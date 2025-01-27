@@ -8,21 +8,11 @@ import Header from './Header'
 import ProfileCard from '@/components/ProfileCard'
 import Link from 'next/link'
 import Footer from './Footer'
-import useFetchJobPostings from '@/hooks/useJobPostings'; // Asegúrate de que la ruta sea correcta
+import JobList from '@/components/JobList';
 
 const Home = () => {
     const [selectedImage, setSelectedImage] = useState(null)
     const router = useRouter();
-
-    const { jobPostings, loading, error } = useFetchJobPostings(); // Usamos el hook aquí
-
-    if (loading) {
-        return <div>Loading...</div>; // Puedes mostrar un spinner o un mensaje de carga
-    }
-
-    if (error) {
-        return <div>Error: {error}</div>; // Mostrar errores si los hay
-    }
 
     // Información de cada imagen
     const imageDetails = {
@@ -45,11 +35,6 @@ const Home = () => {
         e.preventDefault()
         setSelectedImage(imageAlt === selectedImage ? null : imageAlt)
     }
-
-    const handleApply = (id) => {
-        // Redirigir al usuario a la página de detalles de la oferta laboral
-        router.push(`/job/${id}`);
-    };
 
     return (
         <>
@@ -179,26 +164,11 @@ const Home = () => {
 
                     {/* Publicaciones laborales */}
                     <div className="p-6">
-                        <h4 className="mb-4 text-2xl font-bold text-gray-800">
+                        <h4 className="mb-4 text-xl font-bold text-gray-800">
                             Ofertas Laborales
                         </h4>
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {jobPostings.map((job) => (
-                                <div key={job.id} className="p-4 bg-white rounded shadow">
-                                    <h2 className="text-xl font-semibold">{job.title}</h2>
-                                    <p className="text-sm text-gray-600">{job.location}</p>
-                                    <p className="mt-2 text-sm">{job.description}</p>
-                                    <p className="mt-2 text-sm font-medium">
-                                        {job.isRemote ? 'Trabajo Remoto' : 'Presencial'}
-                                    </p>
-                                    <button 
-                                    onClick={() => handleApply(job.id)}
-                                    className="px-4 py-2 mt-4 text-white bg-[#004b9a] rounded shadow hover:bg-blue-700">
-                                        Postularse
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
+                        <JobList />
+                        
                     </div>
 
                     {/* Información de contacto */}

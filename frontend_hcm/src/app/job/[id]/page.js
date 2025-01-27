@@ -1,25 +1,35 @@
-// app/job/[id]/page.jsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from '@/lib/axios';
 
 const JobDetails = ({ params }) => {
     const router = useRouter();
     const { id } = params; // ID de la oferta laboral desde la URL
     const [job, setJob] = useState(null);
     const [formData, setFormData] = useState({
-        name: '',
+        first_name: '',
+        last_name: '',
         email: '',
         phone: '',
-        resume: '',
+        cv_path: null, // Archivo del CV
     });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Simulación de obtener datos de la oferta laboral según el ID
-        const storedJobs = JSON.parse(localStorage.getItem('jobPostings') || '[]');
-        const selectedJob = storedJobs.find((job) => job.id === parseInt(id));
-        setJob(selectedJob);
+        // Cargar los detalles del trabajo
+        const fetchJob = async () => {
+            try {
+                const response = await axios.get(`/api/job-positions/${id}`);
+                setJob(response.data);
+            } catch (err) {
+                console.error('Error al cargar la vacante:', err);
+            }
+        };
+
+        fetchJob();
     }, [id]);
 
     const handleChange = (e) => {
@@ -27,19 +37,38 @@ const JobDetails = ({ params }) => {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        // Guardar los datos de la postulación en localStorage (simulación)
-        const applications = JSON.parse(localStorage.getItem('applications') || '[]');
-        const newApplication = { ...formData, jobId: id, status: 'pending' }; // Estado inicial: pendiente
-        localStorage.setItem('applications', JSON.stringify([...applications, newApplication]));
-
-        // Redirigir al usuario a una página de confirmación o inicio
-        router.push('/');
+    const handleFileChange = (e) => {
+        setFormData((prev) => ({ ...prev, cv_path: e.target.files[0] }));
     };
 
-    if (!job) return <div>Cargando...</div>;
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        const formDataToSend = new FormData();
+        formDataToSend.append('first_name', formData.first_name);
+        formDataToSend.append('last_name', formData.last_name);
+        formDataToSend.append('email', formData.email);
+        formDataToSend.append('phone', formData.phone);
+        formDataToSend.append('cv_path', formData.cv_path); // Archivo del CV
+        formDataToSend.append('job_position_id', id); // ID de la vacante
+
+        try {
+            const response = await axios.post('/api/public/candidates', formDataToSend, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            alert('Postulación realizada con éxito');
+            router.push('/'); // Redirige tras la postulación
+        } catch (err) {
+            setError(err.response?.data?.message || 'Error al enviar la postulación');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!job) return <div>Cargando vacante...</div>;
 
     return (
         <div className="container p-8 mx-auto">
@@ -54,8 +83,19 @@ const JobDetails = ({ params }) => {
                     <label className="block text-sm font-medium text-gray-700">Nombre</label>
                     <input
                         type="text"
-                        name="name"
-                        value={formData.name}
+                        name="first_name"
+                        value={formData.first_name}
+                        onChange={handleChange}
+                        required
+                        className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Apellido</label>
+                    <input
+                        type="text"
+                        name="last_name"
+                        value={formData.last_name}
                         onChange={handleChange}
                         required
                         className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
@@ -87,17 +127,22 @@ const JobDetails = ({ params }) => {
                     <label className="block text-sm font-medium text-gray-700">Adjuntar Currículum</label>
                     <input
                         type="file"
-                        name="resume"
-                        onChange={(e) => setFormData({ ...formData, resume: e.target.files[0]?.name })}
+                        name="cv_path"
+                        onChange={handleFileChange}
                         required
+                        accept=".pdf,.jpg,.png"
                         className="block w-full mt-1 text-gray-600"
                     />
                 </div>
+                {error && <p className="text-sm text-red-500">{error}</p>}
                 <button
                     type="submit"
-                    className="px-4 py-2 text-white bg-blue-600 rounded shadow hover:bg-blue-700"
+                    disabled={loading}
+                    className={`px-4 py-2 text-white bg-blue-600 rounded shadow hover:bg-blue-700 ${
+                        loading ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                 >
-                    Enviar Postulación
+                    {loading ? 'Enviando...' : 'Enviar Postulación'}
                 </button>
             </form>
         </div>
@@ -105,3 +150,5 @@ const JobDetails = ({ params }) => {
 };
 
 export default JobDetails;
+
+

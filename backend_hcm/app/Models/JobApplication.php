@@ -17,12 +17,12 @@ class JobApplication extends Model
 
     public function candidate()
     {
-        return $this->belongsTo(Candidate::class);
+        return $this->belongsTo(Candidate::class, 'candidate_id');
     }
 
     public function jobposition()
     {
-        return $this->belongsTo(JobPosition::class);
+        return $this->belongsTo(JobPosition::class, 'job_position_id');
     }
 
     public function interviews()

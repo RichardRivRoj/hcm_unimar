@@ -103,15 +103,20 @@ class JobPositionController extends Controller
         ]);
     }
 
-    public function publicIndex()
+    public function publicIndex(Request $request)
     {
-        $vacantes = JobPosition::where('status', 'active')->get(); // Mostrar solo las activas
-        return response()->json($vacantes, 200);
+        // Numero de elementos por pagina 
+        $perPage = $request->input('per_page', 3);
+
+        // Obtener vacantes paginadas
+        $vacantes = JobPosition::paginate($perPage);
+
+        return response()->json($vacantes); 
     }
 
     public function publicShow($id)
     {
-        $vacante = JobPosition::where('status', 'active')->findOrFail($id); // Buscar vacante activa
+        $vacante = JobPosition::findOrFail($id); // Buscar vacante activa
         return response()->json($vacante, 200);
     }
 }

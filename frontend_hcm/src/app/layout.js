@@ -1,14 +1,14 @@
-import { Nunito } from 'next/font/google'
+import { Montserrat } from 'next/font/google'
 import '@/app/global.css'
 
-const nunitoFont = Nunito({
+const montserratFont = Montserrat({
     subsets: ['latin'],
     display: 'swap',
 })
 
 const RootLayout = ({ children }) => {
     return (
-        <html lang="es" className={nunitoFont.className}>
+        <html lang="es" className={montserratFont.className}>
             <body className="antialiased">
                 {children}
             </body>

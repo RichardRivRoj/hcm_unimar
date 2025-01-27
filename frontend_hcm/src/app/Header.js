@@ -37,7 +37,7 @@ const Header = () => {
 
                     {/* Opciones alineadas a la derecha */}
                     <nav>
-                        <ul className="flex space-x-8 text-[14px] font-medium text-gray-700 md:text-[14px]">
+                        <ul className="flex space-x-8 text-[14px] font-medium text-gray-700 md:text-[12px]">
                             <li>
                                 <Link href="#" className="hover:text-blue-600">
                                     Inicio
