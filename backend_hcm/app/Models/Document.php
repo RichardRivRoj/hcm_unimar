@@ -9,5 +9,19 @@ class Document extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['employee_id', 'document_type', 'file_path'];
+    protected $fillable = [
+        'person_id', 'document_type_id', 'document_name',
+        'issue_date', 'expiration_date', 'metadata',
+        'file_path', 'status',
+    ];
+
+    public function persons()
+    {
+        return $this->belongsTo(Person::class, 'person_id');
+    }
+
+    public function documenttype()
+    {
+        return $this->belongsTo(DocumentTypes::class, 'document_type_id');
+    }
 }

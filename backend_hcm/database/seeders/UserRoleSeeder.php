@@ -14,24 +14,16 @@ class UserRoleSeeder extends Seeder
      */
     public function run(): void
     {
-        $admin = User::firstOrCreate([
-            'name' => 'Talento Humano',
-            'email' => 'rrhh@unimar.edu.ve',
-            'password' => bcrypt('Farmacia1.'),
-        ]);
-        $admin->assignRole('admin');
 
         $supervisor = User::firstOrCreate([
-            'name' => 'Sujey Avane',
             'email' => 'sujey.avane@unimar.edu.ve',
             'password' => bcrypt('Farmacia1.'),
         ]);
-        $supervisor->assignRole('supervisor');
+        $supervisor->assignRole('employee');
 
         $employee = User::firstOrCreate([
-            'name' => 'Richard Rivera',
             'email' => 'rrivera.0753@unimar.edu.ve',
-            'password' => bcrypt('Famacia1.'),
+            'password' => bcrypt('Farmacia1.'),
         ]);
         $employee->assignRole('employee');
     }

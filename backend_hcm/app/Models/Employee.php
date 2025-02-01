@@ -4,30 +4,34 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use League\CommonMark\Node\Block\Document;
+use PhpParser\Node\Expr\FuncCall;
 
 class Employee extends Model
 {
     use HasFactory;
 
-    // Definir los atributos asignables (mass assignable)
-    protected $fillable = ['user_id', 'birth_date', 'phone', 'address'];
+    protected $fillable = [
+        'person_id', 'position_id', 'department_id',
+        'contract_id', 'half',
+    ];
 
-    // Relacion con el Modelo User
-    public function user()
+    public function persons()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Person::class, 'person_id');
     }
 
-    // Relacion con EmployeePosition
-    public function positions()
+    public function position()
     {
-        return $this->hasMany(EmployeePosition::class);
+        return $this->belongsTo(Position::class, 'position_id');
     }
 
-    // Relacion con Document
-    public function documents()
+    public function department()
     {
-        return $this->hasMany(Document::class);
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
+    public function contract()
+    {
+        return $this->belongsTo(Contract::class, 'contract_id');
     }
 }

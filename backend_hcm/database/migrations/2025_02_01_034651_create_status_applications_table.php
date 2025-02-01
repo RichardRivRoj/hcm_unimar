@@ -11,13 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('candidates', function (Blueprint $table) {
+        Schema::create('status_applications', function (Blueprint $table) {
             $table->id();
-            $table->string('first_name', 100);
-            $table->string('last_name', 100);
-            $table->string('email')->unique();
-            $table->string('phone', 15)->nullable();
-            $table->string('cv_path', 255); // Ruta del archivo del CV
+            $table->string('name', 50);
+            $table->string('short_name', 5);
             $table->timestamps();
         });
     }
@@ -27,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('candidates');
+        Schema::dropIfExists('status_applications');
     }
 };

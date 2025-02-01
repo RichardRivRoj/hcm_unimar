@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('interviews', function (Blueprint $table) {
+        Schema::create('genders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('job_application_id')->constrained()->onDelete('cascade'); // Relacion con la apliacacion
-            $table->dateTime('scheduled_at'); // Fecha y hora de la entrevista
-            $table->text('notes')->nullable(); // Notas del administrador
+            $table->string('name', 50);
+            $table->string('short_name', 1);
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('interviews');
+        Schema::dropIfExists('genders');
     }
 };

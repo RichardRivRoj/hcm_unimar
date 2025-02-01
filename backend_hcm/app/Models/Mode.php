@@ -5,14 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Evaluation extends Model
+class Mode extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'job_application_id',
-        'type',
-        'result',
-        'notes',
+        'name', 'description',
     ];
+
+    public function vacanty()
+    {
+        return $this->hasOne(Vacanty::class, 'mode_id');
+    }
 }

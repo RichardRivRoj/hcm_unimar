@@ -5,14 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Position extends Model
+class Salary extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'description', 'code',
-        'level_id', 'status_id',
+        'amount', 'amount_letters', 'valid_from',
+        'valid_to', 'currency_id', 'level_id',
+        'status_id',
     ];
+
+    public function currency()
+    {
+        return $this->belongsTo(Currency::class, 'currency_id');
+    }
 
     public function level()
     {
@@ -22,10 +28,5 @@ class Position extends Model
     public function status()
     {
         return $this->belongsTo(Status::class, 'status_id');
-    }
-
-    public function vacanty()
-    {
-        return $this->hasMany(Vacanty::class, 'position_id');
     }
 }
