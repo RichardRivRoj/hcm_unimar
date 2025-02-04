@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Vacanty extends Model
+class Vacancy extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'position_id', 'department_id', 'title',
-        'description', 'requirements', 'mode_id',
-        'status_id',
+        'description', 'requirements', 'num_vacancy',
+        'mode_id', 'status_id',
     ];
 
     public function position()
@@ -27,7 +27,7 @@ class Vacanty extends Model
 
     public function mode()
     {
-        return $this->belongsTo(Mode::class, 'mode_id');
+        return $this->belongsTo(Modality::class, 'mode_id');
     }
 
     public function status()
@@ -37,6 +37,6 @@ class Vacanty extends Model
 
     public function candidate()
     {
-        return $this->hasMany(Candidate::class, 'status_id');
+        return $this->hasMany(Candidate::class, 'vacancy_id');
     }
 }

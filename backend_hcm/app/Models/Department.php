@@ -28,6 +28,6 @@ class Department extends Model
 
     public function vacanty()
     {
-        return $this->hasMany(Vacanty::class, 'department_id');
+        return $this->hasMany(Vacancy::class, 'department_id');
     }
 }

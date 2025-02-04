@@ -20,8 +20,8 @@ class UserController extends Controller
         
         return response()->json([
         'id' => $user->id,
-        'name' => $user->name,
         'email' => $user->email,
+        'department_id' => $user->department_id,
         'roles' => $user->getRoleNames(), // Devuelve un array de roles
         'permissions' => $user->getAllPermissions()->pluck('name'), // Devuelve un array de permisos
         ]);

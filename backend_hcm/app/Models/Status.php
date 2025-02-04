@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Status extends Model
 {
-    use HasFactory;
+    //use HasFactory;
 
     protected $fillable = [
-        'name',
+        'name'
     ];
 
     public function persons()
@@ -35,7 +34,7 @@ class Status extends Model
 
     public function vacanty()
     {
-        return $this->hasOne(Vacanty::class, 'status_id');
+        return $this->hasOne(Vacancy::class, 'status_id');
     }
 
     public function candidate()

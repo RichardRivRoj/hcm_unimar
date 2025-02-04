@@ -26,6 +26,6 @@ class Position extends Model
 
     public function vacanty()
     {
-        return $this->hasMany(Vacanty::class, 'position_id');
+        return $this->hasMany(Vacancy::class, 'position_id');
     }
 }

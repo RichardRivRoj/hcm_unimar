@@ -7,17 +7,27 @@ const usePaginatedJobPostings = (initialPage = 1, perPage = 3) => {
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(initialPage);
     const [totalPages, setTotalPages] = useState(1);
+    const [paginationMeta, setPaginationMeta] = useState({});
 
     const fetchJobPostings = async (page) => {
         setLoading(true);
+        setError(null);
         try {
-            const response = await axios.get('/api/public/job-positions', {
+            const response = await axios.get('/api/public/vacancies', {
                 params: { page, per_page: perPage },
             });
-            setJobPostings(response.data.data); // Datos de la página actual
-            setTotalPages(response.data.last_page); // Total de páginas
+
+            // Asegurar que los datos vienen en el formato esperado
+            if (response.data && response.data.data) {
+                setJobPostings(response.data.data.vacancies || []);
+                setTotalPages(response.data.data.pagination?.last_page || 1);
+                setPaginationMeta(response.data.data.pagination || {});
+            } else {
+                throw new Error('Estructura de respuesta inválida');
+            }
         } catch (err) {
-            setError(err.response?.data?.message || 'Error al obtener las vacantes');
+            setError(err.response?.data?.message || err.message || 'Error al obtener las vacantes');
+            setJobPostings([]); // Asegurar array vacío en caso de error
         } finally {
             setLoading(false);
         }
@@ -39,6 +49,7 @@ const usePaginatedJobPostings = (initialPage = 1, perPage = 3) => {
         error,
         currentPage,
         totalPages,
+        paginationMeta,
         goToPage,
     };
 };

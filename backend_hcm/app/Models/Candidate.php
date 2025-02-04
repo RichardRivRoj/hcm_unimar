@@ -11,8 +11,8 @@ class Candidate extends Model
 
     protected $fillable = [
         'person_id',
-        'vacanty_id',
-        'status_id',
+        'vacancy_id',
+        'status_application_id',
     ];
 
     public function persons()
@@ -22,12 +22,12 @@ class Candidate extends Model
 
     public function vacanty()
     {
-        return $this->belongsTo(Vacanty::class, 'vacanty_id');
+        return $this->belongsTo(Vacancy::class, 'vacancy_id');
     }
 
-    public function status()
+    public function status_aplication()
     {
-        return $this->belongsTo(Status::class, 'status_id');
+        return $this->belongsTo(StatusApplication::class, 'status_application_id');
     }
 
     public function agenda()

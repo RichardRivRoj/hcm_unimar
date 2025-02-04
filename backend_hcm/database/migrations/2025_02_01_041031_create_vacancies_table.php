@@ -18,8 +18,9 @@ return new class extends Migration
             $table->string('title', 100);
             $table->text('description');
             $table->json('requirements');
-            $table->foreignId('mode_id')->nullable()->constrained('modalities')->onDelete('set null');
-            $table->foreignId('status_id')->nullable()->constrained('statuses')->onDelete('set null');
+            $table->integer('num_vacancy')->default(1);
+            $table->foreignId('mode_id')->constrained('modalities')->onDelete('cascade');
+            $table->foreignId('status_id')->default(1)->constrained('statuses')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('candidates', function (Blueprint $table) {
             $table->id();
             $table->foreignId('person_id')->constrained('persons')->onDelete('cascade');
-            $table->foreignId('vacanty_id')->constrained('vacancies')->onDelete('cascade');
-            $table->foreignId('status_id')->nullable()->constrained('statuses')->onDelete('set null');
+            $table->foreignId('vacancy_id')->constrained('vacancies')->onDelete('cascade');
+            $table->foreignId('status_application_id')->default(1)->constrained('status_applications')->onDelete('cascade');
             $table->timestamps();
         });
     }

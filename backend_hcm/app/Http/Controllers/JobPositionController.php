@@ -20,18 +20,6 @@ class JobPositionController extends Controller
     }
 
     /**
-     * Mostrar el formulario para crear una nueva oferta laboral
-     */
-    public function getDepartments()
-    {
-        // Obtiene los departamentos disponibles
-        $departments = Department::all(['id', 'name']); // Solo los campos necesarios
-
-        // Retorna los departamentos en formato JSON
-        return response()->json($departments);
-    }
-
-    /**
      * Guardar una nueva oferta laboral en la BD
      */
     public function store(Request $request)

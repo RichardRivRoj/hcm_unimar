@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('scheduled_date');
             $table->time('time');
             $table->string('location', 100);
-            $table->foreignId('status_id')->nullable()->constrained('statuses')->onDelete('set null');
+            $table->foreignId('status_id')->default(1)->constrained('statuses')->onDelete('cascade');
             $table->timestamps();
         });
     }

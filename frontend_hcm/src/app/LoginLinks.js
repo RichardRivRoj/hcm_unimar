@@ -67,7 +67,7 @@ const LoginLinks = () => {
           <Link
             href="/profile"
             className="ml-4 text-sm text-gray-700 underline dark:text-gray-300">
-            {user?.name}
+            {user?.email}
           </Link>
         ) : (
           <>

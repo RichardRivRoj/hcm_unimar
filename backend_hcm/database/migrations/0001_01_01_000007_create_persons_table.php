@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->date('birth_date')->nullable();
             $table->string('phone', 20)->nullable();
+            $table->string('file_path', 220);
+            $table->text('summary');
             $table->string('identification_value', 50)->unique();
             // Claves foraneas
             $table->foreignId('identification_type_id')->nullable()->constrained()->onDelete('set null');
@@ -25,7 +27,7 @@ return new class extends Migration
             $table->foreignId('marital_status_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('gender_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('countries_id')->nullable()->constrained()->onDelete('set null');
-            $table->foreignId('status_id')->default(1)->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('status_id')->default(1)->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
