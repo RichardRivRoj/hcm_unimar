@@ -149,9 +149,9 @@ const JobListPage = () => {
     if (error) return <div className="p-6 text-red-600">Error: {error}</div>
 
     return (
-        <div className="relative min-h-screen bg-gray-50">
+        <div className="static min-h-screen">
             {/* Tabla de vacantes */}
-            <div className="max-w-6xl p-6 mx-auto mt-6 overflow-hidden bg-white rounded-lg shadow-lg">
+            <div className="max-w-full p-6 mx-auto mt-6 ml-6 overflow-hidden bg-white rounded-lg shadow-lg">
                 <h2 className="mb-4 text-2xl font-semibold text-gray-700">
                     Resumen de Vacantes
                 </h2>
@@ -216,23 +216,23 @@ const JobListPage = () => {
 
                 <table className="min-w-full border-separate table-auto border-spacing-2">
                     <thead>
-                        <tr className="text-left bg-gray-100">
-                            <th className="px-6 py-3 text-sm font-medium text-gray-600">
+                        <tr className="text-left bg-blue-200">
+                            <th className="px-6 py-3 text-sm font-medium text-gray-800">
                                 Título
                             </th>
-                            <th className="px-6 py-3 text-sm font-medium text-gray-600">
+                            <th className="px-6 py-3 text-sm font-medium text-gray-800">
                                 Departamento
                             </th>
-                            <th className="px-6 py-3 text-sm font-medium text-gray-600">
+                            <th className="px-6 py-3 text-sm font-medium text-gray-800">
                                 Cargo
                             </th>
-                            <th className="px-6 py-3 text-sm font-medium text-gray-600">
+                            <th className="px-6 py-3 text-sm font-medium text-gray-800">
                                 Modalidad
                             </th>
-                            <th className="px-6 py-3 text-sm font-medium text-gray-600">
+                            <th className="px-6 py-3 text-sm font-medium text-gray-800">
                                 Estatus
                             </th>
-                            <th className="px-6 py-3 text-sm font-medium text-gray-600">
+                            <th className="px-6 py-3 text-sm font-medium text-gray-800">
                                 Acciones
                             </th>
                         </tr>
@@ -241,23 +241,23 @@ const JobListPage = () => {
                         {vacancies.map(vacancy => (
                             <tr
                                 key={vacancy.id}
-                                className="border-b hover:bg-gray-50">
-                                <td className="px-6 py-4 text-sm">
+                                className="border-b hover:bg-blue-50">
+                                <td className="px-6 py-2 text-sm">
                                     {vacancy.title}
                                 </td>
-                                <td className="px-6 py-4 text-sm">
+                                <td className="px-6 py-2 text-sm">
                                     {vacancy.department?.name}
                                 </td>
-                                <td className="px-6 py-4 text-sm">
+                                <td className="px-6 py-2 text-sm">
                                     {vacancy.position?.description}
                                 </td>
-                                <td className="px-6 py-4 text-sm">
+                                <td className="px-6 py-2 text-sm">
                                     {vacancy.mode?.name}
                                 </td>
-                                <td className="px-6 py-4 text-sm">
+                                <td className="px-6 py-2 text-sm">
                                     {vacancy.status?.name}
                                 </td>
-                                <td className="justify-center px-8 py-4 text-sm">
+                                <td className="justify-center px-8 py-2 text-sm">
                                     {/* Botón Ver Detalles */}
                                     <button
                                         onClick={() =>
@@ -313,7 +313,7 @@ const JobListPage = () => {
             {/* Formulario para crear vacante */}
             {isCreating && (
                 <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="w-3/6 p-8 overflow-y-auto bg-white rounded-lg shadow-lg h-3/4 sm:w-3/6">
+                    <div className="w-3/6 p-8 overflow-y-auto bg-white rounded-lg shadow-lg h-3/4 sm:w-3/6 scrollbar-none">
                         <h1 className="mb-6 text-2xl font-semibold text-gray-700">
                             Crear Vacante
                         </h1>
