@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('contract_types', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50);
-            $table->string('short_name', 1)->nullable();
-            $table->string('description', 50);
+            $table->string('short_name', 5)->nullable();
+            $table->string('description', 200);
             $table->timestamps();
         });
     }

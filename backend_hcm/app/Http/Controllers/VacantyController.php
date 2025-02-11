@@ -69,6 +69,7 @@ class VacantyController extends Controller
                 'title' => 'required|max:100',
                 'description' => 'required|string',
                 'requirements' => 'required|json',
+                'responsability' => 'required|json',
                 'num_vacancy' => 'required|integer',
                 'mode_id' => 'required|exists:modalities,id',
                 'status_id' => 'sometimes|exists:statuses,id'
@@ -80,6 +81,7 @@ class VacantyController extends Controller
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'requirements' => $validated['requirements'],
+                'responsability' => $validated['responsability'],
                 'num_vacanty' => $validated['num_vacanty'] ?? 1,
                 'mode_id' => $validated['mode_id'],
                 'status_id' => $validated['status_id'] ?? 1 // Valor por defecto
@@ -131,6 +133,7 @@ class VacantyController extends Controller
             'title' => 'required|string|max:100',
             'description' => 'required|string',
             'requirements' => 'required|json',
+            'responsability' => 'required|json',
             'num_vacancy' => 'required|integer|min:1',
             'mode_id' => 'required|exists:modalities,id',
             'status_id' => 'required|exists:statuses,id'
@@ -147,6 +150,7 @@ class VacantyController extends Controller
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'requirements' => $validated['requirements'],
+                'responsability' => $validated['responsability'],
                 'num_vacancy' => $validated['num_vacancy'],
                 'mode_id' => $validated['mode_id'],
                 'status_id' => $validated['status_id']
@@ -201,4 +205,5 @@ class VacantyController extends Controller
             ], 500);
         }
     }
+
 }

@@ -14,6 +14,7 @@ class PostulationStatusSeeder extends Seeder
     {
         $statuses = [
             ['name' => 'Pendiente', 'short_name' => 'PEND'],
+            ['name' => 'Rechazado', 'short_name' => 'RECH'],
             ['name' => 'Aceptado', 'short_name' => 'ACEP'],
             ['name' => 'En Progreso', 'short_name' => 'PROG'],
             ['name' => 'Contratado', 'short_name' => 'CONT'],

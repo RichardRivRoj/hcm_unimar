@@ -12,7 +12,7 @@ class Agenda extends Model
     protected $fillable = [
         'candidate_id', 'type_agenda_id',
         'scheduled_date', 'time',
-        'location', 'status',
+        'location', 'status_id',
     ];
 
     public function candidate()
@@ -23,6 +23,11 @@ class Agenda extends Model
     public function typeagenda()
     {
         return $this->belongsTo(TypeAgenda::class, 'type_agenda_id');
+    }
+
+    public function status()
+    {
+        return $this->belongsTo(Status::class, 'status_id');
     }
 
     public function agendaresult()

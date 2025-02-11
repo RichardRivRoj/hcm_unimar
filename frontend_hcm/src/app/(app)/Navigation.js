@@ -48,14 +48,9 @@ const Navigation = () => {
                     icon: FileText,
                 },
                 {
-                    name: 'Entrevistas',
+                    name: 'Eventos',
                     href: '/profile/admin/recruitment/interviews',
                     icon: Calendar,
-                },
-                {
-                    name: 'Evaluaciones',
-                    href: '/profile/admin/recruitment/evaluations',
-                    icon: Star,
                 },
                 {
                     name: 'Selección Final',

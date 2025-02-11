@@ -1,16 +1,25 @@
 <?php
 
+use App\Http\Controllers\AgendaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JobPositionController;
 use App\Http\Controllers\CandidateController;
+use App\Http\Controllers\CountryController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\EthnicityController;
+use App\Http\Controllers\GenderController;
+use App\Http\Controllers\IdentificationTypeController;
+use App\Http\Controllers\MaritalStatusController;
 use App\Http\Controllers\ModalityController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\PublicVacancyController;
+use App\Http\Controllers\StatusApplicationController;
 use App\Http\Controllers\StatusController;
+use App\Http\Controllers\TypeAgendaController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VacantyController;
+use App\Models\MaritalStatus;
 
 Route::middleware(['auth:sanctum'])->get('/user', [UserController::class, 'index']);
 
@@ -32,7 +41,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('candidates')->group(function () {
         Route::get('/', [CandidateController::class, 'index'])->name('api.candidates.index'); // Listar todos los candidatos
         Route::get('/{id}', [CandidateController::class, 'show'])->name('api.candidates.show'); // Ver detalles de un candidato
+        Route::put('/{id}/status', [CandidateController::class, 'updateStatus'])->name('api.candidates.status.update');
+        
     });
+
+    // Rutas para Candidates (Candidatos)
+    Route::prefix('agendas')->group(function () {
+        Route::post('/', [AgendaController::class, 'store'])->name('api.agendas.store'); // Crear nuevo evento
+        Route::get('/', [AgendaController::class, 'index'])->name('api.agendas.index'); // Ver listado de eventos
+        
+    });
+
 
     Route::prefix('departments')->group(function () {
         Route::get('/', [DepartmentController::class, 'index'])->name('api.departments.index');
@@ -51,7 +70,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/', [StatusController::class, 'index'])->name('api.statuses.index');
     });
 
-    
+    Route::prefix('applications')->group(function () {
+        Route::get('/', [StatusApplicationController::class, 'index'])->name('api.applications.index');
+    });
+
+    Route::prefix('type_agendas')->group(function () {
+        Route::get('/', [TypeAgendaController::class, 'index'])->name('api.type_agendas.index');
+    });    
     
 });
 
@@ -62,5 +87,21 @@ Route::prefix('public')->group(function () {
     Route::get('/vacancies/{id}', [PublicVacancyController::class, 'show'])->name('api.public.vacancies.show'); // Ver detalles de una vacante pública
 
     // Postulación de Candidatos
-    Route::post('/candidates', [CandidateController::class, 'store'])->name('api.public.candidates.store'); // Registrar un candidato
+    Route::post('/candidates/{vacancyId}', [CandidateController::class, 'store'])->name('api.public.candidates.store');
+
+    // Tipos de identificaciones
+    Route::get('/identifications', [IdentificationTypeController::class, 'index'])->name('api.public.identifications.index'); // Listar identifications
+
+    // Tipos de generos
+    Route::get('/genders', [GenderController::class, 'index'])->name('api.public.genders.index'); // Listar generos
+
+    // Tipos de etnias
+    Route::get('/ethnicities', [EthnicityController::class, 'index'])->name('api.public.ethnicities.index'); // Listar etnias
+
+    // Tipos de estados civiles
+    Route::get('/maritalstatuses', [MaritalStatusController::class, 'index'])->name('api.public.maritalstatuses.index'); // Listar estados civiles
+
+    // Tipos de paises
+    Route::get('/countries', [CountryController::class, 'index'])->name('api.public.countries.index'); // Listar paises
+    
 });

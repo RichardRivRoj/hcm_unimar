@@ -41,6 +41,7 @@ const VacancyDetails = ({ params }) => {
         title: '',
         description: '',
         requirements: [],
+        responsability: [],
         num_vacancy: 1,
         mode_id: '',
         status_id: '',
@@ -82,11 +83,19 @@ const VacancyDetails = ({ params }) => {
                 const normalizedRequirements = normalizeRequirements(
                     data.requirements,
                 )
+                const normalizedResponsability = normalizeRequirements(
+                    data.responsability,
+                )
 
-                setVacancy({ ...data, requirements: normalizedRequirements })
+                setVacancy({
+                    ...data,
+                    requirements: normalizedRequirements,
+                    responsability: normalizedResponsability,
+                })
                 setFormState({
                     ...data,
                     requirements: normalizedRequirements,
+                    responsability: normalizedResponsability,
                 })
                 setLoading(false)
             } catch (err) {
@@ -159,6 +168,7 @@ const VacancyDetails = ({ params }) => {
             const response = await axios.put(`/api/vacancies/${id}`, {
                 ...formState,
                 requirements: JSON.stringify(formState.requirements),
+                responsability: JSON.stringify(formState.responsability),
             })
 
             if (response.data.success) {
@@ -167,9 +177,14 @@ const VacancyDetails = ({ params }) => {
                     response.data.data.requirements,
                 )
 
+                const normalizedResponsability = normalizeRequirements(
+                    response.data.data.responsability,
+                )
+
                 setVacancy({
                     ...response.data.data,
                     requirements: normalizedRequirements,
+                    responsability: normalizedResponsability,
                 })
                 setSuccessMessage('Vacante actualizada exitosamente')
                 setIsEditing(false)
@@ -453,6 +468,16 @@ const VacancyDetails = ({ params }) => {
                             required
                         />
 
+                        <label className="block text-sm font-medium text-gray-700">
+                            Responsabilidades (uno por línea) *
+                        </label>
+                        <textarea
+                            value={formState.responsability.join('\n')}
+                            onChange={handleRequirementsChange}
+                            className="w-full p-3 border rounded-lg h-44 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                        />
+
                         {/* Descripción */}
                         <div className="flex flex-col">
                             <label className="text-sm font-medium text-gray-600">
@@ -541,6 +566,31 @@ const VacancyDetails = ({ params }) => {
                             ) : (
                                 <div className="p-4 text-gray-500 rounded-lg bg-gray-50">
                                     No se han definido requisitos específicos
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Lista de Requisitos */}
+                    <div className="space-y-4">
+                        <h2 className="text-xl font-semibold text-gray-900">
+                            Responsabilidades principales
+                        </h2>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            {vacancy.responsability?.length > 0 ? (
+                                vacancy.responsability.map((req, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex items-start p-4 rounded-lg bg-gray-50">
+                                        <CheckIcon />
+                                        <span className="ml-3 text-gray-700">
+                                            {req}
+                                        </span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="p-4 text-gray-500 rounded-lg bg-gray-50">
+                                    No se han definido responsabilidades específicas
                                 </div>
                             )}
                         </div>

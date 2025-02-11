@@ -27,7 +27,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string', 'email', 'regex:/^[a-zA-Z0-9._%+-]+@unimar\.edu\.ve$/i'],
             'password' => ['required', 'string'],
         ];
     }
@@ -45,7 +45,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
+                'email' => 'Credenciales incorrectas. Por favor verifica.',
             ]);
         }
 
@@ -90,6 +90,13 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->input('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->input('email')) . '|' . $this->ip());
+    }
+
+    public function messages()
+    {
+        return [
+            'email.regex' => 'El correo electrónico debe ser @unimar.edu.ve.',
+        ];
     }
 }

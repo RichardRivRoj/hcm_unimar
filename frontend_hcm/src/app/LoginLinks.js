@@ -76,11 +76,6 @@ const LoginLinks = () => {
               className="text-sm text-gray-700 underline dark:text-gray-300">
               Iniciar Sesión
             </Link>
-            <Link
-              href="/register"
-              className="ml-4 text-sm text-gray-700 underline dark:text-gray-300">
-              Registro
-            </Link>
           </>
         )}
       </div>

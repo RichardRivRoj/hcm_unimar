@@ -30,11 +30,13 @@ const useVacancyDetail = (id) => {
 
                 // Normalizar los requisitos
                 const normalizedRequirements = normalizeRequirements(data.requirements);
+                const normalizedResponsability = normalizeRequirements(data.responsability);
 
                 // Actualizar el estado con los requisitos normalizados
                 setVacancy({
                     ...data,
                     requirements: normalizedRequirements,
+                    responsability: normalizedResponsability,
                 });
             } catch (err) {
                 setError(err.response?.data?.message || 'Error al cargar la vacante');

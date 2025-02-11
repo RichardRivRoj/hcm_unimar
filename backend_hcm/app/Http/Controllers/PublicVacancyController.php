@@ -110,6 +110,7 @@ class PublicVacancyController extends Controller
                         'title' => $vacancy->title,
                         'description' => $vacancy->description,
                         'requirements' => $vacancy->requirements,
+                        'responsability' => $vacancy->responsability,
                         'num_vacancy' => $vacancy->num_vacancy,
                         'created_at' => $vacancy->created_at->toDateString(),
                         'position' => $vacancy->position,

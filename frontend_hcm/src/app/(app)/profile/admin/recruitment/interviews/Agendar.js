@@ -1,109 +1,189 @@
-// app/profile/admin/recruitment/interviews/agendar.jsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import useAgendas from '@/hooks/useAgendas';
+import useStatuses from '@/hooks/useStatuses';
+import useTypeAgendas from '@/hooks/typeAgendasView';
+import { Eye } from 'lucide-react';
+
 
 const AgendarEntrevista = () => {
-    const [applications, setApplications] = useState([]);
-    const [selectedCandidate, setSelectedCandidate] = useState(null);
-    const [formData, setFormData] = useState({
-        date: '',
-        time: '',
-        location: '',
+    
+    const [filters, setFilters] = useState({
+        status: '', // Filtro por estatus
+        type_agenda: '', // Filtro por tipo de agenda
+        page: 1,
     });
 
-    useEffect(() => {
-        const storedApplications = JSON.parse(localStorage.getItem('applications') || '[]');
-        const acceptedApplications = storedApplications.filter(app => app.status === 'accepted');
-        setApplications(acceptedApplications);
-    }, []);
+    const { agendas, loading, meta, error } = useAgendas(filters);
+    const {statuses, loading: loadingStatus, error: errorStatus } = useStatuses();
+    const {typeAgendas, loading: loadingAgendas, error: errorAgendas } = useTypeAgendas();
 
-    const handleChange = (e) => {
+    const handleFilterChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        setFilters((prevFilters) => ({
+            ...prevFilters,
+            [name]: value,
+            page: 1,
+        })); // Resetear a la primera página al cambiar filtros
     };
 
-    const handleSchedule = (e) => {
-        e.preventDefault();
-
-        if (!selectedCandidate) return alert('Por favor, selecciona un candidato.');
-
-        const storedInterviews = JSON.parse(localStorage.getItem('interviews') || '[]');
-        const newInterview = {
-            ...formData,
-            candidate: selectedCandidate,
-        };
-        localStorage.setItem('interviews', JSON.stringify([...storedInterviews, newInterview]));
-        alert(`Correo enviado a ${selectedCandidate.email} con detalles de la entrevista.`);
-        setSelectedCandidate(null);
-        setFormData({ date: '', time: '', location: '' });
-    };
+    if (loading)
+        return (
+            <div className="p-6 space-y-4">
+                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+        )
+    if (error) return <div className="p-6 text-red-600">Error: {error}</div>
 
     return (
-        <form onSubmit={handleSchedule} className="p-4 space-y-4 rounded shadow bg-gray-50">
-            <h2 className="text-xl font-semibold">Formulario de Entrevista</h2>
-            <div>
-                <label className="block text-sm font-medium text-gray-700">
-                    Seleccionar Candidato
-                </label>
+        <>
+        <div className="max-w-full p-6 mx-auto mt-6 ml-6 overflow-hidden bg-white rounded-lg shadow-lg">
+            <h2 className="mb-4 text-2xl font-semibold text-gray-700">
+                Eventos Agendados
+            </h2>
+
+            {/* Filtros */}
+            <div className="flex flex-row justify-end gap-6 mb-8">
                 <select
-                    value={selectedCandidate?.email || ''}
-                    onChange={(e) => {
-                        const candidate = applications.find(app => app.email === e.target.value);
-                        setSelectedCandidate(candidate);
-                    }}
-                    className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    required
-                >
-                    <option value="">Selecciona un candidato</option>
-                    {applications.map((app) => (
-                        <option key={app.email} value={app.email}>
-                            {app.name} - {app.email}
+                    name="type_agenda_id"
+                    value={filters.type_agenda}
+                    onChange={handleFilterChange}
+                    className="w-1/4 p-3 text-sm text-gray-700 transition duration-200 ease-in-out bg-transparent border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-0">
+                    <option value="" className="text-gray-600">
+                        Seleccione Tipo de Evento
+                    </option>
+                    {(typeAgendas || []).map(type => (
+                        <option
+                            key={type.id}
+                            value={type.id}
+                            className="text-gray-600">
+                            {type.name}
+                        </option>
+                    ))}
+                </select>
+
+                <select
+                    name="status_id"
+                    value={filters.status}
+                    onChange={handleFilterChange}
+                    className="w-1/4 p-3 text-sm text-gray-700 transition duration-200 ease-in-out bg-transparent border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-0">
+                    <option value="" className="text-gray-500">
+                        Seleccione estatus
+                    </option>
+                    {(statuses || []).map(status => (
+                        <option
+                            key={status.id}
+                            value={status.id}
+                            className="text-gray-600">
+                            {status.name}
                         </option>
                     ))}
                 </select>
             </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Fecha</label>
-                <input
-                    type="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                    className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    required
-                />
+
+            {/* Tabla de candidatos */}
+            <table className="min-w-full border-separate table-auto border-spacing-2">
+                <thead>
+                    <tr className="text-left bg-blue-200">
+                        <th className="px-6 py-3 text-sm font-medium text-gray-800">
+                            Nombre y Apellido
+                        </th>
+                        <th className="px-6 py-3 text-sm font-medium text-gray-800">
+                            Identificación
+                        </th>
+                        <th className="px-6 py-3 text-sm font-medium text-gray-800">
+                            Vacante
+                        </th>
+                        <th className="px-6 py-3 text-sm font-medium text-gray-800">
+                            Tipo de evento
+                        </th>
+                        <th className="px-6 py-3 text-sm font-medium text-gray-800">
+                            Estado
+                        </th>
+                        <th className="px-6 py-3 text-sm font-medium text-gray-800">
+                            Acciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {agendas.map(agenda => (
+                        <tr
+                            key={agenda.id}
+                            className="border-b hover:bg-blue-50">
+                            <td className="px-6 py-2 text-sm">
+                                {agenda.candidate.persons.first_name}{' '}
+                                {agenda.candidate.persons.last_name}
+                            </td>
+                            <td className="px-6 py-2 text-sm">
+                                {agenda.candidate.persons.identification_value}
+                            </td>
+                            <td className="px-6 py-2 text-sm">
+                                {agenda.candidate.vacancy.title}
+                            </td>
+                            <td className="px-6 py-2 text-sm">
+                                {agenda.typeagenda.name}
+                            </td>
+                            <td className="px-6 py-2 text-sm">
+                                {agenda.status.name}
+                            </td>
+                            <td className="justify-center px-8 py-2 text-sm">
+                                {/* Botón Ver Detalles */}
+                                <button
+                                    onClick={() =>
+                                        router.push(
+                                            `/profile/admin/recruitment/applications-re/inspect/${candidate.id}`,
+                                        )
+                                    }
+                                    className="p-1 text-blue-600 transition rounded-md hover:bg-gray-100">
+                                    <Eye size={26} />
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+
+            {/* Controles de paginación */}
+            <div className="flex items-center justify-center mt-6 space-x-2">
+                <button
+                    onClick={() =>
+                        setFilters(prev => ({
+                            ...prev,
+                            page: meta.current_page - 1,
+                        }))
+                    }
+                    disabled={meta.current_page === 1}
+                    className={`px-2 py-1 text-xs text-white rounded ${
+                        meta.current_page === 1
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-[#004b9a] hover:bg-blue-700'
+                    }`}>
+                    ← Anterior
+                </button>
+                <span className="text-xs text-gray-700">
+                    Página {meta.current_page} de {meta.last_page}
+                </span>
+                <button
+                    onClick={() =>
+                        setFilters(prev => ({
+                            ...prev,
+                            page: meta.current_page + 1,
+                        }))
+                    }
+                    disabled={meta.current_page === meta.last_page}
+                    className={`px-2 py-1 text-xs text-white rounded ${
+                        meta.current_page === meta.last_page
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-[#004b9a] hover:bg-blue-700'
+                    }`}>
+                    Siguiente →
+                </button>
             </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Hora</label>
-                <input
-                    type="time"
-                    name="time"
-                    value={formData.time}
-                    onChange={handleChange}
-                    className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    required
-                />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Lugar</label>
-                <input
-                    type="text"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    placeholder="Ejemplo: Sala de reuniones A"
-                    required
-                />
-            </div>
-            <button
-                type="submit"
-                className="px-4 py-2 text-white bg-blue-600 rounded shadow hover:bg-blue-700"
-            >
-                Agendar Entrevista
-            </button>
-        </form>
+        </div>
+        </>
     );
 };
 

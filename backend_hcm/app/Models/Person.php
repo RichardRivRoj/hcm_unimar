@@ -9,10 +9,13 @@ class Person extends Model
 {
     use HasFactory;
 
+    protected $table = 'persons';
+
     protected $fillable = [
         'first_name', 'last_name', 'email',
-        'birth_date', 'phone', 'identification_value',
-        'identification_type_id', 'ethnicity_id', 'marital_status_id',
+        'birth_date', 'phone', 'file_path', 'summary',
+        'identification_value','identification_type_id', 
+        'ethnicity_id', 'marital_status_id',
         'gender_id', 'countries_id', 'status_id',
     ];
 
@@ -46,7 +49,7 @@ class Person extends Model
         return $this->belongsTo(Status::class, 'status_id');
     }
 
-    public function document()
+    public function documents()
     {
         return $this->hasMany(Document::class, 'person_id');
     }
@@ -64,5 +67,10 @@ class Person extends Model
     public function candidate()
     {
         return $this->hasMany(Candidate::class, 'person_id');
+    }
+
+    public function bank_account()
+    {
+        return $this->hasMany(BankAccount::class, 'person_id');
     }
 }

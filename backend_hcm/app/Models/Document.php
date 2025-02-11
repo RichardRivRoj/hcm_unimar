@@ -15,6 +15,10 @@ class Document extends Model
         'file_path', 'status',
     ];
 
+    protected $casts = [
+        'metadata' => 'array'
+    ];
+
     public function persons()
     {
         return $this->belongsTo(Person::class, 'person_id');

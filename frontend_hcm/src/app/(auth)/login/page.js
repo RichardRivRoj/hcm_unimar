@@ -24,6 +24,11 @@ const Login = () => {
     const [errors, setErrors] = useState([])
     const [status, setStatus] = useState(null)
 
+    const validateEmailFormat = (email) => {
+        const regex = /^[a-zA-Z0-9._%+-]+@unimar\.edu\.ve$/i
+        return regex.test(email)
+    }
+
     useEffect(() => {
         if (router.reset?.length > 0 && errors.length === 0) {
             setStatus(atob(router.reset))
@@ -34,6 +39,11 @@ const Login = () => {
 
     const submitForm = async event => {
         event.preventDefault()
+
+        if (!validateEmailFormat(email)) {
+            setErrors({ email: ['El correo debe tener dominio @unimar.edu.ve'] })
+            return
+        }
 
         login({
             email,
@@ -57,7 +67,18 @@ const Login = () => {
                         type="email"
                         value={email}
                         className="block w-full mt-1"
-                        onChange={event => setEmail(event.target.value)}
+                        onChange={event => {
+                            setEmail(event.target.value)
+                            setErrors(prev => ({ ...prev, email: undefined }))
+                        }}
+                        onBlur={() => {
+                            if (email && !validateEmailFormat(email)) {
+                                setErrors(prev => ({
+                                    ...prev,
+                                    email: ['El correo debe tener dominio @unimar.edu.ve']
+                                }))
+                            }
+                        }} 
                         required
                         autoFocus
                     />
@@ -113,7 +134,7 @@ const Login = () => {
                         ¿Olvidaste tu contraseña?
                     </Link>
 
-                    <Button className="ml-3 bg-[#30669a]">Iniciar sesión</Button>
+                    <Button className="ml-3">Iniciar sesión</Button>
                 </div>
             </form>
         </>

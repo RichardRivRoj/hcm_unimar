@@ -18,4 +18,9 @@ class Currency extends Model
     {
         return $this->hasMany(Salary::class, 'currency_id');
     }
+
+    public function bank_account()
+    {
+        return $this->hasMany(BankAccount::class, 'currency_id');
+    }
 }

@@ -55,6 +55,7 @@ const JobListPage = () => {
         title: '',
         description: '',
         requirements: [],
+        responsability: [],
         num_vacancy: 1,
         mode_id: '',
     })
@@ -69,7 +70,7 @@ const JobListPage = () => {
             [name]: type === 'number' ? parseInt(value) : value,
         }))
     }
-    
+
     // Función para manejar cambios en los filtros
     const handleFilterChange = e => {
         const { name, value } = e.target
@@ -87,7 +88,14 @@ const JobListPage = () => {
             requirements: requirementsArray,
         }))
     }
-
+    
+    const handleResponsabilityChange = e => {
+        const responsabilityArray = e.target.value.split('\n')
+        setFormState(prev => ({
+            ...prev,
+            responsability: responsabilityArray,
+        }))
+    }
 
     const handleSubmit = async e => {
         e.preventDefault()
@@ -103,31 +111,32 @@ const JobListPage = () => {
             return
         }
 
-        
-
         try {
             const payload = {
                 ...formState,
                 requirements: JSON.stringify(formState.requirements),
+                responsability: JSON.stringify(formState.responsability),
             }
 
             await createVacancies(payload)
 
-            if (success) {
-                alert('Vacante creada exitosamente')
-                setFormState({
-                    position_id: '',
-                    department_id: '',
-                    title: '',
-                    description: '',
-                    requirements: [],
-                    num_vacancy: 1,
-                    mode_id: '',
-                })
-                setIsCreating(false)
-            }
+            // Resetear el formulario y cerrar el modal
+            setFormState({
+                position_id: '',
+                department_id: '',
+                title: '',
+                description: '',
+                requirements: [],
+                responsability: [],
+                num_vacancy: 1,
+                mode_id: '',
+            })
+            setIsCreating(false)
+
+            // Recargar la página para actualizar la lista de vacantes
+            router.refresh()
         } catch (error) {
-            setIsCreating(false) // Terminar el proceso en caso de error
+            setIsCreating(false)
             alert('Error al crear vacante: ' + error.message)
         }
     }
@@ -347,8 +356,7 @@ const JobListPage = () => {
                         )}
                         {errorPositions && (
                             <p className="text-sm text-red-500">
-                                Error al cargar Cargos:{' '}
-                                {errorPositions.message}
+                                Error al cargar Cargos: {errorPositions.message}
                             </p>
                         )}
 
@@ -442,7 +450,7 @@ const JobListPage = () => {
                                     type="number"
                                     name="num_vacancy"
                                     min="1"
-                                    value={formState.num_vacanty}
+                                    value={formState.num_vacancy}
                                     onChange={handleChange}
                                     required
                                     className="p-4 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -462,6 +470,19 @@ const JobListPage = () => {
                                 />
                             </div>
 
+                            {/* Requisitos */}
+                            <div className="flex flex-col">
+                                <label className="text-sm font-medium text-gray-600">
+                                    Responsabilidades (uno por línea)
+                                </label>
+                                <textarea
+                                    value={formState.responsability.join('\n')}
+                                    onChange={handleResponsabilityChange}
+                                    className="p-4 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    rows="4"
+                                />
+                            </div>
+
                             {/* Descripción */}
                             <div className="flex flex-col">
                                 <label className="text-sm font-medium text-gray-600">
@@ -475,13 +496,22 @@ const JobListPage = () => {
                                     rows="4"
                                 />
                             </div>
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    onClick={() => setIsCreating(false)}
+                                    className="w-1/4 px-3 py-2 mt-4 text-white bg-gray-400 rounded-lg hover:bg-gray-500">
+                                    Cancelar
+                                </button>
 
-                            <button
-                                type="submit"
-                                disabled={!isFormValid || creatingJob}
-                                className="w-full px-4 py-3 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50">
-                                {creatingJob ? 'Creando...' : 'Crear Vacante'}
-                            </button>
+                                <button
+                                    type="submit"
+                                    disabled={!isFormValid || creatingJob}
+                                    className="w-1/4 px-3 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50">
+                                    {creatingJob
+                                        ? 'Creando...'
+                                        : 'Crear Vacante'}
+                                </button>
+                            </div>
                         </form>
 
                         {errorCreate && (
@@ -489,12 +519,6 @@ const JobListPage = () => {
                                 Error al crear la vacante: {errorCreate}
                             </p>
                         )}
-
-                        <button
-                            onClick={() => setIsCreating(false)}
-                            className="absolute p-2 text-white bg-red-600 rounded-full top-4 right-4 hover:bg-red-700">
-                            X
-                        </button>
                     </div>
                 </div>
             )}
@@ -502,4 +526,4 @@ const JobListPage = () => {
     )
 }
 
-export default JobListPage;
+export default JobListPage

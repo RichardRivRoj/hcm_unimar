@@ -20,12 +20,12 @@ class Candidate extends Model
         return $this->belongsTo(Person::class, 'person_id');
     }
 
-    public function vacanty()
+    public function vacancy()
     {
         return $this->belongsTo(Vacancy::class, 'vacancy_id');
     }
 
-    public function status_aplication()
+    public function status_application()
     {
         return $this->belongsTo(StatusApplication::class, 'status_application_id');
     }

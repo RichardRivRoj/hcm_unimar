@@ -23,7 +23,7 @@ const Interviews = () => {
 
     return (
         <div className="container p-8 mx-auto">
-            <h1 className="mb-6 text-2xl font-bold">Gestión de Entrevistas</h1>
+            <h1 className="mb-6 text-2xl font-bold">Gestión de Eventos</h1>
 
             {/* Opciones de pestañas */}
             <div className="flex mb-6 space-x-4 border-b-2 border-gray-200">
@@ -35,7 +35,7 @@ const Interviews = () => {
                             : 'text-gray-600 hover:text-blue-600'
                     }`}
                 >
-                    Agendar Entrevista
+                    Eventos Agendados
                 </button>
                 <button
                     onClick={() => setActiveTab('calendario')}
@@ -60,7 +60,9 @@ const Interviews = () => {
             </div>
 
             {/* Contenido dinámico */}
-            <div>{renderContent()}</div>
+            <div className=''>
+                {renderContent()}
+            </div>
         </div>
     );
 };
