@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState, useEffect, use } from 'react'
+import { useState } from 'react'
 import axios from '@/lib/axios'
 import useCandidate from '@/hooks/useCandidateShow'
 import DetailCard from '@/components/DetailCard'
@@ -82,6 +82,24 @@ const CandidateDetails = ({ params }) => {
 
     const handleChange = e => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
+    }
+
+    const handleStatusChange = async status => {
+        setLoading(true)
+        setError(null)
+
+        try {
+            await axios.put(`/api/candidates/${id}/status`, { status })
+            setSuccess(true)
+            setTimeout(() => setSuccess(false), 3000)
+        } catch (err) {
+            setError(
+                err.response?.data?.message || 'Error al actualizar estado',
+            )
+        } finally {
+            setLoading(false)
+            setShowConfirm(null)
+        }
     }
 
     const handleSubmit = async e => {
@@ -400,12 +418,23 @@ const CandidateDetails = ({ params }) => {
                 </div>
 
                 {/* Botón de Agendar Entrevista (solo si es Aceptado) */}
-                {candidate.status_application.name === 'Aceptado' && (
-                    <button
-                        onClick={openModal}
-                        className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                        Agendar Entrevista
-                    </button>
+                {(candidate.status_application.name === 'Aceptado' || candidate.status_application.name === 'En Progreso') && (
+                    <div className="flex gap-4">
+                        <button
+                            onClick={openModal}
+                            className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                            Agendar Eventos
+                        </button>
+                        <button
+                            onClick={() =>
+                                router.push(
+                                    `/profile/admin/recruitment/applications-re/agendas/${id}`,
+                                )
+                            }
+                            className="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700">
+                            Ver Eventos
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -506,4 +535,4 @@ const CandidateDetails = ({ params }) => {
     )
 }
 
-export default CandidateDetails
+export default CandidateDetails;

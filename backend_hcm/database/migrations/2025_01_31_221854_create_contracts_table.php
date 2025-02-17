@@ -19,7 +19,7 @@ return new class extends Migration
             $table->date('end_date');
             $table->string('payment_terms')->nullable();
             $table->text('notes');
-            $table->string('file_path');
+            $table->string('file_path')->nullable();
             $table->foreignId('contract_type_id')->constrained('contract_types')->onDelete('cascade');
             $table->foreignId('employment_type_id')->constrained('employment_types')->onDelete('cascade');
             $table->foreignId('status_id')->nullable()->constrained('statuses')->onDelete('set null');

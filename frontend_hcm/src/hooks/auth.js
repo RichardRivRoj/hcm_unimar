@@ -99,6 +99,24 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         window.location.pathname = '/login'
     }
 
+    const updatePassword = async ({ setErrors, setStatus, ...props }) => {
+        await csrf()
+
+        setErrors([])
+        setStatus(null)
+
+        axios
+            .post('/update-password', props)
+            .then(response => setStatus('password-updated'))
+            .catch(error => {
+                if (error.response.status === 422) {
+                    setErrors(Object.values(error.response.data.errors).flat())
+                } else {
+                    throw error
+                }
+            })
+    }
+
     useEffect(() => {
         if (middleware === 'guest' && redirectIfAuthenticated && user)
             router.push(redirectIfAuthenticated)
@@ -114,5 +132,6 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         resetPassword,
         resendEmailVerification,
         logout,
+        updatePassword,
     }
 }

@@ -4,18 +4,22 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use App\Mail\ApplicationAccepted;
 use App\Mail\ApplicationRejected;
+use App\Mail\EmployeeHiredNotification;
 use App\Mail\InterviewScheduled;
+use App\Mail\InterviewUpdated;
 
 Route::get('/', function () {
     $mailData = [
-        'candidate' => 'María González',
-        'typeAgenda' => 'Backend',
-        'scheduledDate' => '20-10-2000',
-        'time' => '10:00',
-        'location' => 'Sala 2'
+        'name' => 'María González',
+        'email' => 'example@unimar.edu.ve',
+        'password' => 'password123',
+        'position' => '10:00',
+        'department' => 'Sala 2',
+        'start_date' => '20-02-2025',
+        'end_date' => '20-05-2025'
     ];
     
-    return new InterviewScheduled($mailData);
+    return new EmployeeHiredNotification($mailData);
 });
 
 Route::get('/photos/{filename}', function ($filename) {

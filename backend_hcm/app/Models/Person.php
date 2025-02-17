@@ -66,7 +66,7 @@ class Person extends Model
 
     public function candidate()
     {
-        return $this->hasMany(Candidate::class, 'person_id');
+        return $this->hasOne(Candidate::class, 'person_id');
     }
 
     public function bank_account()

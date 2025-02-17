@@ -11,6 +11,7 @@ use App\Models\Document;
 use App\Models\Person;
 use App\Models\StatusApplication;
 use App\Models\Vacancy;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -25,37 +26,35 @@ class CandidateController extends Controller
     public function index(Request $request)
     {
         // Obtener los parámetros de filtrado
-        $sort = $request->input('sort', 'asc'); // Orden por defecto: A-Z
+        $sort = $request->input('sort', 'asc');
 
-        // Consulta base con relaciones
+        // Consulta base con relaciones y columnas explícitas
         $query = Candidate::with([
-            'persons', // Relación con Persons
-            'vacancy', // Relación con Vacancy
-            'status_application', // Relación con StatusApplication
-        ]);
+            'persons',
+            'vacancy',
+            'status_application',
+        ])->select('candidates.*'); // Seleccionar solo las columnas de candidates
 
         // Aplicar filtros
         if ($request->filled('status_application_id')) {
             $query->where('status_application_id', $request->status_application_id);
         }
 
-        // Ordenar por nombre de la persona
-        if ($sort === 'asc') {
-            $query->join('persons', 'candidates.person_id', '=', 'persons.id')
-                ->orderBy('persons.first_name', 'asc');
-        } else {
-            $query->join('persons', 'candidates.person_id', '=', 'persons.id')
-                ->orderBy('persons.first_name', 'desc');
-        }
+        // Ordenar por nombre de la persona usando Eloquent
+        $query->when($sort, function ($q) use ($sort) {
+            $q->orderBy(
+                Person::select('first_name')
+                    ->whereColumn('persons.id', 'candidates.person_id'),
+                $sort
+            );
+        });
 
-        // Paginar los resultados (20 por página)
+        // Paginar los resultados
         $candidates = $query->paginate(20);
 
-        // Retornar la respuesta en formato JSON
-        // Estructura de respuesta
         return response()->json([
             'success' => true,
-            'data' => $candidates->items(), // Datos de las vacantes
+            'data' => $candidates->items(),
             'meta' => [
                 'current_page' => $candidates->currentPage(),
                 'last_page' => $candidates->lastPage(),
@@ -211,72 +210,69 @@ class CandidateController extends Controller
 
 
     //Mostrar un candidato específico.
-    public function show($id)
+    public function show($candidateId)
     {
+        try {
+            // Buscar el candidato por su ID
+            $candidate = Candidate::with([
+                'persons.identificationtype',
+                'persons.ethnicity',
+                'persons.maritalstatus',
+                'persons.gender',
+                'persons.country',
+                'persons.status',
+                'persons.documents.documenttype',
+                'vacancy',
+                'status_application'
+            ])->findOrFail($candidateId); // Usar findOrFail en lugar de where
 
-        // Obtener el candidato con todas las relaciones necesarias
-        $candidate = Candidate::with([
-            'persons.identificationtype', // Tipo de identificación
-            'persons.ethnicity',          // Etnia
-            'persons.maritalstatus',      // Estado civil
-            'persons.gender',              // Género
-            'persons.country',             // País
-            'persons.status',              // Estado de la persona
-            'persons.documents.documenttype', // Documentos y su tipo
-            'vacancy',                    // Vacante asociada
-            'status_application'           // Estado de la aplicación
-        ])->findOrFail($id);
+            // Obtener las relaciones individuales para una mejor estructuración
+            $person = $candidate->persons;
+            $documents = $person->documents ?? [];
+            $identificationType = $person->identificationtype;
+            $ethnicity = $person->ethnicity;
+            $maritalStatus = $person->maritalstatus;
+            $gender = $person->gender;
+            $country = $person->country;
+            $status = $person->status;
 
-        // Obtener las relaciones individuales para una mejor estructuración
-        $person = $candidate->persons;
-        $documents = $person->documents ?? [];
-        $identificationType = $person->identificationtype;
-        $ethnicity = $person->ethnicity;
-        $maritalStatus = $person->maritalstatus;
-        $gender = $person->gender;
-        $country = $person->country;
-        $status = $person->status;
+            // Verificar si existe 'person' antes de acceder a sus propiedades
+            if ($candidate->persons) {
+                // Generar URL de la foto solo si existe file_path
+                $candidate->persons->photo_url = $candidate->persons->file_path
+                    ? route('photo.show', ['filename' => basename($candidate->persons->file_path)])
+                    : null;
+            } else {
+                // Si no hay persona asociada, establecer photo_url como null
+                $candidate->person = (object) ['photo_url' => null];
+            }
 
-        // Verificar si existe 'person' antes de acceder a sus propiedades
-        if ($candidate->persons) {
-            // Generar URL de la foto solo si existe file_path
-            $candidate->persons->photo_url = $candidate->persons->file_path
-                ? route('photo.show', ['filename' => basename($candidate->persons->file_path)])
-                : null;
-        } else {
-            // Si no hay persona asociada, establecer photo_url como null
-            $candidate->person = (object) ['photo_url' => null];
+            // Construir la respuesta JSON
+            return response()->json([
+                'candidate_id' => $candidate->id,
+                'person_id' => $candidate->person_id,
+                'status_application' => $candidate->status_application,
+                'vacancy' => $candidate->vacancy,
+                'person' => $person,
+                'documents' => $documents,
+                'identification_type' => $identificationType,
+                'ethnicity' => $ethnicity,
+                'marital_status' => $maritalStatus,
+                'gender' => $gender,
+                'country' => $country,
+                'status' => $status
+            ]);
+        } catch (ModelNotFoundException $e) {
+            // Manejar error si el candidato no existe
+            return response()->json([
+                'error' => 'Candidato no encontrado'
+            ], 404);
+        } catch (\Exception $e) {
+            // Manejar otros errores
+            return response()->json([
+                'error' => 'Error al obtener la información del candidato'
+            ], 500);
         }
-
-        // Construir la respuesta JSON
-        return response()->json([
-            'candidate' => $candidate,
-            'status_application' => $candidate->status_application,
-            'vacancy' => $candidate->vacancy,
-            'person' => $person,
-            'documents' => $documents,
-            'identification_type' => $identificationType,
-            'ethnicity' => $ethnicity,
-            'marital_status' => $maritalStatus,
-            'gender' => $gender,
-            'country' => $country,
-            'status' => $status
-        ]);
-    }
-
-    /**
-     * Actualizar el estado de un candidato (para avanzar en el proceso).
-     */
-    public function update(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'status' => 'required|string|in:applied,interview,sent_offer,selected,rejected',
-        ]);
-
-        $candidate = Candidate::findOrFail($id);
-        $candidate->update(['status' => $validated['status']]);
-
-        return response()->json(['message' => 'Estado del candidato actualizado correctamente.', 'candidate' => $candidate]);
     }
 
     /**
@@ -290,26 +286,29 @@ class CandidateController extends Controller
         return response()->json(['message' => 'Candidato eliminado correctamente.']);
     }
 
-    public function updateStatus($id, Request $request)
+    public function updateStatus($candidateId, Request $request)
     {
         $request->validate(['status' => 'required|in:aceptado,rechazado']);
 
-        // Cargar relaciones CORRECTAMENTE (person en singular)
-        $candidate = Candidate::with(['persons', 'vacancy'])->findOrFail($id);
+        // Buscar el candidato por su ID
+        $candidate = Candidate::with(['persons', 'vacancy'])
+            ->findOrFail($candidateId);
 
+        // Obtener el estado de la aplicación
         $status = StatusApplication::where('name', ucfirst($request->status))->firstOrFail();
 
+        // Actualizar el estado del candidato
         $candidate->update(['status_application_id' => $status->id]);
 
-        // Verificar persona asociada (en singular)
+        // Verificar persona asociada
         if (!$candidate->persons) {
-            Log::error("Candidato {$id} no tiene persona asociada");
+            Log::error("Candidato con ID {$candidateId} no tiene persona asociada");
             return response()->json(['error' => 'Candidato no válido'], 400);
         }
 
-        // Verificar email (acceder en singular)
+        // Verificar email
         if (empty($candidate->persons->email)) {
-            Log::error("Candidato {$id} no tiene email registrado");
+            Log::error("Candidato con ID {$candidateId} no tiene email registrado");
             return response()->json(['error' => 'No hay email asociado'], 400);
         }
 
@@ -324,6 +323,7 @@ class CandidateController extends Controller
                 ? new ApplicationAccepted($mailData)
                 : new ApplicationRejected($mailData);
 
+            // Enviar correo electrónico
             Mail::to($candidate->persons->email)->send($mailable);
         } catch (\Exception $e) {
             Log::error("Error enviando email: " . $e->getMessage());

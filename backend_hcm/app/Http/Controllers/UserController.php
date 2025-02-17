@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
@@ -15,17 +16,42 @@ class UserController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        $user = Auth::user();
-        
-        return response()->json([
+{
+    $user = Auth::user();
+
+    if (!$user) {
+        return response()->json(['error' => 'Usuario no autenticado'], 401);
+    }
+
+    // Obtener la información de la persona relacionada con el usuario
+    $person = $user->persons;
+
+    return response()->json([
         'id' => $user->id,
         'email' => $user->email,
         'department_id' => $user->department_id,
+        'person_id' => $user->person_id,
         'roles' => $user->getRoleNames(), // Devuelve un array de roles
         'permissions' => $user->getAllPermissions()->pluck('name'), // Devuelve un array de permisos
-        ]);
-    }
+        'person' => $person ? [
+            'first_name' => $person->first_name,
+            'last_name' => $person->last_name,
+            'email' => $person->email,
+            'birth_date' => $person->birth_date,
+            'phone' => $person->phone,
+            'identification_value' => $person->identification_value,
+            'gender' => $person->gender ? $person->gender->name : null,
+            'ethnicity' => $person->ethnicity ? $person->ethnicity->name : null,
+            'marital_status' => $person->maritalstatus ? $person->maritalstatus->name : null,
+            'country' => $person->country ? $person->country->name : null,
+            'status' => $person->status ? $person->status->name : null,
+            'summary' => $person->summary,
+            'photo_url' => $person->file_path 
+                ? URL::to('/photos/' . basename($person->file_path)) 
+                : null,
+        ] : null,
+    ]);
+}
 
     /**
      * Show the form for creating a new resource.
@@ -41,14 +67,14 @@ class UserController extends Controller
     public function store(StoreUserRequest $request)
     {
         $validatedData = $request->validated();
-        
+
         $user = new User();
         $user->name = $validatedData['name'];
         $user->email = $validatedData['email'];
         // Set other user properties as needed
-        
+
         $user->save();
-        
+
         return response()->json(['message' => 'User created successfully'], 201);
     }
 
@@ -59,15 +85,15 @@ class UserController extends Controller
     {
         try {
             $userData = $user->toArray();
-            
+
             return response()->json([
-            'status' => 'success',
-            'data' => $userData
+                'status' => 'success',
+                'data' => $userData
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-            'status' => 'error',
-            'message' => 'Failed to retrieve user data'
+                'status' => 'error',
+                'message' => 'Failed to retrieve user data'
             ], 500);
         }
     }
@@ -86,13 +112,13 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, User $user)
     {
         $validatedData = $request->validated();
-        
+
         $user->update([
-        'name' => $validatedData['name'],
-        'email' => $validatedData['email'],
-        // Add other fields as needed
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            // Add other fields as needed
         ]);
-        
+
         return response()->json(['message' => 'User updated successfully'], 200);
     }
 

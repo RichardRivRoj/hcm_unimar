@@ -1,12 +1,16 @@
 <?php
 
 use App\Http\Controllers\AgendaController;
+use App\Http\Controllers\AgendaResultController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JobPositionController;
 use App\Http\Controllers\CandidateController;
+use App\Http\Controllers\ContractTypeController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\EmploymentTypeController;
 use App\Http\Controllers\EthnicityController;
 use App\Http\Controllers\GenderController;
 use App\Http\Controllers\IdentificationTypeController;
@@ -40,17 +44,30 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Rutas para Candidates (Candidatos)
     Route::prefix('candidates')->group(function () {
         Route::get('/', [CandidateController::class, 'index'])->name('api.candidates.index'); // Listar todos los candidatos
-        Route::get('/{id}', [CandidateController::class, 'show'])->name('api.candidates.show'); // Ver detalles de un candidato
+        Route::get('/{candidateId}', [CandidateController::class, 'show'])->name('api.candidates.show'); // Ver detalles de un candidato
         Route::put('/{id}/status', [CandidateController::class, 'updateStatus'])->name('api.candidates.status.update');
+        Route::get('/{candidate_id}/agendas', [AgendaController::class, 'index'])->name('api.candidates.agendas.index');
         
     });
 
     // Rutas para Candidates (Candidatos)
     Route::prefix('agendas')->group(function () {
         Route::post('/', [AgendaController::class, 'store'])->name('api.agendas.store'); // Crear nuevo evento
-        Route::get('/', [AgendaController::class, 'index'])->name('api.agendas.index'); // Ver listado de eventos
-        
+        Route::get('/{id}', [AgendaController::class, 'show'])->name('api.agendas.show'); // Ver evento especifico
+        Route::put('/{id}', [AgendaController::class, 'update'])->name('api.agendas.update'); // actualizar agenda 
+        Route::delete('/{id}', [AgendaController::class, 'destroy'])->name('api.agendas.destroy'); // Eliminar agenda 
     });
+
+    Route::prefix('agenda-results')->group(function () {
+        Route::get('/', [AgendaResultController::class, 'index'])->name('api.agenda-results.index');
+        Route::post('/', [AgendaResultController::class, 'store'])->name('api.agenda-results.store');
+        Route::get('/{id}', [AgendaResultController::class, 'show'])->name('api.agenda-results.show');
+    });
+
+    Route::prefix('employees')->group(function () {
+        Route::post('/{candidateId}', [EmployeeController::class, 'store'])->name('api.employees.store');
+    });
+    
 
 
     Route::prefix('departments')->group(function () {
@@ -76,7 +93,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::prefix('type_agendas')->group(function () {
         Route::get('/', [TypeAgendaController::class, 'index'])->name('api.type_agendas.index');
-    });    
+    });
+    
+    Route::prefix('employment_types')->group(function () {
+        Route::get('/', [EmploymentTypeController::class, 'index'])->name('api.employment_types.index');
+    });
+
+    Route::prefix('contract_types')->group(function () {
+        Route::get('/', [ContractTypeController::class, 'index'])->name('api.contract_types.index');
+    });
     
 });
 

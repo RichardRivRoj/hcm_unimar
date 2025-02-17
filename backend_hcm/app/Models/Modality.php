@@ -15,6 +15,6 @@ class Modality extends Model
 
     public function vacanty()
     {
-        return $this->hasOne(Vacanty::class, 'mode_id');
+        return $this->hasOne(Vacancy::class, 'mode_id');
     }
 }

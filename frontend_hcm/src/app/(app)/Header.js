@@ -51,7 +51,7 @@ const Header = ({ user }) => {
                                 width="48"
                                 trigger={
                                     <button className="flex items-center text-sm font-medium text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none">
-                                        <div>{user?.email}</div>
+                                        <div>{user.person?.first_name}{' '}{user.person?.last_name}</div>
 
                                         <div className="ml-1">
                                             <svg
@@ -181,7 +181,7 @@ const Header = ({ user }) => {
 
                             <div className="ml-3">
                                 <div className="text-base font-medium text-gray-800">
-                                    {user?.name}
+                                    {user.person?.first_name}
                                 </div>
                                 <div className="text-sm font-medium text-gray-500">
                                     {user?.email}

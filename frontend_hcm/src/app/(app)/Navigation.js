@@ -17,6 +17,7 @@ import {
     ChevronRight,
     Folder,
     Star,
+    Circle,
 } from 'lucide-react'
 
 const Navigation = () => {
@@ -46,11 +47,6 @@ const Navigation = () => {
                     name: 'Postulaciones',
                     href: '/profile/admin/recruitment/applications-re',
                     icon: FileText,
-                },
-                {
-                    name: 'Eventos',
-                    href: '/profile/admin/recruitment/interviews',
-                    icon: Calendar,
                 },
                 {
                     name: 'Selección Final',
@@ -114,6 +110,28 @@ const Navigation = () => {
             href: '/profile/employee/tasks',
             icon: ClipboardList,
         },
+        {
+            name: 'Capacitación',
+            href: '#',
+            icon: Users,
+            subLinks: [
+                {
+                    name: 'Publicar Vacantes',
+                    href: '/profile/admin/recruitment/job-postings',
+                    icon: Folder,
+                },
+                {
+                    name: 'Postulaciones',
+                    href: '/profile/admin/recruitment/applications-re',
+                    icon: FileText,
+                },
+                {
+                    name: 'Selección Final',
+                    href: '/profile/admin/recruitment/selection',
+                    icon: Briefcase,
+                },
+            ],
+        },
     ]
 
     const accountLinks = [
@@ -164,7 +182,7 @@ const Navigation = () => {
                                 onClick={() => toggleSection(section.name)}
                                 className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50">
                                 <span className="flex items-center">
-                                    <LayoutDashboard className="w-6 h-6 text-gray-400" />
+                                    <Circle className="w-6 h-6 text-gray-400" />
                                     <span className="ml-4 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
                                         {section.name}
                                     </span>

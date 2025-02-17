@@ -1,24 +1,25 @@
-// hooks/useAgendas.js
 import { useState, useEffect } from 'react';
 import axios from '@/lib/axios';
 
-const useAgendas = (filters = {}) => {
-    const [agendas, setAgendas] = useState([]); // Estado para almacenar las agendas
-    const [loading, setLoading] = useState(true); // Estado para manejar el loading
-    const [meta, setMeta] = useState({}); // Estado para almacenar la metadata de paginación
-    const [error, setError] = useState(null); // Estado para manejar errores
+const useAgendas = (candidateId, filters) => {
+    const [agendas, setAgendas] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [meta, setMeta] = useState({});
 
     useEffect(() => {
+        if (!candidateId) return; // No hacer la solicitud si candidateId no está disponible
+
         const fetchAgendas = async () => {
             try {
-                setLoading(true);
-                // Parámetros de la URL con los filtros
-                // Hacer la petición a la API
-                const response = await axios.get(`/api/agendas?${new URLSearchParams(filters).toString()}`);
-                // Actualizar el estado con los datos recibidos
-                setAgendas(response.data.data);
-                setMeta(response.data.meta);
-                setError(null);
+                const response = await axios.get(`/api/candidates/${candidateId}/agendas`, {
+                    params: filters, // Enviar los filtros como parámetros
+                });
+
+                if (response.data.success) {
+                    setAgendas(response.data.data); // Guardar las agendas
+                    setMeta(response.data.meta); // Guardar la metadata (paginación)
+                }
             } catch (err) {
                 setError(err.message || 'Error al obtener las agendas');
             } finally {
@@ -27,7 +28,7 @@ const useAgendas = (filters = {}) => {
         };
 
         fetchAgendas();
-    }, [filters]); // Ejecutar el efecto cuando los filtros cambien
+    }, [candidateId, filters]); // Ejecutar el efecto cuando cambien candidateId o los filtros
 
     return { agendas, loading, meta, error };
 };

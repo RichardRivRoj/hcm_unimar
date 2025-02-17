@@ -7,7 +7,7 @@ const LoginLinks = () => {
   const { user } = useAuth({ middleware: 'guest' });
 
   return (
-    <div className="flex items-center justify-between w-full px-4 py-4 bg-white dark:bg-gray-900">
+    <div className="flex items-center justify-between w-full px-4 py-4 bg-white">
       {/* Social Media Links */}
       <div className="flex justify-center flex-1 space-x-2">
         <Link href="#" className="flex items-center">
