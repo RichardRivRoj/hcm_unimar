@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('agenda_results', function (Blueprint $table) {
             $table->id();
             $table->decimal('score', 10,2);
-            $table->string('comments', 200);
+            $table->string('comments', 220);
             $table->foreignId('agenda_id')->constrained('agendas')->onDelete('cascade');
             $table->timestamps();
         });

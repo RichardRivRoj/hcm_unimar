@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('bank_accounts', function (Blueprint $table) {
             $table->id();
-            $table->string('account_number', 30)->unique();
+            $table->string('account_number', 50)->unique();
             $table->foreignId('bank_id')->constrained('banks')->onDelete('cascade');
             $table->foreignId('account_type_id')->constrained('account_types')->onDelete('cascade');
             $table->foreignId('currency_id')->constrained('currencies')->onDelete('cascade');

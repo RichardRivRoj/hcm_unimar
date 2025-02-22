@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('type_agenda_id')->constrained('type_agendas')->onDelete('cascade');
             $table->date('scheduled_date');
             $table->time('time');
-            $table->string('location', 100);
+            $table->string('location', 220)->nullable();
             $table->foreignId('status_id')->default(1)->constrained('statuses')->onDelete('cascade');
             $table->timestamps();
         });

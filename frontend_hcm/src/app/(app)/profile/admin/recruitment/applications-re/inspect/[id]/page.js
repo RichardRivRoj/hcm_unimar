@@ -146,27 +146,30 @@ const CandidateDetails = ({ params }) => {
                     </span>
                     <span className="font-medium">Volver</span>
                 </button>
+                {candidate.status_application.name !== 'Contratado' && (
+                    <>
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                            {/* Botones con confirmación */}
+                            <button
+                                onClick={() => setShowConfirm('aceptado')}
+                                disabled={loading}
+                                className="px-4 py-2 text-white transition-colors bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50">
+                                {loading && showConfirm === 'aceptado'
+                                    ? 'Procesando...'
+                                    : 'Aceptar'}
+                            </button>
 
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    {/* Botones con confirmación */}
-                    <button
-                        onClick={() => setShowConfirm('aceptado')}
-                        disabled={loading}
-                        className="px-4 py-2 text-white transition-colors bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50">
-                        {loading && showConfirm === 'aceptado'
-                            ? 'Procesando...'
-                            : 'Aceptar'}
-                    </button>
-
-                    <button
-                        onClick={() => setShowConfirm('rechazado')}
-                        disabled={loading}
-                        className="px-4 py-2 text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50">
-                        {loading && showConfirm === 'rechazado'
-                            ? 'Procesando...'
-                            : 'Rechazar'}
-                    </button>
-                </div>
+                            <button
+                                onClick={() => setShowConfirm('rechazado')}
+                                disabled={loading}
+                                className="px-4 py-2 text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50">
+                                {loading && showConfirm === 'rechazado'
+                                    ? 'Procesando...'
+                                    : 'Rechazar'}
+                            </button>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Modal de confirmación */}
@@ -418,7 +421,8 @@ const CandidateDetails = ({ params }) => {
                 </div>
 
                 {/* Botón de Agendar Entrevista (solo si es Aceptado) */}
-                {(candidate.status_application.name === 'Aceptado' || candidate.status_application.name === 'En Progreso') && (
+                {(candidate.status_application.name === 'Aceptado' ||
+                    candidate.status_application.name === 'En Progreso') && (
                     <div className="flex gap-4">
                         <button
                             onClick={openModal}
@@ -535,4 +539,4 @@ const CandidateDetails = ({ params }) => {
     )
 }
 
-export default CandidateDetails;
+export default CandidateDetails

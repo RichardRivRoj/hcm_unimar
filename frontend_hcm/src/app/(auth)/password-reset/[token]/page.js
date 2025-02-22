@@ -1,40 +1,48 @@
-'use client'
+'use client';
 
-import Button from '@/components/Button'
-import Input from '@/components/Input'
-import InputError from '@/components/InputError'
-import Label from '@/components/Label'
-import { useAuth } from '@/hooks/auth'
-import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
-import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus'
+import Button from '@/components/Button';
+import Input from '@/components/Input';
+import InputError from '@/components/InputError';
+import Label from '@/components/Label';
+import { useAuth } from '@/hooks/auth';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus';
 
-const PasswordReset = () => {
-    const searchParams = useSearchParams()
+const PasswordReset = ({ params }) => {
+    const searchParams = useSearchParams();
+    const { token } = params
+    const { resetPassword } = useAuth({ middleware: 'guest' });
 
-    const { resetPassword } = useAuth({ middleware: 'guest' })
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordConfirmation, setPasswordConfirmation] = useState('');
+    const [errors, setErrors] = useState([]);
+    const [status, setStatus] = useState(null);
 
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [passwordConfirmation, setPasswordConfirmation] = useState('')
-    const [errors, setErrors] = useState([])
-    const [status, setStatus] = useState(null)
-
-    const submitForm = event => {
-        event.preventDefault()
+    const submitForm = (event) => {
+        event.preventDefault();
 
         resetPassword({
             email,
             password,
             password_confirmation: passwordConfirmation,
+            token,
             setErrors,
             setStatus,
-        })
-    }
-
+        });
+    };
+    
     useEffect(() => {
-        setEmail(searchParams.get('email'))
-    }, [searchParams.get('email')])
+        const token = searchParams.get('token');
+        const email = searchParams.get('email');
+    
+        console.log('Token:', token); // Depuración
+        console.log('Email:', email); // Depuración
+    
+        setEmail(email);
+    }, [searchParams]);
+
 
     return (
         <>
@@ -44,68 +52,53 @@ const PasswordReset = () => {
             <form onSubmit={submitForm}>
                 {/* Email Address */}
                 <div>
-                    <Label htmlFor="email">Email</Label>
-
+                    <Label htmlFor="email">Correo electrónico</Label>
                     <Input
                         id="email"
                         type="email"
                         value={email}
-                        className="block mt-1 w-full"
-                        onChange={event => setEmail(event.target.value)}
+                        className="block w-full mt-1"
+                        onChange={(event) => setEmail(event.target.value)}
                         required
                         autoFocus
                     />
-
                     <InputError messages={errors.email} className="mt-2" />
                 </div>
 
                 {/* Password */}
                 <div className="mt-4">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">Contraseña</Label>
                     <Input
                         id="password"
                         type="password"
                         value={password}
-                        className="block mt-1 w-full"
-                        onChange={event => setPassword(event.target.value)}
+                        className="block w-full mt-1"
+                        onChange={(event) => setPassword(event.target.value)}
                         required
                     />
-
-                    <InputError
-                        messages={errors.password}
-                        className="mt-2"
-                    />
+                    <InputError messages={errors.password} className="mt-2" />
                 </div>
 
                 {/* Confirm Password */}
                 <div className="mt-4">
-                    <Label htmlFor="passwordConfirmation">
-                        Confirm Password
-                    </Label>
-
+                    <Label htmlFor="passwordConfirmation">Confirmar contraseña</Label>
                     <Input
                         id="passwordConfirmation"
                         type="password"
                         value={passwordConfirmation}
-                        className="block mt-1 w-full"
-                        onChange={event =>
-                            setPasswordConfirmation(event.target.value)
-                        }
+                        className="block w-full mt-1"
+                        onChange={(event) => setPasswordConfirmation(event.target.value)}
                         required
                     />
-
-                    <InputError
-                        messages={errors.password_confirmation}
-                        className="mt-2"
-                    />
+                    <InputError messages={errors.password_confirmation} className="mt-2" />
                 </div>
 
                 <div className="flex items-center justify-end mt-4">
-                    <Button>Reset Password</Button>
+                    <Button>Actualizar Contraseña</Button>
                 </div>
             </form>
         </>
-    )
-}
+    );
+};
 
-export default PasswordReset
+export default PasswordReset;

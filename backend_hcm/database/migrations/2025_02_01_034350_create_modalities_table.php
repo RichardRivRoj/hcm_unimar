@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('modalities', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50);
-            $table->string('description', 200);
+            $table->string('description', 220)->nullable();
             $table->timestamps();
         });
     }

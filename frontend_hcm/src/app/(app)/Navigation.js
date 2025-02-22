@@ -18,6 +18,8 @@ import {
     Folder,
     Star,
     Circle,
+    BookCheck,
+    ClipboardPenLine,
 } from 'lucide-react'
 
 const Navigation = () => {
@@ -61,44 +63,33 @@ const Navigation = () => {
             icon: ClipboardList,
         },
         { name: 'Evaluación', href: '/profile/admin/evaluate', icon: Eye },
-        { name: 'Personal', href: '/profile/admin/personnel', icon: Briefcase },
+        {
+            name: 'Personal',
+            href: '#',
+            icon: Briefcase,
+            subLinks: [
+                {
+                    name: 'Expedientes',
+                    href: '/profile/admin/staff/files',
+                    icon: BookCheck,
+                },
+                {
+                    name: 'Solicitudes',
+                    href: '/profile/admin/staff/requests',
+                    icon: ClipboardPenLine,
+                },
+            ],
+        },
     ]
 
     const supervisorLinks = [
         {
-            name: 'Reclutamiento',
-            href: '#',
-            icon: Users,
-            subLinks: [
-                {
-                    name: 'Recomendar Candidatos',
-                    href: '/profile/supervisor/recruitment/job-recommendations',
-                    icon: Folder,
-                },
-                {
-                    name: 'Revisar Postulaciones',
-                    href: '/profile/supervisor/recruitment/review-applications',
-                    icon: FileText,
-                },
-                {
-                    name: 'Retroalimentación',
-                    href: '/profile/supervisor/recruitment/feedback',
-                    icon: Star,
-                },
-                {
-                    name: 'Seguimiento',
-                    href: '/profile/supervisor/recruitment/tracking',
-                    icon: Calendar,
-                },
-            ],
-        },
-        {
-            name: 'Supervisión',
+            name: 'Personal',
             href: '/profile/supervisor/supervision',
             icon: Eye,
         },
         {
-            name: 'Evaluaciones',
+            name: 'Evaluación',
             href: '/profile/supervisor/evaluations',
             icon: FileText,
         },
@@ -111,24 +102,19 @@ const Navigation = () => {
             icon: ClipboardList,
         },
         {
-            name: 'Capacitación',
+            name: 'Personal',
             href: '#',
             icon: Users,
             subLinks: [
                 {
-                    name: 'Publicar Vacantes',
-                    href: '/profile/admin/recruitment/job-postings',
-                    icon: Folder,
+                    name: 'Expediente',
+                    href: '/profile/employee/staff/resume',
+                    icon: BookCheck,
                 },
                 {
-                    name: 'Postulaciones',
-                    href: '/profile/admin/recruitment/applications-re',
-                    icon: FileText,
-                },
-                {
-                    name: 'Selección Final',
-                    href: '/profile/admin/recruitment/selection',
-                    icon: Briefcase,
+                    name: 'Solicitudes',
+                    href: '/profile/employee/staff/request',
+                    icon: ClipboardPenLine,
                 },
             ],
         },
@@ -210,7 +196,7 @@ const Navigation = () => {
                                                         <span className="ml-4 transition-opacity opacity-0 group-hover:opacity-100">
                                                             {item.name}
                                                         </span>
-                                                        <ChevronDown className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100" />
+                                                        <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100" />
                                                     </button>
                                                     {openSections[item.name] && (
                                                         <div className="mt-2 space-y-2">

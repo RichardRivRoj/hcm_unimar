@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('marital_statuses', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50);
-            $table->string('short_name', 1)->nullable();
+            $table->string('short_name', 10)->nullable();
             $table->timestamps();
         });
     }

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('identification_types', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 5)->unique();
+            $table->string('code', 10)->unique();
             $table->string('name', 50);
             $table->text('description')->nullable();
             $table->tinyInteger('status')->default(1);

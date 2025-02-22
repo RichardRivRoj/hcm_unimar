@@ -935,7 +935,9 @@ const JobDetails = ({ params }) => {
                                                             <label className="block mb-1 text-sm font-medium text-gray-700">
                                                                 Grado obtenido *
                                                             </label>
-                                                            <select
+
+                                                            <input
+                                                                type="text"
                                                                 value={
                                                                     study
                                                                         .metadata
@@ -949,38 +951,17 @@ const JobDetails = ({ params }) => {
                                                                         'metadata',
                                                                         {
                                                                             ...study.metadata,
-                                                                            grado: e
-                                                                                .target
-                                                                                .value,
+                                                                            grado:
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
                                                                         },
                                                                     )
                                                                 }
                                                                 required
-                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                                                                <option value="">
-                                                                    Seleccionar
-                                                                    grado
-                                                                </option>
-                                                                <option value="Bachiller">
-                                                                    Bachiller
-                                                                </option>
-                                                                <option value="Licenciatura">
-                                                                    Licenciatura
-                                                                </option>
-                                                                <option value="Ingeniería">
-                                                                    Ingeniería
-                                                                </option>
-                                                                <option value="Maestría">
-                                                                    Maestría
-                                                                </option>
-                                                                <option value="Doctorado">
-                                                                    Doctorado
-                                                                </option>
-                                                                <option value="Técnico">
-                                                                    Técnico
-                                                                    Superior
-                                                                </option>
-                                                            </select>
+                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                                placeholder="Ej: Universidad Nacional"
+                                                            />
                                                         </div>
                                                     </div>
 

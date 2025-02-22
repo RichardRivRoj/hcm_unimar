@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 100)->unique();
             $table->string('short_name', 50)->nullable()->unique();
-            $table->string('code', 10)->unique();
+            $table->string('code', 50)->unique();
             $table->timestamps();
         });
     }

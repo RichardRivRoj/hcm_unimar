@@ -11,7 +11,7 @@ class Document extends Model
 
     protected $fillable = [
         'person_id', 'document_type_id', 'document_name',
-        'issue_date', 'expiration_date', 'metadata',
+        'issue_date', 'expiration_date', 'detail' , 'metadata',
         'file_path', 'status',
     ];
 

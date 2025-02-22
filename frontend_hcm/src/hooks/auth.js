@@ -52,38 +52,68 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
     }
 
     const forgotPassword = async ({ setErrors, setStatus, email }) => {
-        await csrf()
+        await csrf(); // Asegúrate de que el token CSRF esté configurado
+    
+        setErrors([]); // Limpia los errores anteriores
+        setStatus(null); // Limpia el estado anterior
+    
+        try {
+            const response = await axios.post('/forgot-password', { email });
+            setStatus(response.data.status); // Establece el estado con la respuesta del servidor
+        } catch (error) {
+            if (error.response) {
+                // El servidor respondió con un código de estado fuera del rango 2xx
+                if (error.response.status === 422) {
+                    // Errores de validación (por ejemplo, campos incorrectos)
+                    setErrors(error.response.data.errors);
+                } else {
+                    // Otros errores del servidor (por ejemplo, 500)
+                    setStatus('Algo salió mal. Por favor, inténtalo de nuevo más tarde.');
+                }
+            } else if (error.request) {
+                // La solicitud fue hecha pero no se recibió respuesta
+                setStatus('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
+            } else {
+                // Otros errores (por ejemplo, errores en la configuración de Axios)
+                setStatus('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.');
+            }
+        }
+    };
 
-        setErrors([])
-        setStatus(null)
-
-        axios
-            .post('/forgot-password', { email })
-            .then(response => setStatus(response.data.status))
-            .catch(error => {
-                if (error.response.status !== 422) throw error
-
-                setErrors(error.response.data.errors)
-            })
-    }
-
-    const resetPassword = async ({ setErrors, setStatus, ...props }) => {
-        await csrf()
-
-        setErrors([])
-        setStatus(null)
-
-        axios
-            .post('/reset-password', { token: params.token, ...props })
-            .then(response =>
-                router.push('/login?reset=' + btoa(response.data.status)),
-            )
-            .catch(error => {
-                if (error.response.status !== 422) throw error
-
-                setErrors(error.response.data.errors)
-            })
-    }
+    const resetPassword = async ({ email, password, password_confirmation, token, setErrors, setStatus }) => {
+        await csrf(); // Asegúrate de que el token CSRF esté configurado
+    
+        setErrors([]);
+        setStatus(null);
+    
+        try {
+            const response = await axios.post('/reset-password', {
+                token,
+                email,
+                password,
+                password_confirmation,
+            });
+    
+            setStatus(response.data.status); // Establece el estado con la respuesta del servidor
+        } catch (error) {
+            if (error.response) {
+                // El servidor respondió con un código de estado fuera del rango 2xx
+                if (error.response.status === 422) {
+                    // Errores de validación (por ejemplo, campos incorrectos)
+                    setErrors(error.response.data.errors);
+                } else {
+                    // Otros errores del servidor (por ejemplo, 500)
+                    setStatus('Algo salió mal. Por favor, inténtalo de nuevo más tarde.');
+                }
+            } else if (error.request) {
+                // La solicitud fue hecha pero no se recibió respuesta
+                setStatus('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
+            } else {
+                // Otros errores (por ejemplo, errores en la configuración de Axios)
+                setStatus('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.');
+            }
+        }
+    };
 
     const resendEmailVerification = ({ setStatus }) => {
         axios

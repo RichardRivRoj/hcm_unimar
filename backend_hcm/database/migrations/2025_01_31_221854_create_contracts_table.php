@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('contracts', function (Blueprint $table) {
             $table->id();
-            $table->string('contract_number', 10);
+            $table->string('contract_number', 50);
             $table->text('description');
             $table->date('star_date')->default(now());
-            $table->date('end_date');
+            $table->date('end_date')->nullable();
             $table->string('payment_terms')->nullable();
-            $table->text('notes');
-            $table->string('file_path')->nullable();
+            $table->text('notes')->nullable();
+            $table->string('file_path', 220)->nullable();
             $table->foreignId('contract_type_id')->constrained('contract_types')->onDelete('cascade');
             $table->foreignId('employment_type_id')->constrained('employment_types')->onDelete('cascade');
             $table->foreignId('status_id')->nullable()->constrained('statuses')->onDelete('set null');

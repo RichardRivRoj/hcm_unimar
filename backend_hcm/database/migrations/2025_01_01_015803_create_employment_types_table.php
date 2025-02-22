@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('employment_types', function (Blueprint $table) {
             $table->id();
             $table->string('name', 20);
-            $table->string('short_name', 2)->nullable();
-            $table->string('description', 200);
+            $table->string('short_name', 10)->nullable();
+            $table->string('description', 200)->nullable();
             $table->timestamps();
         });
     }

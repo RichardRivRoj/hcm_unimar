@@ -49,7 +49,7 @@ class EmployeeController extends Controller
             // Validar los datos proporcionados por el administrador
             $request->validate([
                 'start_date' => 'required|date',
-                'end_date' => 'required|date|after:start_date',
+                'end_date' => 'nullable|date|after:start_date',
                 'contract_type_id' => 'required|exists:contract_types,id',
                 'employment_type_id' => 'required|exists:employment_types,id',
                 'half' => 'required|in:0,1', // 0 = medio tiempo, 1 = tiempo completo
@@ -69,7 +69,7 @@ class EmployeeController extends Controller
                 'contract_number' => $contractNumber,
                 'description' => 'Contrato para nuevo empleado',
                 'star_date' => $request->start_date,
-                'end_date' => $request->end_date,
+                'end_date' => $request->end_date ?? null,
                 'payment_terms' => 'Mensual',
                 'notes' => 'Contrato generado automáticamente al contratar al candidato.',
                 'file_path' => 'Imagen',

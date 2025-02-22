@@ -77,7 +77,6 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
                     name="end_date"
                     value={formData.end_date}
                     onChange={handleChange}
-                    required
                     className="block w-full p-2 mt-1 border border-gray-300 rounded-md"
                 />
             </div>

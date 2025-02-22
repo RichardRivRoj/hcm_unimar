@@ -34,4 +34,9 @@ class Employee extends Model
     {
         return $this->belongsTo(Contract::class, 'contract_id');
     }
+
+    public function request()
+    {
+       return $this->hasMany(Request::class, 'employee_id');
+    }
 }

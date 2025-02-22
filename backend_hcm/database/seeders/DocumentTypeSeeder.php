@@ -22,6 +22,8 @@ class DocumentTypeSeeder extends Seeder
             ['name' => 'RIF'],
             ['name' => 'Reposos'],
             ['name' => 'Referencias'],
+            ['name' => 'Idiomas'],
+            ['name' => 'Competencias'],
             ['name' => 'Otros']
         ];
 

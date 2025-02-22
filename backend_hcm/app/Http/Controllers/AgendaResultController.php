@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ApplicationRejected;
 use App\Models\Agenda;
 use App\Models\AgendaResult;
 use App\Models\Candidate;
+use App\Models\Status;
+use App\Models\StatusApplication;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class AgendaResultController extends Controller
@@ -292,6 +297,64 @@ class AgendaResultController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            // 1. Buscar el candidato
+            $candidate = Candidate::with(['agenda.agendaResult', 'persons', 'vacancy.position'])
+                ->findOrFail($id);
+
+            // 2. Obtener relaciones necesarias
+            $person = $candidate->persons; // Corregida relación (era 'persons' en singular)
+            $agendas = $candidate->agenda;
+
+            // 3. Validar existencia de registros
+            if (!$person) {
+                throw new \Exception('Persona no encontrada');
+            }
+
+            if (!$agendas) {
+                throw new \Exception('No hay agendas relacionadas');
+            }
+
+            // 4. Obtener estados necesarios
+            $statusInactivo = Status::where('name', 'Inactivo')->first();
+            $statusRechazado = StatusApplication::where('name', 'Rechazado')->first();
+
+            if (!$statusInactivo || !$statusRechazado) {
+                throw new \Exception('Estados requeridos no configurados');
+            }
+
+            // 5. Actualizar persona
+            $person->update(['status_id' => $statusInactivo->id]);
+
+            // 6. Actualizar candidato
+            $candidate->update(['status_application_id' => $statusRechazado->id]);
+
+            // 7. Inactivar agendas
+            Agenda::where('candidate_id', $candidate->id)->update(['status_id' => $statusInactivo->id]);
+
+
+            $full_name = $person->first_name . $person->last_name;
+            // 9. Enviar email
+            $mailData = [
+                'name' => $full_name,
+                'puesto' => $candidate->vacancy->position->description ?? 'Puesto no disponible'
+            ];
+
+            Mail::to($person->email)->send(new ApplicationRejected($mailData));
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Proceso completado exitosamente',
+                'data' => $candidate
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error en el proceso: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

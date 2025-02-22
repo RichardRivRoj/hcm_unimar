@@ -22,11 +22,19 @@ class DatabaseSeeder extends Seeder
             StatusSeeder::class,
             ModeSeeder::class,
             BankSeeder::class,
+            DocumentTypeSeeder::class,
             LevelSeeder::class,
             ContractTypeSeeder::class,
             EmploymentTypeSeeder::class,
             CurrencySeeder::class,
             TypeAgendaSeeder::class,
+            RequestTypeSeeder::class,
+            RequestStatusSeeder::class,
+            EvaluationStatusSeeder::class,
+            CompletionStatusSeeder::class,
+            TrainingTypesSeeder::class,
+            ProgramVisibilitySeeder::class,
+            TrainingModalitiesSeeder::class,
             IdentificationTypesSeeder::class,
             BankAccountTypeSeeder::class,
             GendersSeeder::class,
@@ -37,7 +45,6 @@ class DatabaseSeeder extends Seeder
             PositionSeeder::class,
             PostulationStatusSeeder::class,
             DepartmentUsersSeeder::class,
-            UserRoleSeeder::class,
         ]);
     }
 }

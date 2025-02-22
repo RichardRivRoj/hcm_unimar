@@ -30,4 +30,14 @@ class Department extends Model
     {
         return $this->hasMany(Vacancy::class, 'department_id');
     }
+
+    public function program()
+    {
+        return $this->hasOne(TrainingProgram::class, 'department_id');
+    }
+
+    public function status()
+    {
+        return $this->belongsTo(Status::class, 'status_id');
+    }
 }

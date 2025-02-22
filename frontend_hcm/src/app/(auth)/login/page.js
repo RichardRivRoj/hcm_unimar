@@ -129,7 +129,7 @@ const Login = () => {
 
                 <div className="flex items-center justify-end mt-4">
                     <Link
-                        href="/profile"
+                        href="/forgot-password"
                         className="text-sm underline text-[#0d6efd] hover:text-[#1d68a7]">
                         ¿Olvidaste tu contraseña?
                     </Link>

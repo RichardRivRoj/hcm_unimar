@@ -42,13 +42,14 @@ class Status extends Model
         return $this->hasOne(Candidate::class, 'status_id');
     }
 
-    public function status()
-    {
-        return $this->belongsTo(Status::class, 'status_id');
-    }
 
     public function bank_account()
     {
         return $this->hasOne(BankAccount::class, 'status_id');
+    }
+
+    public function period()
+    {
+       return $this->hasOne(EvaluationPeriod::class, 'status_id');
     }
 }

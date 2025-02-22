@@ -27,6 +27,12 @@ use App\Models\MaritalStatus;
 
 Route::middleware(['auth:sanctum'])->get('/user', [UserController::class, 'index']);
 
+// Ruta para mostrar el formulario de restablecimiento de contraseña
+Route::get('password/reset/{token}', [App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+
+// Ruta para procesar la actualización de contraseña
+Route::post('password/reset', [App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])->name('password.update');
+
 
 // Grupo de rutas para el Administrador (protegidas con autenticación)
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -62,6 +68,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/', [AgendaResultController::class, 'index'])->name('api.agenda-results.index');
         Route::post('/', [AgendaResultController::class, 'store'])->name('api.agenda-results.store');
         Route::get('/{id}', [AgendaResultController::class, 'show'])->name('api.agenda-results.show');
+        Route::delete('/{id}', [AgendaResultController::class, 'destroy'])->name('api.agenda-results.destroy'); 
     });
 
     Route::prefix('employees')->group(function () {

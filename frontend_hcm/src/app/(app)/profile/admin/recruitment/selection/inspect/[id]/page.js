@@ -1,51 +1,82 @@
 'use client'
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import axios from '@/lib/axios';
-import useAgendaResultShow from '@/hooks/useResultDetailsShow';
-import DetailCard from '@/components/DetailCard';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-import Modal from '@/components/Modal'; // Importar el componente Modal
-import HireEmployeeForm from '@/components/HireEmployeeForm'; // Importar el formulario de contratación
-
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import axios from '@/lib/axios'
+import useAgendaResultShow from '@/hooks/useResultDetailsShow'
+import DetailCard from '@/components/DetailCard'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
+import Modal from '@/components/Modal' // Importar el componente Modal
+import HireEmployeeForm from '@/components/HireEmployeeForm' // Importar el formulario de contratación
 
 const ResultDetails = ({ params }) => {
-    const router = useRouter();
-    const { id } = params;
-    const { data: result, loading, error } = useAgendaResultShow(id);
-    const [loadingStatus, setLoadingStatus] = useState(false);
-    const [errorStatus, setErrorStatus] = useState(null);
-    const [successStatus, setSuccessStatus] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const router = useRouter()
+    const { id } = params
+    const { data: result, loading, error } = useAgendaResultShow(id)
+    const [loadingStatus, setLoadingStatus] = useState(false)
+    const [errorStatus, setErrorStatus] = useState(null)
+    const [successStatus, setSuccessStatus] = useState(false)
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
     const handleDownloadPDF = () => {
-        const element = document.getElementById('report-content');
+        const element = document.getElementById('report-content')
 
-        html2canvas(element).then((canvas) => {
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgWidth = 210; // Ancho de A4 en mm
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        html2canvas(element).then(canvas => {
+            const imgData = canvas.toDataURL('image/png')
+            const pdf = new jsPDF('p', 'mm', 'a4')
+            const imgWidth = 210 // Ancho de A4 en mm
+            const imgHeight = (canvas.height * imgWidth) / canvas.width
 
-            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-            pdf.save(`reporte_${result.candidate.personal_info.full_name}.pdf`);
-        });
-    };
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
+            pdf.save(`reporte_${result.candidate.personal_info.full_name}.pdf`)
+        })
+    }
 
     // Abrir modal
-    const openModal = () => setIsModalOpen(true);
+    const openModal = () => setIsModalOpen(true)
 
     // Cerrar modal
-    const closeModal = () => setIsModalOpen(false);
+    const closeModal = () => setIsModalOpen(false)
 
     // Manejar éxito en la contratación
-    const handleHireSuccess = (response) => {
-        setSuccessStatus(true);
-        closeModal(); // Cerrar el modal después de contratar
-        console.log('Candidato contratado:', response);
-    };
+    const handleHireSuccess = response => {
+        setSuccessStatus(true)
+        closeModal() // Cerrar el modal después de contratar
+        console.log('Candidato contratado:', response)
+    }
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [deleteError, setDeleteError] = useState(null)
+    const [deleteSuccess, setDeleteSuccess] = useState(false)
+
+    const openDeleteConfirmation = () => {
+        setShowDeleteModal(true)
+        setDeleteError(null)
+        setDeleteSuccess(false)
+    }
+
+    const cancelDelete = () => setShowDeleteModal(false)
+
+    const confirmDelete = async () => {
+        try {
+            // Cambiar la ruta al endpoint correcto de AgendaResult
+            const response = await axios.delete(`/api/agenda-results/${id}`)
+
+            if (response.status === 200) {
+                setDeleteSuccess(true)
+                // Redirigir después de 1.5 segundos
+                setTimeout(() => router.back(), 1500)
+            }
+        } catch (err) {
+            setDeleteError(
+                err.response?.data?.message ||
+                    'Error en el proceso de rechazo del candidato',
+            )
+        } finally {
+            setTimeout(() => setShowDeleteModal(false), 2000)
+        }
+    }
 
     if (loading) {
         return (
@@ -63,13 +94,15 @@ const ResultDetails = ({ params }) => {
                     ))}
                 </div>
             </div>
-        );
+        )
     }
 
-    if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
+    if (error) return <div className="p-6 text-red-600">Error: {error}</div>
 
     return (
-        <div id="report-content" className="max-w-4xl p-8 mx-auto text-justify bg-white shadow-sm rounded-xl">
+        <div
+            id="report-content"
+            className="max-w-4xl p-8 mx-auto text-justify bg-white shadow-sm rounded-xl">
             {/* Encabezado y controles */}
             <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
                 <button
@@ -212,46 +245,103 @@ const ResultDetails = ({ params }) => {
                     </div>
                 </div>
 
+                {/* Modal de confirmación */}
+                {showDeleteModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                        <div className="p-6 bg-white rounded-lg w-96">
+                            <h3 className="mb-4 text-xl font-semibold">
+                                Confirmar
+                            </h3>
+
+                            {deleteError && (
+                                <div className="p-2 mb-4 text-red-600 bg-red-100 rounded">
+                                    {deleteError}
+                                </div>
+                            )}
+
+                            {deleteSuccess ? (
+                                <div className="p-2 text-green-600 bg-green-100 rounded">
+                                    Candidato rechazado exitosamente!
+                                </div>
+                            ) : (
+                                <>
+                                    <p className="mb-4 text-gray-600">
+                                        Esta acción realizará:
+                                        <ul className="pl-5 list-disc">
+                                            <li>
+                                                Marcar al candidato como
+                                                Rechazado
+                                            </li>
+                                            <li>
+                                                Inactivar todas las agendas
+                                                relacionadas
+                                            </li>
+                                            <li>
+                                                Enviar notificación al candidato
+                                            </li>
+                                        </ul>
+                                    </p>
+
+                                    <div className="flex justify-end gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={cancelDelete}
+                                            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={confirmDelete}
+                                            className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">
+                                            Confirmar
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Botón de Agendar Entrevista (solo si es Aceptado) */}
-                <div className='flex gap-4'>
-                {result.candidate.status_application?.name !== 'Pendiente' && (
+                <div className="flex gap-4">
+                    {result.candidate.status_application?.name !==
+                        'Pendiente' && (
                         <button
                             onClick={openModal}
                             className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                             Contratar
                         </button>
-                )}
-                {(result.candidate.status_application?.name === 'Aceptado' || result.candidate.status_application?.name === 'En Progreso') && (
-                    <div className="flex gap-4">
-                        <button
-                            onClick={() =>
-                                router.push(
-                                    `/profile/admin/recruitment/applications-re/agendas/${id}`,
-                                )
-                            }
-                            className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">
-                            Rechazar
-                        </button>
-                    </div>
-                )}
+                    )}
+                    {(result.candidate.status_application?.name ===
+                        'Aceptado' ||
+                        result.candidate.status_application?.name ===
+                            'En Progreso') && (
+                        <div className="flex gap-4">
+                            <button
+                                onClick={openDeleteConfirmation} // Aquí se ejecuta correctamente la función
+                                className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">
+                                Rechazar
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Modal de Contratación */}
                 <Modal isOpen={isModalOpen} onClose={closeModal}>
-                    <div className='flex flex-col gap-4'>
-                        <h2 className='text-xl font-semibold'>
+                    <div className="flex flex-col gap-4">
+                        <h2 className="text-xl font-semibold">
                             Contratar Candidato
                         </h2>
-                    
-                    <HireEmployeeForm
-                        candidateId={id}
-                        onSuccess={handleHireSuccess}
-                    />
+
+                        <HireEmployeeForm
+                            candidateId={id}
+                            onSuccess={handleHireSuccess}
+                        />
                     </div>
                 </Modal>
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default ResultDetails;
+export default ResultDetails

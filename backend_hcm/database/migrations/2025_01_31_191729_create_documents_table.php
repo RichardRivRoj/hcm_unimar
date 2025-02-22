@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('document_name', 220);
             $table->date('issue_date')->nullable();
             $table->date('expiration_date')->nullable();
+            $table->json('detail')->nullable();
             $table->json('metadata')->nullable(); // Campo Json para datos especificos
             $table->string('file_path')->nullable();
             $table->tinyInteger('status')->default(1);

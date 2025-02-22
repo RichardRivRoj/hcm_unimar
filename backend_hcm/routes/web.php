@@ -36,5 +36,13 @@ Route::get('/photos/{filename}', function ($filename) {
 })->name('photo.show');
 
 
+// Habilitar las rutas de autenticación de Laravel
+// Ruta para mostrar el formulario de restablecimiento de contraseña
+Route::get('password/reset/{token}', [App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+
+// Ruta para procesar la actualización de contraseña
+Route::post('password/reset', [App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])->name('password.update');
+
+
 
 require __DIR__.'/auth.php';

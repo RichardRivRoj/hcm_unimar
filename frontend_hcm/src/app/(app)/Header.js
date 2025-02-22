@@ -51,7 +51,15 @@ const Header = ({ user }) => {
                                 width="48"
                                 trigger={
                                     <button className="flex items-center text-sm font-medium text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none">
-                                        <div>{user.person?.first_name}{' '}{user.person?.last_name}</div>
+                                        {user.roles.includes('supervisor') &&
+                                        user.department ? (
+                                            <div>{user.department.name}</div>
+                                        ) : (
+                                            <div>
+                                                {user.person?.first_name}{' '}
+                                                {user.person?.last_name}
+                                            </div>
+                                        )}
 
                                         <div className="ml-1">
                                             <svg
@@ -157,8 +165,7 @@ const Header = ({ user }) => {
             {/* Responsive Navigation Menu */}
             {open && (
                 <div className="block sm:hidden">
-                    <div className="pt-2 pb-3 space-y-1">
-                    </div>
+                    <div className="pt-2 pb-3 space-y-1"></div>
 
                     {/* Responsive Settings Options */}
                     <div className="pt-4 pb-1 border-t border-gray-200">
