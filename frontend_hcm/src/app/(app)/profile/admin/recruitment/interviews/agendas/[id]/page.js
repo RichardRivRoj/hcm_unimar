@@ -44,11 +44,12 @@ const AgendaDetail = ({ params }) => {
     const [deleteSuccess, setDeleteSuccess] = useState(false)
 
     // Estado para el modal de calificación
-    const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+    const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
+    const [isRated, setIsRated] = useState(false)
     const [ratingForm, setRatingForm] = useState({
         score: 0,
         comments: '',
-    });
+    })
 
     // Cargar datos iniciales
     useEffect(() => {
@@ -127,27 +128,31 @@ const AgendaDetail = ({ params }) => {
     }
 
     // Manejar el envío de la calificación
-    const handleRatingSubmit = async (e) => {
-        e.preventDefault();
+    const handleRatingSubmit = async e => {
+        e.preventDefault()
 
         try {
             const response = await axios.post('/api/agenda-results', {
                 ...ratingForm,
                 agenda_id: id,
-            });
+            })
+            setIsRated(true) // Actualizar estado
+            setIsRatingModalOpen(false)
+            // Opcional: recargar datos o mostrar feedback
 
             if (response.data.success) {
-                setSuccessMessage('Calificación guardada exitosamente');
-                setIsRatingModalOpen(false);
-                setRatingForm({ score: 0, comments: '' });
-                setTimeout(() => setSuccessMessage(null), 3000);
+                setSuccessMessage('Calificación guardada exitosamente')
+                setIsRatingModalOpen(false)
+                setRatingForm({ score: 0, comments: '' })
+                setTimeout(() => setSuccessMessage(null), 3000)
             }
         } catch (err) {
             setUpdateError(
-                err.response?.data?.message || 'Error al guardar la calificación',
-            );
+                err.response?.data?.message ||
+                    'Error al guardar la calificación',
+            )
         }
-    };
+    }
 
     if (loading) {
         return (
@@ -279,8 +284,12 @@ const AgendaDetail = ({ params }) => {
 
             {/* Modal de calificación */}
             {isRatingModalOpen && (
-                <Modal isOpen={isRatingModalOpen} onClose={() => setIsRatingModalOpen(false)}>
-                    <h2 className="mb-6 text-2xl font-bold">Calificar Evento</h2>
+                <Modal
+                    isOpen={isRatingModalOpen}
+                    onClose={() => setIsRatingModalOpen(false)}>
+                    <h2 className="mb-6 text-2xl font-bold">
+                        Calificar Evento
+                    </h2>
                     <form onSubmit={handleRatingSubmit}>
                         {/* Campo para la puntuación */}
                         <div className="mb-4">
@@ -291,10 +300,13 @@ const AgendaDetail = ({ params }) => {
                                 type="number"
                                 name="score"
                                 value={ratingForm.score}
-                                onChange={(e) =>
+                                onChange={e =>
                                     setRatingForm({
                                         ...ratingForm,
-                                        score: Math.min(10, Math.max(0, e.target.value)),
+                                        score: Math.min(
+                                            10,
+                                            Math.max(0, e.target.value),
+                                        ),
                                     })
                                 }
                                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -312,8 +324,11 @@ const AgendaDetail = ({ params }) => {
                             <textarea
                                 name="comments"
                                 value={ratingForm.comments}
-                                onChange={(e) =>
-                                    setRatingForm({ ...ratingForm, comments: e.target.value })
+                                onChange={e =>
+                                    setRatingForm({
+                                        ...ratingForm,
+                                        comments: e.target.value,
+                                    })
                                 }
                                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 rows="4"
@@ -563,7 +578,8 @@ const AgendaDetail = ({ params }) => {
                         </div>
                     </div>
                     {/* Botón de Agendar Entrevista (solo si es Aceptado) */}
-                    {agenda.agenda.status === 'Activo' && (
+                    {/* Botón de Calificar (solo si está activo y no calificado) */}
+                    {agenda.agenda.status === 'Activo' && !isRated && (
                         <div className="flex gap-4">
                             <button
                                 onClick={() => setIsRatingModalOpen(true)}

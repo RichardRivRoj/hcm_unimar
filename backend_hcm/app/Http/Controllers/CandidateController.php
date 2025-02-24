@@ -11,6 +11,7 @@ use App\Models\Document;
 use App\Models\Person;
 use App\Models\StatusApplication;
 use App\Models\Vacancy;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -91,6 +92,8 @@ class CandidateController extends Controller
                 'documents.studies' => 'array|max:2',
                 'documents.courses' => 'array|max:2',
                 'documents.jobs' => 'array|max:2',
+                'documents.competencies' => 'array|max:3',
+                'documents.languages' => 'array|max:3'
             ]);
 
             if ($validator->fails()) {
@@ -159,22 +162,32 @@ class CandidateController extends Controller
     private function createDocuments($personId, $documents)
     {
         $documentTypes = [
-            'jobs' => 1,    // Empleos
-            'studies' => 2, // Estudios
-            'courses' => 3  // Cursos
+            'jobs' => 1,       // Empleos
+            'studies' => 2,    // Estudios
+            'courses' => 3,    // Cursos
+            'competencies' => 10, // Competencias
+            'languages' => 9    // Idiomas
         ];
 
         foreach ($documentTypes as $type => $documentTypeId) {
             if (!empty($documents[$type])) {
                 foreach ($documents[$type] as $documentData) {
 
-                    // Validar metadatos según tipo
+                    // Sanitizar fechas
+                    $issueDate = $this->sanitizeDateInput($documentData['issue_date'] ?? null);
+                    $expirationDate = $this->sanitizeDateInput($documentData['expiration_date'] ?? null);
+
+
                     $metadata = [];
+                    $detail = null;
+
                     switch ($type) {
                         case 'jobs':
+                            // Agregar responsabilidades a metadata
                             $metadata = [
                                 'company_name' => $documentData['metadata']['company_name'] ?? null,
                                 'position' => $documentData['metadata']['position'] ?? null,
+                                'responsibilities' => $documentData['metadata']['responsibilities'] ?? null,
                             ];
                             break;
 
@@ -191,20 +204,49 @@ class CandidateController extends Controller
                                 'instructor' => $documentData['metadata']['instructor'] ?? null,
                             ];
                             break;
+
+                        case 'competencies':
+                            // Almacenar competencias en detail como JSON
+                            $detail = isset($documentData['detail'])
+                                ? json_encode($documentData['detail'])
+                                : null;
+                            break;
+
+                        case 'languages':
+                            // Acceder correctamente al nivel
+                            $detail = isset($documentData['detail']['level'])
+                                ? json_encode(['level' => $documentData['detail']['level']])
+                                : null;
+                            break;
                     }
 
                     Document::create([
                         'person_id' => $personId,
                         'document_type_id' => $documentTypeId,
                         'document_name' => $documentData['name'],
-                        'issue_date' => $documentData['issue_date'] ?? null,
-                        'expiration_date' => $documentData['expiration_date'] ?? null,
-                        'metadata' => json_encode($metadata),
+                        'issue_date' => $issueDate,
+                        'expiration_date' => $expirationDate,
+                        'detail' => $detail,
+                        'metadata' => !empty($metadata) ? json_encode($metadata) : null,
                         'file_path' => $documentData['file_path'] ?? null,
                         'status' => 1
                     ]);
                 }
             }
+        }
+    }
+
+    // Nuevo método helper para sanitización
+    private function sanitizeDateInput($date)
+    {
+        if (empty($date) || $date === '') {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($date)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return null;
         }
     }
 

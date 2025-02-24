@@ -1,49 +1,61 @@
-import { useState } from 'react'
-import axios from '@/lib/axios'
+import { useState } from 'react';
+import axios from '@/lib/axios';
 
 const useCandidateForm = () => {
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(null)
-    const [response, setResponse] = useState(null)
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [response, setResponse] = useState(null);
+
+    const sanitizeDocuments = (documents) => {
+        return {
+            jobs: documents.jobs.map(job => ({
+                ...job,
+                issue_date: job.issue_date || null,
+                expiration_date: job.expiration_date || null
+            })),
+            studies: documents.studies.map(study => ({
+                ...study,
+                issue_date: study.issue_date || null,
+                expiration_date: study.expiration_date || null
+            })),
+            courses: documents.courses.map(course => ({
+                ...course,
+                issue_date: course.issue_date || null,
+                expiration_date: course.expiration_date || null
+            })),
+            competencies: documents.competencies.map(c => ({
+                name: c.name,
+                detail: c.detail.filter(item => item.trim())
+            })),
+            languages: documents.languages.map(l => ({
+                name: l.name,
+                detail: { 
+                    level: l.detail?.level?.trim() || '' 
+                }
+            }))
+        };
+    };
 
     const submitForm = async (formData, vacancyId) => {
-        setLoading(true)
-        setError(null)
-        setResponse(null)
+        setLoading(true);
+        setError(null);
+        setResponse(null);
 
         try {
-            // Crear un FormData para enviar archivos (foto)
-            const data = new FormData()
+            const data = new FormData();
+            const sanitizedDocs = sanitizeDocuments(formData.documents);
 
-            // Convertir el objeto documents en un array
-            const documentsArray = [
-                ...formData.documents.jobs.map(job => ({
-                    ...job,
-                    type: 'jobs',
-                })),
-                ...formData.documents.studies.map(study => ({
-                    ...study,
-                    type: 'studies',
-                })),
-                ...formData.documents.courses.map(course => ({
-                    ...course,
-                    type: 'courses',
-                })),
-            ]
+            // Agregar campos principales
             Object.keys(formData).forEach(key => {
                 if (key === 'documents') {
-                    // Convertir documentos a JSON
-                    data.append(key, JSON.stringify(formData[key]))
+                    data.append(key, JSON.stringify(sanitizedDocs));
                 } else if (key === 'photo') {
-                    // Agregar la foto como archivo
-                    data.append(key, formData[key])
+                    formData[key] && data.append(key, formData[key]);
                 } else {
-                    // Agregar otros campos
-                    data.append(key, formData[key])
+                    data.append(key, formData[key]);
                 }
-            })
+            });
 
-            // Enviar la solicitud al backend
             const response = await axios.post(
                 `/api/public/candidates/${vacancyId}`,
                 data,
@@ -51,23 +63,31 @@ const useCandidateForm = () => {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
-                },
-            )
+                }
+            );
 
-            setResponse(response.data)
+            setResponse(response.data);
+            return response.data;
         } catch (err) {
-            setError(err.response?.data || { message: 'Error desconocido' })
+            const errorData = err.response?.data || { 
+                message: 'Error de conexión con el servidor' 
+            };
+            setError({
+                ...errorData,
+                status: err.response?.status || 500
+            });
+            throw errorData;
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     return {
         loading,
         error,
         response,
         submitForm,
-    }
-}
+    };
+};
 
-export default useCandidateForm
+export default useCandidateForm;

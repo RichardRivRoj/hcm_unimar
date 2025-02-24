@@ -64,6 +64,10 @@ const CandidateDetails = ({ params }) => {
         start_date: 'Fecha de inicio',
         end_date: 'Fecha de finalización',
         description: 'Descripción',
+
+        level: 'Nivel de dominio',
+        detail: 'Habilides',
+        language: 'Idioma',
     }
 
     // Abrir modal
@@ -306,7 +310,6 @@ const CandidateDetails = ({ params }) => {
                         Documentos
                     </h2>
                     {candidate.documents?.length > 0 ? (
-                        // Agrupar documentos por tipo
                         Object.entries(
                             candidate.documents.reduce((acc, doc) => {
                                 const type = doc.documenttype?.name || 'Otros'
@@ -320,14 +323,15 @@ const CandidateDetails = ({ params }) => {
                                 <h3 className="text-lg font-semibold text-gray-800">
                                     {type}
                                 </h3>
-
-                                {/* Lista de documentos de este tipo */}
                                 {documents.map(doc => {
-                                    // Parsear los metadatos como JSON
                                     const metadata =
                                         typeof doc.metadata === 'string'
                                             ? JSON.parse(doc.metadata)
                                             : doc.metadata
+                                    const detail =
+                                        typeof doc.detail === 'string'
+                                            ? JSON.parse(doc.detail)
+                                            : doc.detail
 
                                     return (
                                         <div
@@ -338,53 +342,143 @@ const CandidateDetails = ({ params }) => {
                                                 {doc.document_name}
                                             </p>
 
-                                            {/* Fechas */}
-                                            <div className="mt-2 text-base text-gray-600">
-                                                <p>
-                                                    <span className="font-medium">
-                                                        Fecha de Inicio:
-                                                    </span>{' '}
-                                                    {new Date(
-                                                        doc.issue_date,
-                                                    ).toLocaleDateString()}
-                                                </p>
-                                                <p>
-                                                    <span className="font-medium">
-                                                        Fecha de Finalización:
-                                                    </span>{' '}
-                                                    {doc.expiration_date
-                                                        ? new Date(
-                                                              doc.expiration_date,
-                                                          ).toLocaleDateString()
-                                                        : 'No expira'}
-                                                </p>
-                                            </div>
-
-                                            {/* Metadatos */}
-                                            {metadata && (
-                                                <div className="mt-2 text-sm text-gray-600">
-                                                    <p className="font-medium">
-                                                        Detalles:
-                                                    </p>
-                                                    <ul className="list-disc list-inside">
-                                                        {Object.entries(
-                                                            metadata,
-                                                        ).map(
-                                                            ([key, value]) => (
-                                                                <li key={key}>
-                                                                    <span className="capitalize">
-                                                                        {translateMetadataKey(
-                                                                            key,
-                                                                        )}
-                                                                        :
-                                                                    </span>{' '}
-                                                                    {value ||
-                                                                        'No especificado'}
-                                                                </li>
-                                                            ),
-                                                        )}
-                                                    </ul>
+                                            {/* Renderizado para documentos especiales */}
+                                            {[9, 10].includes(
+                                                doc.document_type_id,
+                                            ) ? (
+                                                <div className="mt-2 text-base text-gray-600">
+                                                    {doc.document_type_id ===
+                                                        10 && (
+                                                        <div>
+                                                            <p className="font-medium">
+                                                                Habilidades:
+                                                            </p>
+                                                            <ul className="pl-5 list-disc">
+                                                                {detail?.map(
+                                                                    (
+                                                                        skill,
+                                                                        index,
+                                                                    ) => (
+                                                                        <li
+                                                                            key={
+                                                                                index
+                                                                            }>
+                                                                            {
+                                                                                skill
+                                                                            }
+                                                                        </li>
+                                                                    ),
+                                                                )}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                    {doc.document_type_id ===
+                                                        9 && (
+                                                        <div>
+                                                            <p className="font-medium">
+                                                                Nivel:
+                                                            </p>
+                                                            <p>
+                                                                {detail?.level}
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </div>
+                                            ) : (
+                                                // Renderizado normal para otros documentos
+                                                <>
+                                                    <div className="mt-2 text-base text-gray-600">
+                                                        <p>
+                                                            <span className="font-medium">
+                                                                Fecha de Inicio:
+                                                            </span>{' '}
+                                                            {new Date(
+                                                                doc.issue_date,
+                                                            ).toLocaleDateString()}
+                                                        </p>
+                                                        <p>
+                                                            <span className="font-medium">
+                                                                Fecha de
+                                                                Finalización:
+                                                            </span>{' '}
+                                                            {doc.expiration_date
+                                                                ? new Date(
+                                                                      doc.expiration_date,
+                                                                  ).toLocaleDateString()
+                                                                : 'No expira'}
+                                                        </p>
+                                                    </div>
+
+                                                    {metadata && (
+                                                        <div className="mt-2 text-sm text-gray-600">
+                                                            <p className="font-medium">
+                                                                Detalles:
+                                                            </p>
+                                                            <ul className="list-disc list-inside">
+                                                                {Object.entries(
+                                                                    metadata,
+                                                                ).map(
+                                                                    ([
+                                                                        key,
+                                                                        value,
+                                                                    ]) => (
+                                                                        <li
+                                                                            key={
+                                                                                key
+                                                                            }>
+                                                                            {/* Caso especial para responsabilidades */}
+                                                                            {key ===
+                                                                            'responsibilities' ? (
+                                                                                <div>
+                                                                                    <span className="capitalize">
+                                                                                        {translateMetadataKey(
+                                                                                            key,
+                                                                                        )}
+                                                                                        :
+                                                                                    </span>
+                                                                                    <ul className="pl-5 list-[circle]">
+                                                                                        {value
+                                                                                            .split(
+                                                                                                '\n',
+                                                                                            )
+                                                                                            .map(
+                                                                                                (
+                                                                                                    responsibility,
+                                                                                                    index,
+                                                                                                ) => (
+                                                                                                    <li
+                                                                                                        key={
+                                                                                                            index
+                                                                                                        }
+                                                                                                        className="mt-1">
+                                                                                                        {
+                                                                                                            responsibility
+                                                                                                        }
+                                                                                                    </li>
+                                                                                                ),
+                                                                                            )}
+                                                                                    </ul>
+                                                                                </div>
+                                                                            ) : (
+                                                                                // Renderizado normal para otros campos
+                                                                                <>
+                                                                                    <span className="capitalize">
+                                                                                        {translateMetadataKey(
+                                                                                            key,
+                                                                                        )}
+                                                                                        :
+                                                                                    </span>{' '}
+                                                                                    {value ||
+                                                                                        'No especificado'}
+                                                                                </>
+                                                                            )}
+                                                                        </li>
+                                                                    ),
+                                                                )}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                </>
                                             )}
                                         </div>
                                     )
@@ -392,9 +486,9 @@ const CandidateDetails = ({ params }) => {
                             </div>
                         ))
                     ) : (
-                        <div className="p-4 text-gray-500 rounded-lg bg-gray-50">
-                            No se han subido documentos.
-                        </div>
+                        <p className="text-gray-500">
+                            No hay documentos disponibles.
+                        </p>
                     )}
                 </div>
 

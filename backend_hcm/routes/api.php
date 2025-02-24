@@ -6,13 +6,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JobPositionController;
 use App\Http\Controllers\CandidateController;
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ContractTypeController;
 use App\Http\Controllers\CountryController;
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\DiplomaController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\EmploymentController;
 use App\Http\Controllers\EmploymentTypeController;
 use App\Http\Controllers\EthnicityController;
 use App\Http\Controllers\GenderController;
+use App\Http\Controllers\IdentificationController;
 use App\Http\Controllers\IdentificationTypeController;
 use App\Http\Controllers\MaritalStatusController;
 use App\Http\Controllers\ModalityController;
@@ -20,6 +25,7 @@ use App\Http\Controllers\PositionController;
 use App\Http\Controllers\PublicVacancyController;
 use App\Http\Controllers\StatusApplicationController;
 use App\Http\Controllers\StatusController;
+use App\Http\Controllers\StudyController;
 use App\Http\Controllers\TypeAgendaController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VacantyController;
@@ -108,6 +114,30 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::prefix('contract_types')->group(function () {
         Route::get('/', [ContractTypeController::class, 'index'])->name('api.contract_types.index');
+    });
+
+    Route::prefix('documents')->group(function () {
+        Route::get('employments', [EmploymentController::class, 'index']);
+        Route::get('employments/{id}', [EmploymentController::class, 'show']);
+        Route::post('employments', [EmploymentController::class, 'store']);
+
+        Route::get('studies', [StudyController::class, 'index']);
+        Route::post('studies', [StudyController::class, 'store']);
+
+        Route::get('courses', [CourseController::class, 'index']);
+        Route::post('courses', [courseController::class, 'store']);
+
+        Route::get('certificates', [CertificateController::class, 'index']);
+        Route::post('certificates', [CertificateController::class, 'store']);
+
+        Route::get('diplomas', [DiplomaController::class, 'index']);
+        Route::post('diplomas', [DiplomaController::class, 'store']);
+
+        Route::get('identifications', [IdentificationController::class, 'index']);
+        Route::post('identifications', [IdentificationController::class, 'store']);
+
+        
+        // ... otras rutas de documentos ...
     });
     
 });

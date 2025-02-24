@@ -52,7 +52,6 @@ class EmployeeController extends Controller
                 'end_date' => 'nullable|date|after:start_date',
                 'contract_type_id' => 'required|exists:contract_types,id',
                 'employment_type_id' => 'required|exists:employment_types,id',
-                'half' => 'required|in:0,1', // 0 = medio tiempo, 1 = tiempo completo
                 'email' => 'required|email|unique:users,email',
             ]);
 
@@ -84,7 +83,6 @@ class EmployeeController extends Controller
                 'position_id' => $candidate->vacancy->position_id,
                 'department_id' => $candidate->vacancy->department_id,
                 'contract_id' => $contract->id,
-                'half' => $request->half, // 0 = medio tiempo, 1 = tiempo completo
             ]);
 
             // Crear un usuario para el empleado

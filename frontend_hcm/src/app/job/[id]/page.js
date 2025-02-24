@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import DetailCard from '@/components/DetailCard'
 import useVacancyDetail from '@/hooks/useVacancyDetail'
@@ -11,11 +11,14 @@ import useGenders from '@/hooks/gendersView'
 import useEthnicities from '@/hooks/ethnicitiesView'
 import useMaritalStatuses from '@/hooks/maritalStatusesView'
 import useCountries from '@/hooks/countryView'
+import { PencilIcon } from 'lucide-react'
 
 const JobDetails = ({ params }) => {
     const router = useRouter()
     const { id } = params
     const { vacancy, loading, error } = useVacancyDetail(id)
+    const [dragActive, setDragActive] = useState(false)
+    const [errorPhoto, setErrorPhoto] = useState('')
     const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false)
     const [currentStep, setCurrentStep] = useState(1) // Paso actual del modal
     const {
@@ -50,6 +53,16 @@ const JobDetails = ({ params }) => {
         submitForm,
     } = useCandidateForm()
 
+    // Efecto para manejar respuesta exitosa
+    useEffect(() => {
+        if (candidateResponse?.success) {
+            setIsApplicationModalOpen(false)
+            setCurrentStep(1)
+            resetForm()
+        }
+    }, [candidateResponse])
+
+
     // Estado para almacenar los datos del formulario
     const [formData, setFormData] = useState({
         first_name: '',
@@ -70,8 +83,33 @@ const JobDetails = ({ params }) => {
             jobs: [],
             studies: [],
             courses: [],
+            competencies: [],
+            languages: [{
+                name: '',
+                detail: { level: '' }
+            }]
         },
     })
+
+    const validateImage = file => {
+        if (!file) return false
+
+        const validTypes = ['image/jpeg', 'image/png']
+        const maxSize = 2 * 1024 * 1024 // 2MB
+
+        if (!validTypes.includes(file.type)) {
+            setErrorPhoto('Formato no válido. Solo se permiten JPG/PNG')
+            return false
+        }
+
+        if (file.size > maxSize) {
+            setErrorPhoto('El archivo es demasiado grande (Máx. 2MB)')
+            return false
+        }
+
+        setErrorPhoto('')
+        return true
+    }
 
     // Función para manejar cambios en los campos del formulario
     const handleChange = e => {
@@ -82,14 +120,32 @@ const JobDetails = ({ params }) => {
         }))
     }
 
-    // Función para manejar cambios en los documentos (estudios, cursos, empleos)
+    // Función mejorada para manejar cambios en documentos
     const handleDocumentChange = (type, index, field, value) => {
         setFormData(prev => {
             const updatedDocuments = [...prev.documents[type]]
-            updatedDocuments[index] = {
-                ...updatedDocuments[index],
-                [field]: value,
+
+            // Convertir cadenas vacías en fechas a null
+            if (['issue_date', 'expiration_date'].includes(field)) {
+                value = value === '' ? null : value
             }
+
+            // Manejar estructura específica para idiomas
+            if (type === 'languages' && field === 'level') {
+                updatedDocuments[index] = {
+                    ...updatedDocuments[index],
+                    detail: {
+                        ...(updatedDocuments[index].detail || {}),
+                        level: value,
+                    },
+                }
+            } else {
+                updatedDocuments[index] = {
+                    ...updatedDocuments[index],
+                    [field]: value,
+                }
+            }
+
             return {
                 ...prev,
                 documents: {
@@ -114,54 +170,79 @@ const JobDetails = ({ params }) => {
         })
     }
 
-    // Función para agregar un nuevo documento (estudio, curso, empleo)
+    // Función mejorada para agregar documentos
     const addDocument = type => {
+        const baseDocument = {
+            name: '',
+            ...(type === 'competencies' && { detail: [] }),
+            ...(type === 'languages' && {
+                detail: { level: '' },
+            }),
+        }
+
+        // Agregar fechas solo para documentos que las requieren
+        if (['jobs', 'studies', 'courses'].includes(type)) {
+            baseDocument.issue_date = null
+            baseDocument.expiration_date = null
+        }
+
         setFormData(prev => ({
             ...prev,
             documents: {
                 ...prev.documents,
-                [type]: [...prev.documents[type], { name: '', issue_date: '' }],
+                [type]: [...prev.documents[type], baseDocument],
             },
         }))
     }
 
+    // Función para resetear formulario
+    const resetForm = () => {
+        setFormData({
+            first_name: '',
+            last_name: '',
+            email: '',
+            phone: '',
+            identification_value: '',
+            vacancy_id: id,
+            ethnicity_id: '',
+            identification_type_id: '',
+            marital_status_id: '',
+            gender_id: '',
+            countries_id: '',
+            birth_date: '',
+            photo: null,
+            summary: '',
+            documents: {
+                jobs: [],
+                studies: [],
+                courses: [],
+                competencies: [],
+                languages: [{
+                    name: '',
+                    detail: { level: '' }
+                }]
+            },
+        })
+    }
+
+    // Función de submit actualizada
     const handleSubmit = async e => {
         e.preventDefault()
 
-        if (currentStep < 4) {
-            setCurrentStep(currentStep + 1) // Avanzar al siguiente paso
+        if (currentStep < 6) {
+            setCurrentStep(prev => prev + 1)
             return
         }
 
-        // Si estamos en el último paso, enviar los datos
-        await submitForm(formData, id)
+        try {
+            // Validar foto antes de enviar
+            if (!formData.photo || !validateImage(formData.photo)) {
+                throw new Error('Foto requerida o inválida')
+            }
 
-        if (candidateResponse?.success) {
-            setIsApplicationModalOpen(false) // Cerrar el modal
-            setCurrentStep(1) // Reiniciar el paso
-            setFormData({
-                first_name: '',
-                last_name: '',
-                email: '',
-                phone: '',
-                identification_value: '',
-                vacancy_id: id,
-                ethnicity_id: '',
-                identification_type_id: '',
-                marital_status_id: '',
-                gender_id: '',
-                countries_id: '',
-                birth_date: '',
-                photo: null,
-                summary: '',
-                documents: {
-                    jobs: [],
-                    studies: [],
-                    courses: [],
-                },
-            })
-        } else {
-            console.error(errorCandidate)
+            await submitForm(formData, id)
+        } catch (error) {
+            console.error('Error submitting form:', error)
         }
     }
 
@@ -298,7 +379,7 @@ const JobDetails = ({ params }) => {
                             <h2 className="text-2xl font-semibold">
                                 Postularse a: {vacancy.title}
                                 <span className="text-sm text-gray-500">
-                                    (Paso {currentStep}/4)
+                                    (Paso {currentStep}/6)
                                 </span>
                             </h2>
                         </div>
@@ -591,29 +672,137 @@ const JobDetails = ({ params }) => {
                                                     />
                                                 </div>
 
-                                                <div>
-                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                        Subir foto tipo carnet
-                                                        (JPG, PNG) *
+                                                <div className="space-y-4">
+                                                    <label className="block text-sm font-medium text-gray-700">
+                                                        Foto tipo carnet (JPG,
+                                                        PNG - Máx. 2MB) *
                                                     </label>
-                                                    <input
-                                                        type="file"
-                                                        name="photo"
-                                                        onChange={e => {
-                                                            const file =
-                                                                e.target
-                                                                    .files[0]
-                                                            setFormData(
-                                                                prev => ({
-                                                                    ...prev,
-                                                                    photo: file, // Almacenamos el objeto File
-                                                                }),
-                                                            )
+
+                                                    <div
+                                                        className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg 
+      ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'} 
+      transition-colors duration-200 cursor-pointer`}
+                                                        onDragOver={e => {
+                                                            e.preventDefault()
+                                                            setDragActive(true)
                                                         }}
-                                                        accept=".jpg,.jpeg,.png"
-                                                        required
-                                                        className="w-full"
-                                                    />
+                                                        onDragLeave={() =>
+                                                            setDragActive(false)
+                                                        }
+                                                        onDrop={e => {
+                                                            e.preventDefault()
+                                                            setDragActive(false)
+                                                            const file =
+                                                                e.dataTransfer
+                                                                    .files[0]
+                                                            if (
+                                                                validateImage(
+                                                                    file,
+                                                                )
+                                                            ) {
+                                                                setFormData(
+                                                                    prev => ({
+                                                                        ...prev,
+                                                                        photo: file,
+                                                                    }),
+                                                                )
+                                                            }
+                                                        }}
+                                                        onClick={() =>
+                                                            document
+                                                                .getElementById(
+                                                                    'photoInput',
+                                                                )
+                                                                .click()
+                                                        }>
+                                                        {formData.photo ? (
+                                                            <>
+                                                                <div className="relative group">
+                                                                    <img
+                                                                        src={URL.createObjectURL(
+                                                                            formData.photo,
+                                                                        )}
+                                                                        alt="Previsualización de foto"
+                                                                        className="object-cover w-32 h-32 rounded-full shadow-lg"
+                                                                    />
+                                                                    <div className="absolute inset-0 flex items-center justify-center transition-opacity bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100">
+                                                                        <PencilIcon className="w-8 h-8 text-white" />
+                                                                    </div>
+                                                                </div>
+                                                                <p className="mt-2 text-sm text-gray-600">
+                                                                    Haz clic
+                                                                    para cambiar
+                                                                    la foto
+                                                                </p>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <svg
+                                                                    className="w-12 h-12 mb-2 text-gray-400"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24">
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth="2"
+                                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                                    />
+                                                                </svg>
+                                                                <div className="text-center">
+                                                                    <p className="text-sm text-gray-600">
+                                                                        <span className="font-semibold text-blue-600">
+                                                                            Haz
+                                                                            clic
+                                                                            para
+                                                                            subir
+                                                                        </span>{' '}
+                                                                        o
+                                                                        arrastra
+                                                                        aquí
+                                                                    </p>
+                                                                    <p className="text-xs text-gray-500">
+                                                                        Tamaño
+                                                                        recomendado:
+                                                                        300x300
+                                                                        px
+                                                                    </p>
+                                                                </div>
+                                                            </>
+                                                        )}
+
+                                                        <input
+                                                            id="photoInput"
+                                                            type="file"
+                                                            name="photo"
+                                                            onChange={e => {
+                                                                const file =
+                                                                    e.target
+                                                                        .files[0]
+                                                                if (
+                                                                    validateImage(
+                                                                        file,
+                                                                    )
+                                                                ) {
+                                                                    setFormData(
+                                                                        prev => ({
+                                                                            ...prev,
+                                                                            photo: file,
+                                                                        }),
+                                                                    )
+                                                                }
+                                                            }}
+                                                            accept=".jpg,.jpeg,.png"
+                                                            className="hidden"
+                                                            required
+                                                        />
+                                                    </div>
+
+                                                    {errorPhoto && (
+                                                        <p className="mt-2 text-sm text-red-600">
+                                                            {errorPhoto}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -771,6 +960,44 @@ const JobDetails = ({ params }) => {
                                                                 className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                                                             />
                                                         </div>
+                                                    </div>
+                                                    {/* Nuevo campo de responsabilidades */}
+                                                    <div>
+                                                        <label className="block mb-1 text-sm font-medium text-gray-700">
+                                                            Responsabilidades
+                                                            (Una por línea) *
+                                                        </label>
+                                                        <textarea
+                                                            value={
+                                                                job.metadata
+                                                                    ?.responsibilities ||
+                                                                ''
+                                                            }
+                                                            onChange={e =>
+                                                                handleDocumentChange(
+                                                                    'jobs',
+                                                                    index,
+                                                                    'metadata',
+                                                                    {
+                                                                        ...job.metadata,
+                                                                        responsibilities:
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                    },
+                                                                )
+                                                            }
+                                                            required
+                                                            className="w-full h-24 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                            placeholder="Ej: - Desarrollo de componentes React
+                                                                            - Coordinación de equipo frontend
+                                                                            - Implementación de pruebas unitarias"
+                                                        />
+                                                        <p className="mt-1 text-xs text-gray-500">
+                                                            Escribe cada
+                                                            responsabilidad en
+                                                            una línea separada
+                                                        </p>
                                                     </div>
 
                                                     {/* Botón para eliminar empleo */}
@@ -941,7 +1168,7 @@ const JobDetails = ({ params }) => {
                                                                 value={
                                                                     study
                                                                         .metadata
-                                                                        ?.grado ||
+                                                                        ?.degree ||
                                                                     ''
                                                                 }
                                                                 onChange={e =>
@@ -951,10 +1178,9 @@ const JobDetails = ({ params }) => {
                                                                         'metadata',
                                                                         {
                                                                             ...study.metadata,
-                                                                            grado:
-                                                                                e
-                                                                                    .target
-                                                                                    .value,
+                                                                            degree: e
+                                                                                .target
+                                                                                .value,
                                                                         },
                                                                     )
                                                                 }
@@ -1190,18 +1416,230 @@ const JobDetails = ({ params }) => {
                                     </>
                                 )}
 
+                                {/* Paso 5: Competencias */}
+                                {currentStep === 5 && (
+                                    <>
+                                        <h3 className="mb-4 text-lg font-semibold text-gray-900">
+                                            Competencias Técnicas
+                                        </h3>
+
+                                        {formData.documents.competencies.map(
+                                            (competency, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="p-4 mb-6 space-y-4 border rounded-lg">
+                                                    {/* Nombre del documento de competencias */}
+                                                    <div>
+                                                        <label className="block mb-1 text-sm font-medium text-gray-700">
+                                                            Nombre la
+                                                            competencias *
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={
+                                                                competency.name ||
+                                                                ''
+                                                            }
+                                                            onChange={e =>
+                                                                handleDocumentChange(
+                                                                    'competencies',
+                                                                    index,
+                                                                    'name',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            required
+                                                            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                            placeholder="Ej: Competencias en Habilidades Blandas"
+                                                        />
+                                                    </div>
+
+                                                    {/* Lista de competencias */}
+                                                    <div>
+                                                        <label className="block mb-1 text-sm font-medium text-gray-700">
+                                                            Competencias (Una
+                                                            por línea) *
+                                                        </label>
+                                                        <textarea
+                                                            value={
+                                                                competency.detail?.join(
+                                                                    '\n',
+                                                                ) || ''
+                                                            }
+                                                            onChange={e =>
+                                                                handleDocumentChange(
+                                                                    'competencies',
+                                                                    index,
+                                                                    'detail',
+                                                                    e.target.value.split(
+                                                                        '\n',
+                                                                    ),
+                                                                )
+                                                            }
+                                                            required
+                                                            className="w-full h-32 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                            placeholder="Ej: Laravel
+                                    React
+                                    Gestión de proyectos
+                                    SQL"
+                                                        />
+                                                        <p className="mt-1 text-xs text-gray-500">
+                                                            Lista cada
+                                                            competencia en una
+                                                            línea separada
+                                                        </p>
+                                                    </div>
+
+                                                    {/* Botón para eliminar competencia */}
+                                                    {formData.documents
+                                                        .competencies.length >
+                                                        1 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                removeDocument(
+                                                                    'competencies',
+                                                                    index,
+                                                                )
+                                                            }
+                                                            className="px-4 py-2 mt-2 text-sm text-red-600 bg-red-100 rounded-lg hover:bg-red-200">
+                                                            Eliminar Competencia
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ),
+                                        )}
+
+                                        {/* Botón para agregar competencia */}
+                                        {formData.documents.competencies
+                                            .length < 3 && (
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    addDocument('competencies')
+                                                }
+                                                className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                                Agregar Competencia
+                                            </button>
+                                        )}
+                                    </>
+                                )}
+
+                                {/* Paso 6: Idiomas */}
+                                {currentStep === 6 && (
+                                    <>
+                                        <h3 className="mb-4 text-lg font-semibold text-gray-900">
+                                            Idiomas
+                                        </h3>
+
+                                        {formData.documents.languages.map(
+                                            (language, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="p-4 mb-6 space-y-4 border rounded-lg">
+                                                    {/* Campo para el idioma */}
+                                                    <div>
+                                                        <label className="block mb-1 text-sm font-medium text-gray-700">
+                                                            Idioma *
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={
+                                                                language.name ||
+                                                                ''
+                                                            }
+                                                            onChange={e =>
+                                                                handleDocumentChange(
+                                                                    'languages',
+                                                                    index,
+                                                                    'name',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            required
+                                                            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                            placeholder="Ej: Inglés"
+                                                        />
+                                                    </div>
+
+                                                    {/* Campo para el nivel de dominio (texto) */}
+                                                    <div>
+                                                        <label className="block mb-1 text-sm font-medium text-gray-700">
+                                                            Nivel de dominio *
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={
+                                                                language.detail
+                                                                    ?.level ||
+                                                                ''
+                                                            }
+                                                            onChange={e =>
+                                                                handleDocumentChange(
+                                                                    'languages',
+                                                                    index,
+                                                                    'detail',
+                                                                    {
+                                                                        level: e
+                                                                            .target
+                                                                            .value,
+                                                                    },
+                                                                )
+                                                            }
+                                                            required
+                                                            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                            placeholder="Ej: Avanzado, Intermedio, Nativo, etc."
+                                                        />
+                                                    </div>
+
+                                                    {/* Botón para eliminar idioma */}
+                                                    {formData.documents
+                                                        .languages.length >
+                                                        1 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                removeDocument(
+                                                                    'languages',
+                                                                    index,
+                                                                )
+                                                            }
+                                                            className="px-4 py-2 mt-2 text-sm text-red-600 bg-red-100 rounded-lg hover:bg-red-200">
+                                                            Eliminar Idioma
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ),
+                                        )}
+
+                                        {/* Botón para agregar idioma */}
+                                        {formData.documents.languages.length <
+                                            3 && (
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    addDocument('languages')
+                                                }
+                                                className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                                Agregar Idioma
+                                            </button>
+                                        )}
+                                    </>
+                                )}
 
                                 {/* Botones fijos en la parte inferior */}
                                 <div className="pt-4 border-t">
-                                {errorCandidate && (
-                                    <div className="p-4 mb-4 text-red-600 bg-red-100 rounded-lg">
-                                        {errorCandidate.errors
-                                            ? Object.values(
-                                                  errorCandidate.errors,
-                                              ).join(', ')
-                                            : errorCandidate.message}
-                                    </div>
-                                )}
+                                    {errorCandidate && (
+                                        <div className="p-4 mb-4 text-red-600 bg-red-100 rounded-lg">
+                                            {errorCandidate.errors
+                                                ? Object.values(
+                                                      errorCandidate.errors,
+                                                  ).join(', ')
+                                                : errorCandidate.message}
+                                        </div>
+                                    )}
                                     <div className="flex justify-between">
                                         <button
                                             type="button"
@@ -1230,7 +1668,7 @@ const JobDetails = ({ params }) => {
                                                 type="button"
                                                 onClick={e => handleSubmit(e)}
                                                 className="px-6 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                                                {currentStep === 4
+                                                {currentStep === 6
                                                     ? 'Finalizar'
                                                     : 'Siguiente'}
                                             </button>

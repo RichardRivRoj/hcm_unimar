@@ -39,6 +39,7 @@ class UserController extends Controller
                     'document_name' => $doc->document_name,
                     'company_name' => $metadata['company_name'] ?? 'No especificado',
                     'position' => $metadata['position'] ?? 'No especificado',
+                    'responsibilities' => $metadata['responsibilities'] ?? 'No especificado',
                     'issue_date' => $doc->issue_date,
                     'expiration_date' => $doc->expiration_date,
                 ];
@@ -72,6 +73,25 @@ class UserController extends Controller
                     'expiration_date' => $doc->expiration_date,
                 ];
             });
+        // Obtener competencias (document_type_id = 10)
+        $competencies = $documents->where('document_type_id', 10)
+            ->map(function ($doc) {
+                $detail = json_decode($doc->detail, true); // Decodificar el JSON de detalle
+                return [
+                    'document_name' => $doc->document_name,
+                    'skills' => $detail ?? ['No especificado']
+                ];
+            });
+
+        // Obtener idiomas (document_type_id = 9)
+        $languages = $documents->where('document_type_id', 9)
+            ->map(function ($doc) {
+                $detail = json_decode($doc->detail, true); // Decodificar el JSON de detalle
+                return [
+                    'document_name' => $doc->document_name,
+                    'level' => $detail['level'] ?? 'No especificado'
+                ];
+            });
 
         // Obtener la información del departamento
         $department = $user->department;
@@ -100,6 +120,8 @@ class UserController extends Controller
                 'photo_url' => $person->file_path
                     ? URL::to('/photos/' . basename($person->file_path))
                     : null,
+                'competencies' => $competencies->isEmpty() ? 'No hay competencias registradas' : $competencies,
+                'languages' => $languages->isEmpty() ? 'No hay idiomas registrados' : $languages,
                 'recent_jobs' => $recentJobs->isEmpty() ? 'No hay información de empleos' : $recentJobs,
                 'recent_studies' => $recentStudies->isEmpty() ? 'No hay información de estudios' : $recentStudies,
                 'recent_courses' => $recentCourses->isEmpty() ? 'No hay información de cursos' : $recentCourses,
