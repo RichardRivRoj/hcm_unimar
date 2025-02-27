@@ -17,7 +17,7 @@ class Contract extends Model
         'employment_type_id', 'status_id',
     ];
 
-    public function contracttype()
+    public function contractType()
     {
         return $this->belongsTo(ContractTypes::class, 'contract_type_id');
     }
@@ -30,5 +30,9 @@ class Contract extends Model
     public function status()
     {
         return $this->belongsTo(Status::class, 'status_id');
+    }
+
+    public function employees(){
+        return $this->hasMany(Employee::class, 'contract_id'); 
     }
 }

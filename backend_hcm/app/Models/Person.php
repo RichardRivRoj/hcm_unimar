@@ -12,11 +12,20 @@ class Person extends Model
     protected $table = 'persons';
 
     protected $fillable = [
-        'first_name', 'last_name', 'email',
-        'birth_date', 'phone', 'file_path', 'summary',
-        'identification_value','identification_type_id', 
-        'ethnicity_id', 'marital_status_id',
-        'gender_id', 'countries_id', 'status_id',
+        'first_name',
+        'last_name',
+        'email',
+        'birth_date',
+        'phone',
+        'file_path',
+        'summary',
+        'identification_value',
+        'identification_type_id',
+        'ethnicity_id',
+        'marital_status_id',
+        'gender_id',
+        'countries_id',
+        'status_id',
     ];
 
     public function identificationtype()
@@ -61,7 +70,7 @@ class Person extends Model
 
     public function employee()
     {
-        return $this->hasMany(Employee::class, 'person_id');
+        return $this->hasOne(Employee::class, 'person_id');
     }
 
     public function candidate()
@@ -69,7 +78,19 @@ class Person extends Model
         return $this->hasOne(Candidate::class, 'person_id');
     }
 
-    public function bank_account()
+
+    public function contracts()
+    {
+        return $this->hasManyThrough(
+            Contract::class,
+            Employee::class,
+            'person_id', // Foreign key en employees
+            'id', // Foreign key en contracts
+            'id', // Local key en persons
+            'contract_id' // Local key en employees
+        );
+    }
+    public function bankAccounts()
     {
         return $this->hasMany(BankAccount::class, 'person_id');
     }

@@ -27,7 +27,7 @@ class DepartmentUsersSeeder extends Seeder
                 'code' => 1,
                 'mission' => 'Gestionar el talento humano para el desarrollo organizacional.',
                 'vision' => 'Ser el área líder en la gestión de personas.',
-                'responsibilities' => ['Reclutamiento', 'Capacitación', 'Nómina', 'evaluaciones'],
+                'responsibilities' => ['Reclutamiento', 'Capacitación', 'Nómina', 'Evaluaciones'],
                 'objectives' => ['Mejorar el clima laboral', 'Fomentar el desarrollo profesional'],
                 'contact_info' => 'rrhh@unimar.edu.ve',
                 'file_path' => $defaultImagePath, // Usar la imagen predeterminada
@@ -103,7 +103,7 @@ class DepartmentUsersSeeder extends Seeder
             ],
             [
                 'name' => 'Prevención y Control',
-                'description' => 'Departamento encargado de la prevención y control de riesgos.',
+                'description' => 'Departamento de prevención y control de riesgos.',
                 'code' => 6,
                 'mission' => 'Garantizar un entorno seguro y saludable para toda la comunidad universitaria.',
                 'vision' => 'Ser el referente en prevención y control de riesgos a nivel institucional.',
@@ -119,7 +119,7 @@ class DepartmentUsersSeeder extends Seeder
             ],
             [
                 'name' => 'Administración',
-                'description' => 'Departamento encargado de la gestión administrativa de la institución.',
+                'description' => 'Dirección de Administración.',
                 'code' => 7,
                 'mission' => 'Optimizar los recursos administrativos para garantizar la eficiencia operativa.',
                 'vision' => 'Ser el soporte administrativo más eficiente de la organización.',
@@ -135,7 +135,7 @@ class DepartmentUsersSeeder extends Seeder
             ],
             [
                 'name' => 'Servicios Generales',
-                'description' => 'Departamento encargado de proveer servicios de mantenimiento y soporte.',
+                'description' => 'Departamento de Servicios Generales.',
                 'code' => 8,
                 'mission' => 'Brindar servicios de calidad para el mantenimiento de las instalaciones.',
                 'vision' => 'Ser el área líder en servicios de soporte y mantenimiento.',
@@ -151,7 +151,7 @@ class DepartmentUsersSeeder extends Seeder
             ],
             [
                 'name' => 'Biblioteca',
-                'description' => 'Departamento encargado de gestionar los recursos bibliográficos y de información.',
+                'description' => 'Coordinacion de Biblioteca.',
                 'code' => 9,
                 'mission' => 'Proveer acceso a recursos de información para el aprendizaje y la investigación.',
                 'vision' => 'Ser el centro de conocimiento más importante de la institución.',
@@ -167,7 +167,7 @@ class DepartmentUsersSeeder extends Seeder
             ],
             [
                 'name' => 'Decanato de Ingeniería y Afines',
-                'description' => 'Departamento encargado de la gestión académica de las carreras de ingeniería.',
+                'description' => 'Decanato de Ingeniería y Afines.',
                 'code' => 10,
                 'mission' => 'Formar profesionales de ingeniería con excelencia académica y ética.',
                 'vision' => 'Ser el decanato líder en la formación de ingenieros a nivel nacional.',

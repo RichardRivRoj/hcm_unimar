@@ -16,7 +16,7 @@ class BankAccount extends Model
         return $this->belongsTo(Bank::class, 'bank_id');
     }
 
-    public function acount_type()
+    public function accountType()
     {
         return $this->belongsTo(AccountType::class, 'account_type_id');
     }

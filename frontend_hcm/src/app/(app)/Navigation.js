@@ -20,6 +20,7 @@ import {
     Circle,
     BookCheck,
     ClipboardPenLine,
+    SendToBack,
 } from 'lucide-react'
 
 const Navigation = () => {
@@ -59,8 +60,25 @@ const Navigation = () => {
         },
         {
             name: 'Capacitación',
-            href: '/profile/admin/training',
+            href: '#',
             icon: ClipboardList,
+            subLinks: [
+                {
+                    name: 'Publicar Programas',
+                    href: '/profile/admin/recruitment/job-postings',
+                    icon: Folder,
+                },
+                {
+                    name: 'Inscripciones',
+                    href: '/profile/admin/recruitment/applications-re',
+                    icon: FileText,
+                },
+                {
+                    name: 'Selección Final',
+                    href: '/profile/admin/recruitment/selection',
+                    icon: Briefcase,
+                },
+            ],
         },
         { name: 'Evaluación', href: '/profile/admin/evaluate', icon: Eye },
         {
@@ -84,22 +102,48 @@ const Navigation = () => {
 
     const supervisorLinks = [
         {
-            name: 'Personal',
-            href: '/profile/supervisor/supervision',
-            icon: Eye,
+            name: 'Evaluación',
+            href: '#',
+            icon: Bell,
+            subLinks: [
+                {
+                    name: 'Pruebas',
+                    href: '/profile/supervisor/staff/resume',
+                    icon: Star,
+                },
+            ],
         },
         {
-            name: 'Evaluación',
-            href: '/profile/supervisor/evaluations',
-            icon: FileText,
+            name: 'Personal',
+            href: '#',
+            icon: Briefcase,
+            subLinks: [
+                {
+                    name: 'Estructura',
+                    href: '/profile/supervisor/staff/resume',
+                    icon: SendToBack,
+                },
+            ],
         },
     ]
 
     const employeeLinks = [
         {
-            name: 'Tareas',
-            href: '/profile/employee/tasks',
+            name: 'Capacitación',
+            href: '#',
             icon: ClipboardList,
+            subLinks: [
+                {
+                    name: 'Expediente',
+                    href: '/profile/employee/staff/resume',
+                    icon: BookCheck,
+                },
+                {
+                    name: 'Solicitudes',
+                    href: '/profile/employee/staff/request',
+                    icon: ClipboardPenLine,
+                },
+            ],
         },
         {
             name: 'Personal',
@@ -124,7 +168,6 @@ const Navigation = () => {
         { name: 'Inicio', href: '/', icon: Home },
         { name: 'Perfil', href: '/profile', icon: Users },
         { name: 'Configuración', href: '/profile/settings', icon: Settings },
-        { name: 'Notificaciones', href: '/profile/notifications', icon: Bell },
     ]
 
     const sections = [

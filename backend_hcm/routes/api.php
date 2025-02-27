@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\AgendaResultController;
+use App\Http\Controllers\BankEmployeeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JobPositionController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\CertificateController;
+use App\Http\Controllers\ContractController;
 use App\Http\Controllers\ContractTypeController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\CourseController;
@@ -19,17 +21,25 @@ use App\Http\Controllers\EthnicityController;
 use App\Http\Controllers\GenderController;
 use App\Http\Controllers\IdentificationController;
 use App\Http\Controllers\IdentificationTypeController;
+use App\Http\Controllers\ListAccountTypeController;
+use App\Http\Controllers\ListAccountTypeller;
+use App\Http\Controllers\ListBanksController;
+use App\Http\Controllers\ListCurrencyController;
 use App\Http\Controllers\MaritalStatusController;
 use App\Http\Controllers\ModalityController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\PublicVacancyController;
+use App\Http\Controllers\ReferenceController;
+use App\Http\Controllers\ReposeController;
 use App\Http\Controllers\StatusApplicationController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\StudyController;
+use App\Http\Controllers\Supervisor\ClasificationEmployeeController;
 use App\Http\Controllers\TypeAgendaController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VacantyController;
 use App\Models\MaritalStatus;
+use League\CommonMark\Reference\Reference;
 
 Route::middleware(['auth:sanctum'])->get('/user', [UserController::class, 'index']);
 
@@ -116,6 +126,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/', [ContractTypeController::class, 'index'])->name('api.contract_types.index');
     });
 
+    Route::prefix('list-banks')->group(function () {
+        Route::get('/', [ListBanksController::class, 'index'])->name('api.list-banks.index');
+    });
+
+    Route::prefix('list-accounts')->group(function () {
+        Route::get('/', [ListAccountTypeController::class, 'index'])->name('api.list-accounts.index');
+    });
+
+    Route::prefix('list-currencies')->group(function () {
+        Route::get('/', [ListCurrencyController::class, 'index'])->name('api.list-currencies.index');
+    });
+
     Route::prefix('documents')->group(function () {
         Route::get('employments', [EmploymentController::class, 'index']);
         Route::get('employments/{id}', [EmploymentController::class, 'show']);
@@ -136,12 +158,31 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('identifications', [IdentificationController::class, 'index']);
         Route::post('identifications', [IdentificationController::class, 'store']);
 
+        Route::get('contracts', [ContractController::class, 'index']);
+
+        Route::get('banks', [BankEmployeeController::class, 'index']);
+        Route::post('banks', [BankEmployeeController::class, 'store']);
+
+        Route::get('rests', [ReposeController::class, 'index']);
+
+        Route::get('references', [ReferenceController::class, 'index']);
+        Route::post('references', [ReferenceController::class, 'store']);
         
         // ... otras rutas de documentos ...
     });
     
 });
 
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::prefix('supervisor')->group(function () {
+    
+        Route::prefix('departments')->group(function () {
+            
+            Route::get('employees', [ClasificationEmployeeController::class, 'index'])->name('supervisor.departments.employees.index');
+        });
+    });
+
+});
 // Grupo de rutas públicas (sin autenticación)
 Route::prefix('public')->group(function () {
     // Mostrar vacantes disponibles al público

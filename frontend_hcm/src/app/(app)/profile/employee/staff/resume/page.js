@@ -5,27 +5,42 @@ import { useState } from 'react'
 import DocumentPreview from './DocumentPreview'
 import EmploymentDocuments from './EmploymentDocuments'
 import StudyDocuments from './StudyDocuments'
+
 import {
     BookMarked,
+    BookUser,
     BriefcaseBusiness,
+    ClipboardPlus,
+    FileBadge,
+    FileUser,
     FolderCog,
     GraduationCap,
     IdCard,
+    Newspaper,
     NotepadText,
     School,
+    ScrollText,
 } from 'lucide-react'
 import CourseDocuments from './CourseDocuments'
 import CertificateDocuments from './CertificateDocuments'
 import DiplomaDocuments from './DiplomaDocuments'
 import IdentificationDocuments from './IdentificationDocuments'
+import ContractDocuments from './ContractDocuments'
+import BanckAccountDocuments from './BankAccounts'
+import ReposeDocuments from './ReposeDocuments'
+import ReferenceDocuments from './ReferenceDocuments'
 
 const documentCategories = [
-    { id: 1, name: 'Empleos', icon: <BriefcaseBusiness /> }, // Asegúrate que existe esta categoría
-    { id: 2, name: 'Estudios', icon: <GraduationCap /> },
-    { id: 3, name: 'Cursos', icon: <FolderCog /> },
-    { id: 4, name: 'Certificados', icon: <NotepadText /> },
-    { id: 5, name: 'Diplomados', icon: <School /> },
-    { id: 6, name: 'Identificaciones', icon: <IdCard /> },
+    { id: 1, name: 'Contratos', icon: <ScrollText /> }, // Asegúrate que existe esta categoría
+    { id: 2, name: 'Identificaciones', icon: <IdCard /> },
+    { id: 3, name: 'Cuentas de Banco', icon: <FileUser /> },
+    { id: 4, name: 'Estudios', icon: <GraduationCap /> },
+    { id: 5, name: 'Certificados', icon: <School /> },
+    { id: 6, name: 'Diplomados', icon: <FileBadge /> },
+    { id: 7, name: 'Cursos', icon: <Newspaper /> },
+    { id: 8, name: 'Empleos', icon: <BookUser /> },
+    { id: 9, name: 'Reposos', icon: <ClipboardPlus /> },
+    { id: 10, name: 'Referencias', icon: <BookMarked /> },
 ]
 
 export default function DigitalFile() {
@@ -105,6 +120,30 @@ export default function DigitalFile() {
 
                         {selectedCategory === 'Identificaciones' ? (
                             <IdentificationDocuments /> // Componente personalizado para Cursos
+                        ) : (
+                            // Contenido original para otras categorías
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+                        )}
+                        {selectedCategory === 'Contratos' ? (
+                            <ContractDocuments /> // Componente personalizado para Contratos
+                        ) : (
+                            // Contenido original para otras categorías
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+                        )}
+                        {selectedCategory === 'Cuentas de Banco' ? (
+                            <BanckAccountDocuments /> // Componente personalizado para Contratos
+                        ) : (
+                            // Contenido original para otras categorías
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+                        )}
+                        {selectedCategory === 'Reposos' ? (
+                            <ReposeDocuments /> // Componente personalizado para Contratos
+                        ) : (
+                            // Contenido original para otras categorías
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+                        )}
+                        {selectedCategory === 'Referencias' ? (
+                            <ReferenceDocuments /> // Componente personalizado para Contratos
                         ) : (
                             // Contenido original para otras categorías
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>

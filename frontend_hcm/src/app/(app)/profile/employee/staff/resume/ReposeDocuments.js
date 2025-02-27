@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import useStudy from '@/hooks/useStudy'
 import { Skeleton } from '@/components/skeleton'
 import { Alert, AlertDescription } from '@/components/alert'
 import Modal from '@/components/Modal'
 import axios from '@/lib/axios'
+import useRests from '@/hooks/useRests'
 
-const StudyDocuments = () => {
+const ReposeDocuments = () => {
     const {
         documents,
         loading,
@@ -15,7 +15,7 @@ const StudyDocuments = () => {
         totalPages,
         goToNextPage,
         goToPrevPage,
-    } = useStudy()
+    } = useRests()
     const [selectedDocument, setSelectedDocument] = useState(null)
 
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -24,8 +24,8 @@ const StudyDocuments = () => {
 
     const [formData, setFormData] = useState({
         document_name: '',
-        institution: '',
-        degree: '',
+        reason: '',
+        doctor_name: '',
         issue_date: '',
         expiration_date: '',
         file_path: null, // Para manejar subida de archivos
@@ -155,21 +155,21 @@ const StudyDocuments = () => {
                                         </label>
                                         <input
                                             type="text"
-                                            name="institution"
-                                            value={formData.institution}
+                                            name="doctor_name"
+                                            value={formData.doctor_name}
                                             className={`w-full p-2 border rounded ${
-                                                validationErrors.institution
+                                                validationErrors.doctor_name
                                                     ? 'border-red-500'
                                                     : ''
                                             }`}
                                             onChange={handleInputChange}
                                             required
                                         />
-                                        {validationErrors.institution && (
+                                        {validationErrors.doctor_name && (
                                             <span className="text-sm text-red-500">
                                                 {
                                                     validationErrors
-                                                        .institution[0]
+                                                        .doctor_name[0]
                                                 }
                                             </span>
                                         )}
@@ -181,19 +181,19 @@ const StudyDocuments = () => {
                                         </label>
                                         <input
                                             type="text"
-                                            name="degree"
-                                            value={formData.degree}
+                                            name="reason"
+                                            value={formData.reason}
                                             className={`w-full p-2 border rounded ${
-                                                validationErrors.degree
+                                                validationErrors.reason
                                                     ? 'border-red-500'
                                                     : ''
                                             }`}
                                             onChange={handleInputChange}
                                             required
                                         />
-                                        {validationErrors.degree && (
+                                        {validationErrors.reason && (
                                             <span className="text-sm text-red-500">
-                                                {validationErrors.degree[0]}
+                                                {validationErrors.reason[0]}
                                             </span>
                                         )}
                                     </div>
@@ -284,14 +284,14 @@ const StudyDocuments = () => {
                                 <div>
                                     <p className="font-medium">Institución Educativa:</p>
                                     <p className="text-gray-600">
-                                        {selectedDocument.institution}
+                                        {selectedDocument.reason}
                                     </p>
                                 </div>
 
                                 <div>
                                     <p className="font-medium">Grado:</p>
                                     <p className="text-gray-600">
-                                        {selectedDocument.degree || 'Licenciado'}
+                                        {selectedDocument.doctor_name || 'Licenciado'}
                                     </p>
                                 </div>
 
@@ -337,13 +337,13 @@ const StudyDocuments = () => {
 
             {/* Encabezado */}
             <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Recorrido Académico</h2>
+                <h2 className="text-xl font-semibold">Reposos</h2>
                 <div className="flex gap-4">
                     <button
                         onClick={() => setIsModalOpen(true)}
                         className="px-4 py-2 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7a]"
                     >
-                        + Nuevo Registro Académico
+                        + Nuevo Reposo
                     </button>
                     <button
                         onClick={() => refresh(currentPage)}
@@ -374,22 +374,22 @@ const StudyDocuments = () => {
                             <div className="space-y-1 text-sm">
                                 <p className="text-gray-600">
                                     <span className="font-medium">
-                                        Institución
+                                        Nombre del Médico
                                     </span>{' '}
-                                    {doc.institution}
+                                    {doc.doctor_name}
                                 </p>
                                 <p className="text-gray-600">
                                     <span className="font-medium">
-                                        Periodo:
+                                        Desde:
                                     </span>{' '}
-                                    {doc.issue_date} - {' '}
+                                    {doc.issue_date} - {'Hasta'}
                                     {doc.expiration_date || 'Presente'}
                                 </p>
                                 <p className="text-gray-600">
                                     <span className="font-medium">
-                                        Grado:
+                                        Razón:
                                     </span>{' '}
-                                    {doc.degree || 'Licenciado'}
+                                    {doc.reason || 'Licenciado'}
                                 </p>
                             </div>
                         </div>
@@ -398,14 +398,14 @@ const StudyDocuments = () => {
             )}
 
             {/* Controles de paginación */}
-            <div className="flex justify-center gap-4 mt-4">
+            <div className="flex justify-between gap-4 mt-4">
                 <button
                     onClick={goToPrevPage}
                     disabled={currentPage === 1}
                     className="px-4 py-2 text-white bg-blue-500 rounded-lg disabled:opacity-50">
                     Anterior
                 </button>
-                <span className="text-gray-700">
+                <span className="text-sm text-gray-600">
                     Página {currentPage} de {totalPages}
                 </span>
                 <button
@@ -419,4 +419,4 @@ const StudyDocuments = () => {
     )
 }
 
-export default StudyDocuments
+export default ReposeDocuments;

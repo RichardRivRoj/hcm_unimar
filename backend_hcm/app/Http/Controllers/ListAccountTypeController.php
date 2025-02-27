@@ -3,16 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\AccountType;
 use Illuminate\Http\Request;
 
-class EmployeeResumeController extends Controller
+class ListAccountTypeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        // Obtiene los tipos de identificaciones disponibles
+        $accounts = AccountType::all(['id', 'name']); // Solo los campos necesarios
+
+        // Retorna los tipos de identificaciones en formato JSON
+        return response()->json($accounts);
     }
 
     /**

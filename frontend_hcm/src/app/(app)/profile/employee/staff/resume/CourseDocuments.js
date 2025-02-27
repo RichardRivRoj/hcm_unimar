@@ -266,14 +266,6 @@ const CourseDocuments = () => {
                     </div>
                 </Modal>
 
-                {/* Botón para abrir el modal */}
-                <div className="flex justify-end">
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="px-4 py-2 text-white bg-[#004b9a] rounded hover:bg-[#003a7a]">
-                        + Nuevo Registro de Curso
-                    </button>
-                </div>
             </div>
             {/* Modal para detalles del empleo */}
             <Modal
@@ -343,15 +335,24 @@ const CourseDocuments = () => {
                 )}
             </Modal>
 
-            {/* Contenido principal */}
+            {/* Encabezado */}
             <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Listado de Cursos</h2>
-                <button
-                    onClick={() => refresh(currentPage)}
-                    className="text-sm text-[#004b9a] hover:underline"
-                    disabled={loading}>
-                    {loading ? 'Actualizando...' : 'Actualizar'}
-                </button>
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="px-4 py-2 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7a]"
+                    >
+                        + Nuevo Curso
+                    </button>
+                    <button
+                        onClick={() => refresh(currentPage)}
+                        className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                        disabled={loading}
+                    >
+                        {loading ? 'Actualizando...' : '⟳ Actualizar'}
+                    </button>
+                </div>
             </div>
 
             {loading ? (
@@ -397,14 +398,14 @@ const CourseDocuments = () => {
             )}
 
             {/* Controles de paginación */}
-            <div className="flex justify-center gap-4 mt-4">
+            <div className="flex items-center justify-between mt-4">
                 <button
                     onClick={goToPrevPage}
                     disabled={currentPage === 1}
                     className="px-4 py-2 text-white bg-blue-500 rounded-lg disabled:opacity-50">
                     Anterior
                 </button>
-                <span className="text-gray-700">
+                <span className="text-sm text-gray-600">
                     Página {currentPage} de {totalPages}
                 </span>
                 <button

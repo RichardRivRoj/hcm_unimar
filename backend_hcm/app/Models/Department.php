@@ -13,6 +13,13 @@ class Department extends Model
         'name',
         'description',
         'code',
+        'mission',
+        'vision',
+        'responsibilities',
+        'objectives',
+        'contact_info',
+        'file_path',
+        'extra_data',
         'status_id'
     ];
 
