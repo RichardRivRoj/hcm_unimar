@@ -31,10 +31,10 @@ class ReferenceController extends BaseDocumentController
         }
 
         // Obtener la persona con relaciones necesarias
-        $person = $user->persons
+        $person = $user->person
             ->with([
                 'identificationtype',
-                'employee.department' // Carga el departamento actual
+                'employee.contract.department' // Carga el departamento actual
             ])->first();
 
         if (!$person) {
@@ -122,7 +122,7 @@ class ReferenceController extends BaseDocumentController
         ]);
 
         // Obtener la persona con relaciones necesarias
-        $person = $user->persons->with('employee.department')->first();
+        $person = $user->person->with('employee.contract.department')->first();
 
         if (!$person) {
             return response()->json(['error' => 'Persona no encontrada'], 404);
@@ -133,8 +133,8 @@ class ReferenceController extends BaseDocumentController
         try {
             // Obtener departamento actual (dentro de la transacción)
             $departmentName = 'Sin departamento';
-            if ($person->employee && $person->employee->department) {
-                $departmentName = $person->employee->department->description;
+            if ($person->employee && $person->employee->contract->department) {
+                $departmentName = $person->employee->contract->department->description;
             }
 
             // Establecer expiration_date a "now" si no se proporciona

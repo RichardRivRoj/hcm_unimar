@@ -12,7 +12,10 @@ const useAgendaResultShow = (id) => {
                 const response = await axios.get(`/api/agenda-results/${id}`);
                 setData(response.data.data);
             } catch (err) {
-                setError(err.response?.data?.message || 'Error al cargar los detalles');
+                setError(err.response?.data?.message ||
+                    error.response?.data?.errors?.end_date ||
+                    error.response?.data?.errors?.start_date || 
+                    'Error al cargar los detalles');
             } finally {
                 setLoading(false);
             }

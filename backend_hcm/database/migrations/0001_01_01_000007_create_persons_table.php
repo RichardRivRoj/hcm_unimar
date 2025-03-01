@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->date('birth_date')->nullable();
             $table->string('phone', 20)->nullable();
-            $table->string('file_path', 220);
+            $table->string('file_path', 220)->nullable();
+            $table->string('cv_path', 220)->nullable();
             $table->text('summary');
             $table->string('identification_value', 50)->unique();
             // Claves foraneas

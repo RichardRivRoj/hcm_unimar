@@ -35,6 +35,21 @@ Route::get('/photos/{filename}', function ($filename) {
     return Response::make($file, 200)->header('Content-Type', $type);
 })->name('photo.show');
 
+Route::get('/pdf/{filename}', function ($filename) {
+    $path = storage_path('app/private/public/pdf/' . $filename);
+
+    if (!file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'attachment; filename="'.$filename.'"'
+    ]);
+
+    return Response::make($file, 200)->header('Content-Type', $type);
+})->name('pdf.download');
+
 
 // Habilitar las rutas de autenticación de Laravel
 // Ruta para mostrar el formulario de restablecimiento de contraseña

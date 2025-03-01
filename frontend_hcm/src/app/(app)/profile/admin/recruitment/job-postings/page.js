@@ -52,7 +52,6 @@ const JobListPage = () => {
     const [formState, setFormState] = useState({
         position_id: '',
         department_id: '',
-        title: '',
         description: '',
         requirements: [],
         responsability: [],
@@ -104,8 +103,7 @@ const JobListPage = () => {
         if (
             !formState.position_id ||
             !formState.department_id ||
-            !formState.mode_id ||
-            !formState.title
+            !formState.mode_id 
         ) {
             alert('Complete todos los campos obligatorios (*)')
             return
@@ -124,7 +122,6 @@ const JobListPage = () => {
             setFormState({
                 position_id: '',
                 department_id: '',
-                title: '',
                 description: '',
                 requirements: [],
                 responsability: [],
@@ -144,7 +141,6 @@ const JobListPage = () => {
     const isFormValid =
         formState.position_id &&
         formState.department_id &&
-        formState.title &&
         formState.mode_id
 
     if (loading)
@@ -252,7 +248,8 @@ const JobListPage = () => {
                                 key={vacancy.id}
                                 className="border-b hover:bg-blue-50">
                                 <td className="px-6 py-2 text-sm">
-                                    {vacancy.title}
+                                    {vacancy.position?.description}{' - '}
+                                    {vacancy.department?.name}
                                 </td>
                                 <td className="px-6 py-2 text-sm">
                                     {vacancy.department?.name}
@@ -361,19 +358,6 @@ const JobListPage = () => {
                         )}
 
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* Título */}
-                            <div className="flex flex-col">
-                                <label className="text-sm font-medium text-gray-600">
-                                    Título *
-                                </label>
-                                <input
-                                    name="title"
-                                    value={formState.title}
-                                    onChange={handleChange}
-                                    required
-                                    className="p-4 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                />
-                            </div>
 
                             {/* Departamento */}
                             <div className="flex flex-col">

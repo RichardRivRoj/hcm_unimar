@@ -22,7 +22,11 @@ const useScheduleInterview = () => {
       setSuccess(true);
       return response.data;
     } catch (error) {
-      setError(error.response?.data?.error || "Error al agendar la entrevista.");
+      setError(
+        error.response?.data?.message || 
+        error.response?.data?.errors?.scheduled_date?.[0] || 
+        "Error al agendar la entrevista."
+      );
     } finally {
       setLoading(false);
     }

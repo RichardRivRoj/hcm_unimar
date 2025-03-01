@@ -29,7 +29,7 @@ class ReposeController extends Controller
         }
 
         // Obtener documentos de empleos directamente desde la relación
-        $documents = $user->persons->documents()
+        $documents = $user->person->documents()
             ->where('document_type_id', $this->documentType) // Usar número entero
             ->orderByDesc('issue_date')
             ->paginate(6);

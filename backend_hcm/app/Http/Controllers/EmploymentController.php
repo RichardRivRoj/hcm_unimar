@@ -33,7 +33,7 @@ class EmploymentController extends BaseDocumentController
         }
 
         // Obtener documentos de empleos directamente desde la relación
-        $documents = $user->persons->documents()
+        $documents = $user->person->documents()
             ->where('document_type_id', 1) // Usar número entero
             ->orderByDesc('issue_date')
             ->paginate(10);

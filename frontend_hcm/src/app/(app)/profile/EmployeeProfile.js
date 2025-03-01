@@ -1,29 +1,19 @@
-import React from 'react'
+'use client'
+
+import React, { useState } from 'react'
 import { Cake, IdCard, Captions, HeartHandshake, NotebookPen } from 'lucide-react'
+import DownloadCVButton from '@/components/DownloadCVButton'
+import ProfilePhotoEditor from '@/components/ProfilePhotoEditor'
 
 const EmployeeProfile = ({ user }) => {
     return (
         <div className="mb-8">
             {/* Encabezado */}
             <div className="flex items-center gap-6 mb-6 p-6 bg-[#004b9a] text-white rounded-lg shadow-lg">
-                <div className="flex-shrink-0 w-32 h-32">
-                    {user.person?.photo_url ? (
-                        <img
-                            src={user.person.photo_url}
-                            alt={`${user.person.first_name} ${user.person.last_name}`}
-                            className="object-cover w-32 h-32 border-4 border-white rounded-full shadow-lg"
-                        />
-                    ) : (
-                        <div className="flex items-center justify-center w-32 h-32 bg-gray-200 rounded-full">
-                            <svg
-                                className="w-16 h-16 text-gray-400"
-                                fill="currentColor"
-                                viewBox="0 0 24 24">
-                                <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112 15c3.183 0 6.135.946 8.546 2.564a3 3 0 013.454 3.429zM18 10a6 6 0 11-12 0 6 6 0 0112 0z" />
-                            </svg>
-                        </div>
-                    )}
-                </div>
+            <ProfilePhotoEditor 
+                user={user}
+                onUpdate={(updatedUser) => setUser(updatedUser)}
+            />
                 <div className="space-y-2">
                     <h1 className="text-3xl font-bold tracking-tight">
                         {user.person?.first_name} {user.person?.last_name}
@@ -202,6 +192,21 @@ const EmployeeProfile = ({ user }) => {
                                 {user.person?.marital_status}
                             </li>
                         </ul>
+                    </div>
+
+                    {/* CV */}
+                    <div className="p-6 bg-white rounded-lg shadow">
+                        <h2 className="flex items-center text-xl font-semibold mb-4 text-[#004b9a]">
+                            <svg
+                                className="w-5 h-5 mr-2"
+                                fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
+                                <path d="M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586z" />
+                            </svg>
+                            Descargar CV
+                        </h2>
+                        <DownloadCVButton resumeUrl={user.person.resume_url} />
                     </div>
                 </div>
 

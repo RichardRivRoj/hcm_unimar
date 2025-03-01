@@ -84,6 +84,13 @@ export default function DigitalFile() {
                             </h1>
                         </div>
 
+                        {selectedCategory === 'Contratos' ? (
+                            <ContractDocuments /> // Componente personalizado para Contratos
+                        ) : (
+                            // Contenido original para otras categorías
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+                        )}
+
                         {selectedCategory === 'Empleos' ? (
                             <EmploymentDocuments /> // Componente personalizado para empleos
                         ) : (
@@ -120,12 +127,6 @@ export default function DigitalFile() {
 
                         {selectedCategory === 'Identificaciones' ? (
                             <IdentificationDocuments /> // Componente personalizado para Cursos
-                        ) : (
-                            // Contenido original para otras categorías
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
-                        )}
-                        {selectedCategory === 'Contratos' ? (
-                            <ContractDocuments /> // Componente personalizado para Contratos
                         ) : (
                             // Contenido original para otras categorías
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>

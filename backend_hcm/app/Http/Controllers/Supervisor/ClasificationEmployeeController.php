@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 
 class ClasificationEmployeeController extends Controller
 {
@@ -40,44 +41,45 @@ class ClasificationEmployeeController extends Controller
         $search = $request->input('search');
         $position = $request->input('position');
 
-        // Consulta base con relaciones
         $query = Employee::with([
-                'persons.identificationtype',
-                'position',
-                'contract',
-                'persons.user'
-            ])
-            ->where('department_id', $department->id)
-            ->whereHas('contract', function($query) {
-                $query->where('status_id', 1);
-            });
-
-        // Aplicar filtros
+            'person.identificationtype',
+            'contract' => function($q) {
+                $q->with(['position', 'department']);
+            },
+            'person.user'
+        ])
+        ->whereHas('contract', function ($query) use ($department) {
+            // Filtrar por departamento a través del contrato
+            $query->where('department_id', $department->id)
+                  ->where('status_id', 1);
+        });
+        
+        // Aplicar filtros corregidos
         if ($search) {
-            $query->whereHas('persons', function($q) use ($search) {
+            $query->whereHas('person', function ($q) use ($search) {
                 $q->where('first_name', 'like', "%$search%")
-                  ->orWhere('last_name', 'like', "%$search%");
+                    ->orWhere('last_name', 'like', "%$search%");
             });
         }
-
+        
         if ($position) {
-            $query->whereHas('position', function($q) use ($position) {
+            $query->whereHas('contract.position', function ($q) use ($position) {
                 $q->where('description', 'like', "%$position%");
             });
         }
-
-        // Paginación y transformación de datos
-        $employees = $query->paginate(4)->through(function($employee) {
+        
+        // Transformación de datos corregida
+        $employees = $query->paginate(4)->through(function ($employee) {
             return [
                 'employe_id' => $employee->id,
-                'full_name' => $employee->persons->first_name . ' ' . $employee->persons->last_name,
-                'identification_type' => $employee->persons->identificationtype->code,
-                'identification_value' => $employee->persons->identification_value,
-                'position' => $employee->position->description,
-                'department' => $employee->department->name,
-                'email' => $employee->persons->user->email,
+                'full_name' => $employee->person->first_name . ' ' . $employee->person->last_name, // Cambiar persons por person
+                'identification_type' => $employee->person->identificationtype->code,
+                'identification_value' => $employee->person->identification_value,
+                'position' => $employee->contract->position->description,
+                'department' => $employee->contract->department->name,
+                'email' => $employee->person->user->email,
                 'status' => $employee->contract->status,
-                'contract_start' => $employee->contract->star_date,
+                'contract_start' => $employee->contract->start_date, // Corregir star_date por start_date
                 'contract_end' => $employee->contract->end_date ?? 'Indefinido'
             ];
         });
@@ -113,92 +115,131 @@ class ClasificationEmployeeController extends Controller
      */
     public function show(string $id)
     {
-        $employee = User::with([
-            'persons' => function($query) {
-                $query->with([
-                    'documents' => function($q) {
-                        $q->orderBy('issue_date', 'desc')->take(2);
-                    },
-                    'jobs' => function($q) {
-                        $q->orderBy('start_date', 'desc');
-                    },
-                    'studies' => function($q) {
-                        $q->orderBy('start_date', 'desc');
-                    },
-                    'courses' => function($q) {
-                        $q->orderBy('start_date', 'desc');
-                    },
-                    'languages',
-                    'competencies'
-                ]);
-            }
-        ])->findOrFail($id);
-    
-        // Transformamos los datos manualmente
-        $response = [
-            'id' => $employee->id,
-            'email' => $employee->email,
-            'person' => [
-                'first_name' => $employee->persons->first_name,
-                'last_name' => $employee->persons->last_name,
-                'identification_type' => $employee->persons->identification_type,
-                'identification_value' => $employee->persons->identification_value,
-                'birth_date' => $employee->persons->birth_date,
-                'gender' => $employee->persons->gender,
-                'phone' => $employee->persons->phone,
-                'country' => $employee->persons->country,
-                'photo_url' => $employee->persons->photo_url,
-                'documents' => $employee->persons->documents->map(function($document) {
-                    return [
-                        'type' => $document->type,
-                        'issue_date' => $document->issue_date,
-                        'file_url' => $document->file_url
-                    ];
-                }),
-                'jobs' => $employee->persons->jobs->map(function($job) {
-                    return [
-                        'position' => $job->position,
-                        'company' => $job->company,
-                        'location' => $job->location,
-                        'start_date' => $job->start_date,
-                        'end_date' => $job->end_date,
-                        'responsibilities' => $job->responsibilities
-                    ];
-                }),
-                'studies' => $employee->persons->studies->map(function($study) {
-                    return [
-                        'institution' => $study->institution,
-                        'degree' => $study->degree,
-                        'start_date' => $study->start_date,
-                        'end_date' => $study->end_date
-                    ];
-                }),
-                'courses' => $employee->persons->courses->map(function($course) {
-                    return [
-                        'name' => $course->name,
-                        'institution' => $course->institution,
-                        'hours' => $course->hours,
-                        'start_date' => $course->start_date,
-                        'end_date' => $course->end_date
-                    ];
-                }),
-                'languages' => $employee->person->languages->map(function($language) {
-                    return [
-                        'name' => $language->name,
-                        'level' => $language->level
-                    ];
-                }),
-                'competencies' => $employee->person->competencies->map(function($competency) {
-                    return [
-                        'name' => $competency->name,
-                        'level' => $competency->level
-                    ];
-                })
-            ]
-        ];
-    
+        // Obtener el empleado por ID
+        $employee = Employee::find($id);
+
+        if (!$employee) {
+            return response()->json(['error' => 'Empleado no encontrado'], 404);
+        }
+
+        // Obtener la información de la persona relacionada con el empleado
+        $person = $employee->persons;
+
+        $user = $person->user;
+
+        // Obtener los documentos de la persona
+        $documents = $person ? $person->documents : collect();
+
+        // Filtrar y obtener los dos documentos más recientes de cada tipo
+        $recentJobs = $documents->where('document_type_id', '1')
+            ->sortByDesc('issue_date')
+            ->take(2)
+            ->map(function ($doc) {
+                $metadata = json_decode($doc->metadata, true);
+                return [
+                    'document_name' => $doc->document_name,
+                    'company_name' => $metadata['company_name'] ?? 'No especificado',
+                    'position' => $metadata['position'] ?? 'No especificado',
+                    'responsibilities' => $metadata['responsibilities'] ?? 'No especificado',
+                    'issue_date' => $doc->issue_date,
+                    'expiration_date' => $doc->expiration_date,
+                ];
+            });
+
+        $recentStudies = $documents->where('document_type_id', '2')
+            ->sortByDesc('issue_date')
+            ->take(2)
+            ->map(function ($doc) {
+                $metadata = json_decode($doc->metadata, true);
+                return [
+                    'document_name' => $doc->document_name,
+                    'institution' => $metadata['institution'] ?? 'No especificado',
+                    'degree' => $metadata['degree'] ?? 'No especificado',
+                    'issue_date' => $doc->issue_date,
+                    'expiration_date' => $doc->expiration_date,
+                ];
+            });
+
+        $recentCourses = $documents->where('document_type_id', '3')
+            ->sortByDesc('issue_date')
+            ->take(2)
+            ->map(function ($doc) {
+                $metadata = json_decode($doc->metadata, true);
+                return [
+                    'document_name' => $doc->document_name,
+                    'institution' => $metadata['institution'] ?? 'No especificado',
+                    'hours' => $metadata['hours'] ?? 'No especificado',
+                    'instructor' => $metadata['instructor'] ?? 'No especificado',
+                    'issue_date' => $doc->issue_date,
+                    'expiration_date' => $doc->expiration_date,
+                ];
+            });
+
+        // Competencias e idiomas
+        $competencies = $documents->where('document_type_id', 10)
+            ->map(function ($doc) {
+                $detail = json_decode($doc->detail, true);
+                return [
+                    'document_name' => $doc->document_name,
+                    'skills' => $detail ?? ['No especificado']
+                ];
+            });
+
+        $languages = $documents->where('document_type_id', 9)
+            ->map(function ($doc) {
+                $detail = json_decode($doc->detail, true);
+                return [
+                    'document_name' => $doc->document_name,
+                    'level' => $detail['level'] ?? 'No especificado'
+                ];
+            });
+
+        // Obtener la información del departamento del empleado
+        $department = $employee->department;
+
         return response()->json([
-            'employee' => $response
+            'employee_id' => $employee->id,
+            'department_id' => $employee->department_id,
+            'person_id' => $employee->person_id,
+            'person' => $person ? [
+                'first_name' => $person->first_name,
+                'last_name' => $person->last_name,
+                'email' => $person->email,
+                'birth_date' => $person->birth_date,
+                'phone' => $person->phone,
+                'identification_value' => $person->identification_value,
+                'identification_type' => $person->identificationtype ? $person->identificationtype->code : null,
+                'gender' => $person->gender ? $person->gender->name : null,
+                'ethnicity' => $person->ethnicity ? $person->ethnicity->name : null,
+                'marital_status' => $person->maritalstatus ? $person->maritalstatus->name : null,
+                'country' => $person->country ? $person->country->name : null,
+                'status' => $person->status ? $person->status->name : null,
+                'summary' => $person->summary,
+                'photo_url' => $person->file_path
+                    ? URL::to('/photos/' . basename($person->file_path))
+                    : null,
+                'competencies' => $competencies->isEmpty() ? 'No hay competencias registradas' : $competencies,
+                'languages' => $languages->isEmpty() ? 'No hay idiomas registrados' : $languages,
+                'recent_jobs' => $recentJobs->isEmpty() ? 'No hay información de empleos' : $recentJobs,
+                'recent_studies' => $recentStudies->isEmpty() ? 'No hay información de estudios' : $recentStudies,
+                'recent_courses' => $recentCourses->isEmpty() ? 'No hay información de cursos' : $recentCourses,
+            ] : null,
+            'user' => $user ? [
+                'email_user' => $user->email ?? 'No hay información',
+            ] : null,
+            'department' => $department ? [
+                'name' => $department->name,
+                'description' => $department->description,
+                'code' => $department->code,
+                'mission' => $department->mission,
+                'vision' => $department->vision,
+                'responsibilities' => json_decode($department->responsibilities, true),
+                'objectives' => json_decode($department->objectives, true),
+                'contact_info' => $department->contact_info,
+                'file_path' => $department->file_path,
+                'extra_data' => json_decode($department->extra_data, true),
+                'status' => $department->status ? $department->status->name : null,
+            ] : null,
         ]);
     }
 

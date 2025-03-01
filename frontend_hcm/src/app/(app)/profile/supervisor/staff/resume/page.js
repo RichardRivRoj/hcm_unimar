@@ -59,7 +59,7 @@ const DepartmentEmployeesList = () => {
                 color: 'text-blue-600',
                 handler: item =>
                     router.push(
-                        `/profile/supervisor/staff/resume/inspect/${item.id}`,
+                        `/profile/supervisor/staff/resume/inspect/${item.employe_id || 'unknown'}`,
                     ),
             },
         ],
@@ -93,7 +93,7 @@ const DepartmentEmployeesList = () => {
     return (
         <div className="static min-h-screen">
             {/* Filtro de búsqueda */}
-            <div className="max-w-full p-6 mx-auto mt-6 overflow-hidden bg-white rounded-lg shadow-lg">
+            <div className="max-w-full p-6 mx-auto mt-6 ml-6 overflow-hidden bg-white rounded-lg shadow-lg">
                 <Input
                     type="text"
                     placeholder="Buscar por nombre..."
@@ -104,7 +104,7 @@ const DepartmentEmployeesList = () => {
                             search: e.target.value,
                         }))
                     }
-                    className="w-full p-3 border-b-2 focus:border-blue-500"
+                    className="w-full border-b-2 focus:border-blue-500"
                 />
             </div>
 

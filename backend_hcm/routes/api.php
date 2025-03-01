@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\FileEmployeeController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\AgendaResultController;
 use App\Http\Controllers\BankEmployeeController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\CountryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DiplomaController;
+use App\Http\Controllers\Employee\NewPhotoController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmploymentController;
 use App\Http\Controllers\EmploymentTypeController;
@@ -179,6 +181,31 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::prefix('departments')->group(function () {
             
             Route::get('employees', [ClasificationEmployeeController::class, 'index'])->name('supervisor.departments.employees.index');
+            Route::get('employees/{id}', [ClasificationEmployeeController::class, 'show'])->name('supervisor.departments.employees.show');
+        });
+    });
+
+});
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::prefix('admin')->group(function () {
+    
+        Route::prefix('departments')->group(function () {
+            
+            Route::get('employees', [FileEmployeeController::class, 'index'])->name('admin.departments.employees.index');
+            Route::get('employees/{id}', [FileEmployeeController::class, 'show'])->name('admin.departments.employees.show');
+        });
+    });
+
+});
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::prefix('employees')->group(function () {
+    
+        Route::prefix('profile')->group(function () {
+            
+            Route::post('photo/{id}', [NewPhotoController::class, 'update'])->name('photo.update');
+            Route::delete('photo/{id}', [NewPhotoController::class, 'destroy'])->name('photo.destroy');
         });
     });
 

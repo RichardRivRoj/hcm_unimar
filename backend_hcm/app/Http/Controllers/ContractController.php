@@ -21,13 +21,14 @@ class ContractController extends Controller
         }
 
         // Corregir la relación (de persons a person) y relaciones anidadas
-        $person = $user->persons->with([
-            'employee.department',
+        $person = $user->person->with([
+            'employee',
             'identificationtype',
             'country',
-            'employee.position.level.salary', // Corregido de positions a position
-            'contracts.contractType',
-            'contracts.employmentType'
+            'employee.contract.contractType',
+            'employee.contract.employmentType',
+            'employee.contract.department',
+            'employee.contract.position',
         ])->first();
 
         if (!$person || !$person->employee) {
@@ -35,7 +36,10 @@ class ContractController extends Controller
         }
 
         // Acceso seguro a relaciones anidadas
-        $position = $person->employee->position;
+        $employee = $person->employee;
+        $contract = $employee->contract;
+        $position = $contract->position;
+        $department = $contract->department;
         $level = $position->level ?? null;
         $salary = $level->salary->first() ?? null;
 
@@ -48,7 +52,7 @@ class ContractController extends Controller
             'personal_info' => [
                 'full_name' => $person->first_name . ' ' . $person->last_name,
                 'position' => $position->description ?? 'No especificado',
-                'department' => $person->employee->department->name ?? 'Sin departamento',
+                'department' => $department->name ?? 'Sin departamento',
                 'identification' => $person->identificationtype->code . '-'. $person->identification_value ?? 'Sin documento',
                 'country' => $person->country->long_name,
             ],

@@ -32,7 +32,7 @@ class CandidateController extends Controller
         // Consulta base con relaciones y columnas explícitas
         $query = Candidate::with([
             'persons',
-            'vacancy',
+            'vacancy.position',
             'status_application',
         ])->select('candidates.*'); // Seleccionar solo las columnas de candidates
 
@@ -81,6 +81,7 @@ class CandidateController extends Controller
                 'email' => 'required|email|unique:persons,email',
                 'phone' => 'required|max:200',
                 'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+                'resume' => 'required|mimes:pdf',
                 'identification_value' => 'required|unique:persons,identification_value',
                 'vacancy_id' => 'required|exists:vacancies,id',
                 'ethnicity_id' => 'nullable|exists:ethnicities,id',
@@ -107,6 +108,10 @@ class CandidateController extends Controller
             $photoPath = $request->file('photo')->store('public/photos');
             $photoUrl = FacadesStorage::url($photoPath);
 
+            // Subir la foto
+            $resumePath = $request->file('resume')->store('public/pdf');
+            $resumeUrl = FacadesStorage::url($resumePath);
+
             // Crear Persona
             $person = Person::create([
                 'first_name' => $request->first_name,
@@ -115,6 +120,7 @@ class CandidateController extends Controller
                 'birth_date' => $request->birth_date,
                 'phone' => $request->phone,
                 'file_path' => $photoUrl,
+                'cv_path' => $resumeUrl,
                 'summary' => $request->summary,
                 'identification_value' => $request->identification_value,
                 'identification_type_id' => $request->identification_type_id,
@@ -144,6 +150,7 @@ class CandidateController extends Controller
             return response()->json([
                 'success' => true,
                 'photo_url' => asset($photoUrl),
+                'resume_url' => asset($resumeUrl),
                 'data' => [
                     'person' => $person,
                     'candidate' => $candidate,
@@ -255,7 +262,6 @@ class CandidateController extends Controller
     public function show($candidateId)
     {
         try {
-            // Buscar el candidato por su ID
             $candidate = Candidate::with([
                 'persons.identificationtype',
                 'persons.ethnicity',
@@ -263,57 +269,54 @@ class CandidateController extends Controller
                 'persons.gender',
                 'persons.country',
                 'persons.status',
-                'persons.documents.documenttype',
+                'persons.documents' => function ($query) {
+                    $query->orderBy('created_at', 'desc')
+                        ->with('documenttype');
+                },
                 'vacancy',
                 'status_application'
-            ])->findOrFail($candidateId); // Usar findOrFail en lugar de where
+            ])->findOrFail($candidateId);
 
-            // Obtener las relaciones individuales para una mejor estructuración
             $person = $candidate->persons;
-            $documents = $person->documents ?? [];
-            $identificationType = $person->identificationtype;
-            $ethnicity = $person->ethnicity;
-            $maritalStatus = $person->maritalstatus;
-            $gender = $person->gender;
-            $country = $person->country;
-            $status = $person->status;
+            $documents = $person->documents ?? collect();
 
-            // Verificar si existe 'person' antes de acceder a sus propiedades
-            if ($candidate->persons) {
-                // Generar URL de la foto solo si existe file_path
-                $candidate->persons->photo_url = $candidate->persons->file_path
-                    ? route('photo.show', ['filename' => basename($candidate->persons->file_path)])
-                    : null;
-            } else {
-                // Si no hay persona asociada, establecer photo_url como null
-                $candidate->person = (object) ['photo_url' => null];
-            }
+            // Obtener los 3 documentos más recientes por tipo
+            $filteredDocuments = $documents->groupBy('document_type_id')
+                ->map(function ($group) {
+                    return $group->take(3);
+                })->flatten();
 
-            // Construir la respuesta JSON
+            // Generar URLs para foto y CV
+            $photoUrl = $person->file_path
+                ? route('photo.show', ['filename' => basename($person->file_path)])
+                : null;
+
+            $resumeUrl = $person->cv_path
+                ? route('pdf.download', ['filename' => basename($person->cv_path)])
+                : null;
+
+            // Construir la respuesta
             return response()->json([
                 'candidate_id' => $candidate->id,
                 'person_id' => $candidate->person_id,
                 'status_application' => $candidate->status_application,
                 'vacancy' => $candidate->vacancy,
-                'person' => $person,
-                'documents' => $documents,
-                'identification_type' => $identificationType,
-                'ethnicity' => $ethnicity,
-                'marital_status' => $maritalStatus,
-                'gender' => $gender,
-                'country' => $country,
-                'status' => $status
+                'person' => array_merge($person->toArray(), [
+                    'photo_url' => $photoUrl,
+                    'resume_url' => $resumeUrl
+                ]),
+                'documents' => $filteredDocuments,
+                'identification_type' => $person->identificationtype,
+                'ethnicity' => $person->ethnicity,
+                'marital_status' => $person->maritalstatus,
+                'gender' => $person->gender,
+                'country' => $person->country,
+                'status' => $person->status
             ]);
         } catch (ModelNotFoundException $e) {
-            // Manejar error si el candidato no existe
-            return response()->json([
-                'error' => 'Candidato no encontrado'
-            ], 404);
+            return response()->json(['error' => 'Candidato no encontrado'], 404);
         } catch (\Exception $e) {
-            // Manejar otros errores
-            return response()->json([
-                'error' => 'Error al obtener la información del candidato'
-            ], 500);
+            return response()->json(['error' => 'Error al obtener la información'], 500);
         }
     }
 

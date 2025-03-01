@@ -11,7 +11,7 @@ import useGenders from '@/hooks/gendersView'
 import useEthnicities from '@/hooks/ethnicitiesView'
 import useMaritalStatuses from '@/hooks/maritalStatusesView'
 import useCountries from '@/hooks/countryView'
-import { PencilIcon } from 'lucide-react'
+import { FileText, PencilIcon } from 'lucide-react'
 
 const JobDetails = ({ params }) => {
     const router = useRouter()
@@ -62,7 +62,6 @@ const JobDetails = ({ params }) => {
         }
     }, [candidateResponse])
 
-
     // Estado para almacenar los datos del formulario
     const [formData, setFormData] = useState({
         first_name: '',
@@ -78,16 +77,19 @@ const JobDetails = ({ params }) => {
         countries_id: '',
         birth_date: '',
         photo: null,
+        resume: null,
         summary: '',
         documents: {
             jobs: [],
             studies: [],
             courses: [],
             competencies: [],
-            languages: [{
-                name: '',
-                detail: { level: '' }
-            }]
+            languages: [
+                {
+                    name: '',
+                    detail: { level: '' },
+                },
+            ],
         },
     })
 
@@ -211,16 +213,19 @@ const JobDetails = ({ params }) => {
             countries_id: '',
             birth_date: '',
             photo: null,
+            resume: null,
             summary: '',
             documents: {
                 jobs: [],
                 studies: [],
                 courses: [],
                 competencies: [],
-                languages: [{
-                    name: '',
-                    detail: { level: '' }
-                }]
+                languages: [
+                    {
+                        name: '',
+                        detail: { level: '' },
+                    },
+                ],
             },
         })
     }
@@ -293,7 +298,9 @@ const JobDetails = ({ params }) => {
                     {/* Encabezado y detalles de la vacante */}
                     <div className="space-y-4">
                         <h1 className="text-3xl font-bold text-gray-900">
-                            {vacancy.title}
+                            {vacancy.position?.description}
+                            {' - '}
+                            {vacancy.department?.name}
                         </h1>
                         <p className="text-base text-gray-600">
                             {vacancy.description}
@@ -803,6 +810,125 @@ const JobDetails = ({ params }) => {
                                                             {errorPhoto}
                                                         </p>
                                                     )}
+                                                </div>
+
+                                                <div className="space-y-4">
+                                                    <label className="block text-sm font-medium text-gray-700">
+                                                        Curriculum Vitae (PDF) *
+                                                    </label>
+
+                                                    <div
+                                                        className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg 
+            ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'} 
+            transition-colors duration-200 cursor-pointer`}
+                                                        onDragOver={e => {
+                                                            e.preventDefault()
+                                                            setDragActive(true)
+                                                        }}
+                                                        onDragLeave={() =>
+                                                            setDragActive(false)
+                                                        }
+                                                        onDrop={e => {
+                                                            e.preventDefault()
+                                                            setDragActive(false)
+                                                            const file =
+                                                                e.dataTransfer
+                                                                    .files[0]
+                                                            if (
+                                                                file?.type ===
+                                                                'application/pdf'
+                                                            ) {
+                                                                setFormData(
+                                                                    prev => ({
+                                                                        ...prev,
+                                                                        resume: file,
+                                                                    }),
+                                                                )
+                                                            }
+                                                        }}
+                                                        onClick={() =>
+                                                            document
+                                                                .getElementById(
+                                                                    'resumeInput',
+                                                                )
+                                                                .click()
+                                                        }>
+                                                        {formData.resume ? (
+                                                            <div className="text-center">
+                                                                <FileText className="w-12 h-12 mx-auto text-blue-600" />
+                                                                <p className="mt-2 text-sm font-medium text-gray-900">
+                                                                    {
+                                                                        formData
+                                                                            .resume
+                                                                            .name
+                                                                    }
+                                                                </p>
+                                                                <p className="text-xs text-gray-500">
+                                                                    Haz clic
+                                                                    para cambiar
+                                                                    el archivo
+                                                                </p>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <svg
+                                                                    className="w-12 h-12 mb-2 text-gray-400"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24">
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth="2"
+                                                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                                    />
+                                                                </svg>
+                                                                <div className="text-center">
+                                                                    <p className="text-sm text-gray-600">
+                                                                        <span className="font-semibold text-blue-600">
+                                                                            Haz
+                                                                            clic
+                                                                            para
+                                                                            subir
+                                                                        </span>{' '}
+                                                                        o
+                                                                        arrastra
+                                                                        aquí
+                                                                    </p>
+                                                                    <p className="text-xs text-gray-500">
+                                                                        Formato
+                                                                        requerido:
+                                                                        PDF
+                                                                    </p>
+                                                                </div>
+                                                            </>
+                                                        )}
+
+                                                        <input
+                                                            id="resumeInput"
+                                                            type="file"
+                                                            name="resume"
+                                                            onChange={e => {
+                                                                const file =
+                                                                    e.target
+                                                                        .files[0]
+                                                                if (
+                                                                    file?.type ===
+                                                                    'application/pdf'
+                                                                ) {
+                                                                    setFormData(
+                                                                        prev => ({
+                                                                            ...prev,
+                                                                            resume: file,
+                                                                        }),
+                                                                    )
+                                                                }
+                                                            }}
+                                                            accept=".pdf"
+                                                            className="hidden"
+                                                            required
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

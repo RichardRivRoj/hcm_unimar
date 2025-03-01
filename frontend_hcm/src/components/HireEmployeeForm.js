@@ -2,9 +2,10 @@ import { useState } from 'react'
 import useHireEmployee from '@/hooks/useHireEmployee'
 import useEmploymentTypes from '@/hooks/employmentTypesView'
 import useContractTypes from '@/hooks/contractTypesView'
+import { Alert, AlertDescription } from './alert'
 
 const HireEmployeeForm = ({ candidateId, onSuccess }) => {
-    const { hireEmployee, loading, error, success } = useHireEmployee()
+    const { hireEmployee, loading, error, validationErrors, success } = useHireEmployee()
     const {
         employment,
         loading: loadingEmployment,
@@ -22,7 +23,6 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
         end_date: '',
         contract_type_id: '',
         employment_type_id: '',
-        half: 1, // 1 = tiempo completo por defecto
         email: '',
     })
 
@@ -48,6 +48,17 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+                <Alert>
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
+            )}
+
+            {success && (
+                <div className="text-sm text-green-500">
+                    Candidato contratado exitosamente.
+                </div>
+            )}
             <div>
                 <label
                     htmlFor="start_date"
@@ -63,6 +74,9 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
                     required
                     className="block w-full p-2 mt-1 border border-gray-300 rounded-md"
                 />
+                {validationErrors.start_date && (
+                    <p className="text-sm text-red-600">{validationErrors.start_date[0]}</p>
+                )}
             </div>
 
             <div>
@@ -79,6 +93,9 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
                     onChange={handleChange}
                     className="block w-full p-2 mt-1 border border-gray-300 rounded-md"
                 />
+                {validationErrors.end_date && (
+                    <p className="text-sm text-red-600">{validationErrors.end_date[0]}</p>
+                )}
             </div>
 
             <div>
@@ -140,9 +157,10 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
                     required
                     className="block w-full p-2 mt-1 border border-gray-300 rounded-md"
                 />
+                {validationErrors.email && (
+                    <p className="text-sm text-red-600">{validationErrors.email[0]}</p>
+                )}
             </div>
-
-            {error && <div className="text-sm text-red-500">{error}</div>}
 
             <button
                 type="submit"
@@ -151,11 +169,7 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
                 {loading ? 'Contratando...' : 'Contratar'}
             </button>
 
-            {success && (
-                <div className="text-sm text-green-500">
-                    Candidato contratado exitosamente.
-                </div>
-            )}
+            
         </form>
     )
 }

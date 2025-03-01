@@ -8,6 +8,8 @@ import DetailCard from '@/components/DetailCard'
 import Modal from '@/components/Modal'
 import useScheduleInterview from '@/hooks/useScheduleInterview'
 import useTypeAgendas from '@/hooks/typeAgendasView'
+import DownloadCVButton from '@/components/DownloadCVButton'
+import { Alert, AlertDescription } from '@/components/alert'
 
 const CandidateDetails = ({ params }) => {
     const router = useRouter()
@@ -85,7 +87,11 @@ const CandidateDetails = ({ params }) => {
     }
 
     const handleChange = e => {
-        setFormData({ ...formData, [e.target.name]: e.target.value })
+        const { name, value } = e.target
+        setFormData(prev => ({
+            ...prev,
+            [name]: value,
+        }))
     }
 
     const handleStatusChange = async status => {
@@ -108,11 +114,29 @@ const CandidateDetails = ({ params }) => {
 
     const handleSubmit = async e => {
         e.preventDefault()
-        await scheduleInterview({ ...formData, candidate_id: id, status_id: 1 })
-        if (success) {
-            setTimeout(() => {
-                closeModal
-            }, 1000)
+
+        try {
+            // Realizar la solicitud para agendar la entrevista
+            await scheduleInterview({
+                ...formData,
+                candidate_id: id,
+                status_id: 1,
+            })
+
+            // Si es exitoso, cerrar el modal y refrescar la página
+            if (successInterview) {
+                setTimeout(() => {
+                    closeModal() // Cerrar el modal
+                    window.location.reload() // Refrescar la página
+                }, 1000)
+            }
+        } catch (error) {
+            // Mostrar mensajes de error si la solicitud falla
+            console.error('Error al agendar la entrevista:', error)
+            alert(
+                errorInterview ||
+                    'Hubo un error al agendar la entrevista. Inténtalo de nuevo.',
+            )
         }
     }
 
@@ -434,6 +458,7 @@ const CandidateDetails = ({ params }) => {
                                                                                         {translateMetadataKey(
                                                                                             key,
                                                                                         )}
+
                                                                                         :
                                                                                     </span>
                                                                                     <ul className="pl-5 list-[circle]">
@@ -466,6 +491,7 @@ const CandidateDetails = ({ params }) => {
                                                                                         {translateMetadataKey(
                                                                                             key,
                                                                                         )}
+
                                                                                         :
                                                                                     </span>{' '}
                                                                                     {value ||
@@ -514,32 +540,42 @@ const CandidateDetails = ({ params }) => {
                     </div>
                 </div>
 
-                {/* Botón de Agendar Entrevista (solo si es Aceptado) */}
-                {(candidate.status_application.name === 'Aceptado' ||
-                    candidate.status_application.name === 'En Progreso') && (
-                    <div className="flex gap-4">
-                        <button
-                            onClick={openModal}
-                            className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                            Agendar Eventos
-                        </button>
-                        <button
-                            onClick={() =>
-                                router.push(
-                                    `/profile/admin/recruitment/applications-re/agendas/${id}`,
-                                )
-                            }
-                            className="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700">
-                            Ver Eventos
-                        </button>
-                    </div>
-                )}
+                <div className="flex justify-end gap-4">
+                    <DownloadCVButton resumeUrl={candidate.person.resume_url} />
+
+                    {/* Botón de Agendar Entrevista (solo si es Aceptado) */}
+                    {(candidate.status_application.name === 'Aceptado' ||
+                        candidate.status_application.name ===
+                            'En Progreso') && (
+                        <div className="flex gap-4">
+                            <button
+                                onClick={openModal}
+                                className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                Agendar Eventos
+                            </button>
+                            <button
+                                onClick={() =>
+                                    router.push(
+                                        `/profile/admin/recruitment/applications-re/agendas/${id}`,
+                                    )
+                                }
+                                className="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700">
+                                Ver Eventos
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Modal para Agendar Entrevista */}
             <Modal isOpen={isModalOpen} onClose={closeModal}>
                 <h2 className="mb-6 text-2xl font-bold">Agendar Evento</h2>
-                {errorInterview && <p className="text-red-500">{error}</p>}
+                {/* Mostrar mensajes de error */}
+                {errorInterview && (
+                    <Alert>
+                        <AlertDescription>{errorInterview}</AlertDescription>
+                    </Alert>
+                )}
                 {successInterview && (
                     <p className="text-green-500">
                         ¡Entrevista agendada con éxito!
@@ -623,8 +659,11 @@ const CandidateDetails = ({ params }) => {
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                            Agendar
+                            disabled={loadingInterview}
+                            className="w-full p-2 text-white transition-colors bg-blue-500 rounded-md hover:bg-blue-600">
+                            {loadingInterview
+                                ? 'Agendando...'
+                                : 'Agendar Entrevista'}
                         </button>
                     </div>
                 </form>

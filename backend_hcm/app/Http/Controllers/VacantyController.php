@@ -66,7 +66,6 @@ class VacantyController extends Controller
             $validated = $request->validate([
                 'position_id' => 'required|exists:positions,id',
                 'department_id' => 'required|exists:departments,id',
-                'title' => 'required|max:100',
                 'description' => 'required|string',
                 'requirements' => 'required|json',
                 'responsability' => 'required|json',
@@ -78,7 +77,6 @@ class VacantyController extends Controller
             $vacancies = Vacancy::create([
                 'position_id' => $validated['position_id'],
                 'department_id' => $validated['department_id'],
-                'title' => $validated['title'],
                 'description' => $validated['description'],
                 'requirements' => $validated['requirements'],
                 'responsability' => $validated['responsability'],
@@ -130,7 +128,6 @@ class VacantyController extends Controller
         $validated = $request->validate([
             'position_id' => 'required|exists:positions,id',
             'department_id' => 'required|exists:departments,id',
-            'title' => 'required|string|max:100',
             'description' => 'required|string',
             'requirements' => 'required|json',
             'responsability' => 'required|json',
@@ -147,7 +144,6 @@ class VacantyController extends Controller
             $vacancy->update([
                 'position_id' => $validated['position_id'],
                 'department_id' => $validated['department_id'],
-                'title' => $validated['title'],
                 'description' => $validated['description'],
                 'requirements' => $validated['requirements'],
                 'responsability' => $validated['responsability'],

@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('position_id')->constrained('positions')->onDelete('cascade');
             $table->foreignId('department_id')->constrained('departments')->onDelete('cascade');
-            $table->string('title', 220);
             $table->text('description');
             $table->json('requirements');
             $table->json('responsability');

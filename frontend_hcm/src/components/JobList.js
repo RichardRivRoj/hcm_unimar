@@ -40,7 +40,8 @@ const JobList = () => {
                         key={job.id}
                         className="p-5 transition-shadow duration-300 bg-white border border-gray-200 shadow-lg rounded-2xl hover:shadow-xl">
                         <h2 className="text-xl font-semibold text-gray-900">
-                            {job.title}
+                        {job.position?.description}{' - '}
+                        {job.department?.name}
                         </h2>
                         <p className="mt-3 text-sm text-left text-gray-600">
                             {truncateDescription(job.description)}

@@ -22,7 +22,7 @@ class BankEmployeeController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        $person = $user->persons->with([
+        $person = $user->person->with([
             'bankAccounts.accountType',
             'bankAccounts.currency',
             'bankAccounts.status',

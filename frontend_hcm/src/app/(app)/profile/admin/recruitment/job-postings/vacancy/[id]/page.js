@@ -331,19 +331,7 @@ const VacancyDetails = ({ params }) => {
                 // Formulario de edición
                 <form onSubmit={handleUpdate} className="space-y-8">
                     <div className="grid gap-6 md:grid-cols-2">
-                        {/* Campo Título */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Título *
-                            </label>
-                            <input
-                                name="title"
-                                value={formState.title}
-                                onChange={handleChange}
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                required
-                            />
-                        </div>
+                        
 
                         {/* Campo Departamento */}
                         <div className="space-y-2">
@@ -515,7 +503,8 @@ const VacancyDetails = ({ params }) => {
                     {/* Encabezado */}
                     <div className="space-y-4">
                         <h1 className="text-3xl font-bold text-gray-900">
-                            {vacancy.title}
+                            {vacancy.position?.description}{' - '}
+                            {vacancy.department?.name}
                         </h1>
                         <p className="text-lg text-gray-600">
                             {vacancy.description}

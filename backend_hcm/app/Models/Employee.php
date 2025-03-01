@@ -11,23 +11,13 @@ class Employee extends Model
     use HasFactory;
 
     protected $fillable = [
-        'person_id', 'position_id', 'department_id',
+        'person_id', 
         'contract_id'
     ];
 
-    public function persons()
+    public function person()
     {
         return $this->belongsTo(Person::class, 'person_id');
-    }
-
-    public function position()
-    {
-        return $this->belongsTo(Position::class, 'position_id');
-    }
-
-    public function department()
-    {
-        return $this->belongsTo(Department::class, 'department_id');
     }
 
     public function contract()

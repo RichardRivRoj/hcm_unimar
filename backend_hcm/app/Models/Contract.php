@@ -14,6 +14,7 @@ class Contract extends Model
         'star_date', 'end_date',
         'payment_terms', 'notes',
         'file_path', 'contract_type_id',
+        'department_id', 'position_id',
         'employment_type_id', 'status_id',
     ];
 
@@ -22,7 +23,7 @@ class Contract extends Model
         return $this->belongsTo(ContractTypes::class, 'contract_type_id');
     }
 
-    public function employmenttype()
+    public function employmentType()
     {
         return $this->belongsTo(EmploymentTypes::class, 'employment_type_id');
     }
@@ -32,7 +33,19 @@ class Contract extends Model
         return $this->belongsTo(Status::class, 'status_id');
     }
 
-    public function employees(){
-        return $this->hasMany(Employee::class, 'contract_id'); 
+    public function position()
+    {
+        return $this->belongsTo(Position::class, 'position_id'); 
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
+
+    public function scopeActive($query)
+    {
+        return $query->where('status_id', 1); // Ajusta el ID según tu DB
     }
 }

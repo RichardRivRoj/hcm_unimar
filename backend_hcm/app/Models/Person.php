@@ -18,6 +18,7 @@ class Person extends Model
         'birth_date',
         'phone',
         'file_path',
+        'cv_path',
         'summary',
         'identification_value',
         'identification_type_id',

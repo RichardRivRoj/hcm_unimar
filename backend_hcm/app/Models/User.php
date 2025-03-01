@@ -53,7 +53,7 @@ class User extends Authenticatable implements CanResetPassword
         ];
     }
 
-    public function persons()
+    public function person()
     {
         return $this->belongsTo(Person::class, 'person_id');
     }

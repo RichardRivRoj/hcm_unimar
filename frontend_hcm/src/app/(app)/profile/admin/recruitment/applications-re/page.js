@@ -115,7 +115,7 @@ const CandidatesPage = () => {
                                 {candidate.persons.identification_value}
                             </td>
                             <td className="px-6 py-2 text-sm">
-                                {candidate.vacancy.title}
+                                {candidate.vacancy.position.description}
                             </td>
                             <td className="px-6 py-2 text-sm">
                                 {candidate.status_application.short_name}

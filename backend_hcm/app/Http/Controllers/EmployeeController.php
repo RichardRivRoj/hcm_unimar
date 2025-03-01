@@ -10,10 +10,12 @@ use App\Models\Contract;
 use App\Models\Employee;
 use App\Models\StatusApplication;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
@@ -47,13 +49,47 @@ class EmployeeController extends Controller
 
         try {
             // Validar los datos proporcionados por el administrador
-            $request->validate([
-                'start_date' => 'required|date',
-                'end_date' => 'nullable|date|after:start_date',
+            $validator = Validator::make($request->all(), [
+                'start_date' => [
+                    'required',
+                    'date',
+                    function ($attribute, $value, $fail) {
+                        if (Carbon::parse($value)->isPast()) {
+                            $fail('La fecha de inicio no puede ser anterior a la fecha actual.');
+                        }
+                    }
+                ],
+                'end_date' => [
+                    'nullable',
+                    'date',
+                    function ($attribute, $value, $fail) use ($request) {
+                        if ($value && Carbon::parse($value)->lte(Carbon::parse($request->start_date))) {
+                            $fail('La fecha de fin no puede ser igual o anterior a la fecha de inicio.');
+                        }
+                    }
+                ],
                 'contract_type_id' => 'required|exists:contract_types,id',
                 'employment_type_id' => 'required|exists:employment_types,id',
-                'email' => 'required|email|unique:users,email',
+                'email' => [
+                    'required',
+                    'email',
+                    'unique:users,email',
+                    function ($attribute, $value, $fail) {
+                        if (User::where('email', $value)->exists()) {
+                            $fail('El correo electrónico ya está registrado.');
+                        }
+                    }
+                ],
             ]);
+
+            // Si la validación falla, retornar errores
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
 
             // Obtener el candidato seleccionado
             $candidate = Candidate::with(['persons', 'vacancy'])->findOrFail($candidateId);
@@ -67,21 +103,21 @@ class EmployeeController extends Controller
             $contract = Contract::create([
                 'contract_number' => $contractNumber,
                 'description' => 'Contrato para nuevo empleado',
-                'star_date' => $request->start_date,
+                'start_date' => $request->start_date,
                 'end_date' => $request->end_date ?? null,
-                'payment_terms' => 'Mensual',
+                'payment_terms' => 'Quincenal',
                 'notes' => 'Contrato generado automáticamente al contratar al candidato.',
                 'file_path' => 'Imagen',
                 'contract_type_id' => $request->contract_type_id,
                 'employment_type_id' => $request->employment_type_id,
+                'position_id' => $candidate->vacancy->position_id,
+                'department_id' => $candidate->vacancy->department_id,
                 'status_id' => 1, // Estado por defecto
             ]);
 
             // Crear el empleado
             $employee = Employee::create([
                 'person_id' => $candidate->person_id,
-                'position_id' => $candidate->vacancy->position_id,
-                'department_id' => $candidate->vacancy->department_id,
                 'contract_id' => $contract->id,
             ]);
 

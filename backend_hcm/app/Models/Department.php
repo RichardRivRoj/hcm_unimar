@@ -47,4 +47,9 @@ class Department extends Model
     {
         return $this->belongsTo(Status::class, 'status_id');
     }
+
+    public function contract()
+    {
+        return $this->hasOne(Department::class, 'department_id');
+    }
 }

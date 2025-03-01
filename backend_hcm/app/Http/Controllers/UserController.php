@@ -104,6 +104,7 @@ class UserController extends Controller
             'roles' => $user->getRoleNames(), // Devuelve un array de roles
             'permissions' => $user->getAllPermissions()->pluck('name'), // Devuelve un array de permisos
             'person' => $person ? [
+                'id' => $person->id,
                 'first_name' => $person->first_name,
                 'last_name' => $person->last_name,
                 'email' => $person->email,
@@ -119,6 +120,9 @@ class UserController extends Controller
                 'summary' => $person->summary,
                 'photo_url' => $person->file_path
                     ? URL::to('/photos/' . basename($person->file_path))
+                    : null,
+                'resume_url' => $person->cv_path
+                    ? URL::to('/pdf/' . basename($person->cv_path))
                     : null,
                 'competencies' => $competencies->isEmpty() ? 'No hay competencias registradas' : $competencies,
                 'languages' => $languages->isEmpty() ? 'No hay idiomas registrados' : $languages,
