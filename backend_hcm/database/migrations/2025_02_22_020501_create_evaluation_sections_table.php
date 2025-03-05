@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->integer('max_score')->check('max_score <= 20');
-            $table->foreignId('evaluation_id')->constrained('performance_evaluations')->onDelete('cascade');
             $table->timestamps();
         });
     }

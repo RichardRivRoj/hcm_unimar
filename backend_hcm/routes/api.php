@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminRequestController;
 use App\Http\Controllers\Admin\FileEmployeeController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\AgendaResultController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\CountryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DiplomaController;
+use App\Http\Controllers\Employee\EmployeeRequestController;
 use App\Http\Controllers\Employee\NewPhotoController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmploymentController;
@@ -29,10 +31,12 @@ use App\Http\Controllers\ListBanksController;
 use App\Http\Controllers\ListCurrencyController;
 use App\Http\Controllers\MaritalStatusController;
 use App\Http\Controllers\ModalityController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\PublicVacancyController;
 use App\Http\Controllers\ReferenceController;
 use App\Http\Controllers\ReposeController;
+use App\Http\Controllers\RequestTypesController;
 use App\Http\Controllers\StatusApplicationController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\StudyController;
@@ -40,6 +44,7 @@ use App\Http\Controllers\Supervisor\ClasificationEmployeeController;
 use App\Http\Controllers\TypeAgendaController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VacantyController;
+use App\Models\Employee;
 use App\Models\MaritalStatus;
 use League\CommonMark\Reference\Reference;
 
@@ -55,6 +60,11 @@ Route::post('password/reset', [App\Http\Controllers\Auth\ResetPasswordController
 // Grupo de rutas para el Administrador (protegidas con autenticación)
 Route::middleware(['auth:sanctum'])->group(function () {
     // Rutas para Job Positions (Vacantes)
+
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('api.notifications.index');
+    });
+    
     Route::prefix('vacancies')->group(function () {
         Route::get('/', [VacantyController::class, 'index'])->name('api.vacancies.index'); // Listar todas las vacantes
         Route::post('/', [VacantyController::class, 'store'])->name('api.vacancies.store'); // Crear una vacante
@@ -172,6 +182,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         
         // ... otras rutas de documentos ...
     });
+
+    Route::prefix('list-requests')->group(function () {
+        Route::get('/', [RequestTypesController::class, 'index'])->name('api.list-requests.index');
+    });
     
 });
 
@@ -193,19 +207,33 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::prefix('departments')->group(function () {
             
             Route::get('employees', [FileEmployeeController::class, 'index'])->name('admin.departments.employees.index');
-            Route::get('employees/{id}', [FileEmployeeController::class, 'show'])->name('admin.departments.employees.show');
+            Route::get('employees/{employee}', [FileEmployeeController::class, 'show'])->name('admin.departments.employees.show');
+        });
+
+        Route::prefix('requests')->group(function () {
+            
+            Route::get('/', [AdminRequestController::class, 'index'])->name('admin.requests.index');
+            Route::get('/{id}', [AdminRequestController::class, 'show'])->name('admin.requests.show');
+            Route::put('/{id}', [AdminRequestController::class, 'update'])->name('admin.requests.update');
         });
     });
 
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::prefix('employees')->group(function () {
+    Route::prefix('employee')->group(function () {
     
         Route::prefix('profile')->group(function () {
-            
             Route::post('photo/{id}', [NewPhotoController::class, 'update'])->name('photo.update');
             Route::delete('photo/{id}', [NewPhotoController::class, 'destroy'])->name('photo.destroy');
+        });
+
+        Route::prefix('requests')->group(function () {
+            Route::get('/', [EmployeeRequestController::class, 'index'])->name('requests.index');
+            Route::post('/', [EmployeeRequestController::class, 'store'])->name('requests.store');
+            Route::delete('/{id}', [EmployeeRequestController::class, 'destroy'])->name('requests.destroy');
+            Route::put('/{id}', [EmployeeRequestController::class, 'update'])->name('requests.update');
+            Route::get('/{id}', [EmployeeRequestController::class, 'show'])->name('requests.show');
         });
     });
 

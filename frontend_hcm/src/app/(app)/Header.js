@@ -5,13 +5,82 @@ import { DropdownButton } from '@/components/DropdownLink'
 import { ResponsiveNavButton } from '@/components/ResponsiveNavLink'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/auth'
-import { useState } from 'react'
 import { Bell } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { formatDistanceToNow } from 'date-fns'
+import { es } from 'date-fns'
+import axios from '@/lib/axios'
+import Loader from '@/components/Loader'
 
 const Header = ({ user }) => {
     const { logout } = useAuth()
 
     const [openNotifications, setOpenNotifications] = useState(false)
+    const router = useRouter()
+    const [notifications, setNotifications] = useState([])
+    const [unreadCount, setUnreadCount] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [hasMorePages, setHasMorePages] = useState(true)
+    const [notificationsLoading, setNotificationsLoading] = useState(false)
+    const [notificationsError, setNotificationsError] = useState(null)
+
+    // Cargar notificaciones
+    const fetchNotifications = async (page = 1) => {
+        try {
+            setNotificationsLoading(true)
+            const response = await axios.get(`/api/notifications?page=${page}`)
+            
+            setNotifications(prev => page === 1 
+                ? response.data.data 
+                : [...prev, ...response.data.data]
+            )
+            setUnreadCount(response.data.unread_count)
+            setHasMorePages(response.data.meta.current_page < response.data.meta.last_page)
+            setCurrentPage(response.data.meta.current_page)
+        } catch (error) {
+            setNotificationsError(error.message)
+        } finally {
+            setNotificationsLoading(false)
+        }
+    }
+
+    // Marcar como leída
+    const markAsRead = async (notificationId) => {
+        try {
+            await axios.put(`/api/notifications/${notificationId}/read`)
+            setNotifications(prev => prev.map(n => 
+                n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n
+            ))
+            setUnreadCount(prev => prev - 1)
+        } catch (error) {
+            console.error('Error marking as read:', error)
+        }
+    }
+
+    // Manejar clic en notificación
+    const handleNotificationClick = (notification) => {
+        if (!notification.read_at) {
+            markAsRead(notification.id)
+        }
+        // Lógica adicional para redirección
+        if (notification.metadata?.request_id) {
+            router.push(`/requests/${notification.metadata.request_id}`)
+        }
+    }
+
+    // Cargar más notificaciones
+    const loadMoreNotifications = () => {
+        fetchNotifications(currentPage + 1)
+    }
+
+    useEffect(() => {
+        if (openNotifications) {
+            fetchNotifications()
+        }
+    }, [openNotifications])
+
+
 
     return (
         <header className="bg-white border-b border-gray-100">
@@ -125,6 +194,11 @@ const Header = ({ user }) => {
                     <div className="flex items-center justify-between p-4 border-b">
                         <h2 className="text-lg font-semibold text-gray-700">
                             Notificaciones
+                            {unreadCount > 0 && (
+                                <span className="px-2 py-1 ml-2 text-xs font-medium text-white bg-red-500 rounded-full">
+                                    {unreadCount}
+                                </span>
+                            )}
                         </h2>
                         <button
                             onClick={() => setOpenNotifications(false)}
@@ -132,33 +206,112 @@ const Header = ({ user }) => {
                             ✕
                         </button>
                     </div>
+
                     <div className="p-4 space-y-4">
-                        {/* Example notifications */}
-                        <div className="p-3 rounded-md shadow bg-gray-50">
-                            <p className="text-sm text-gray-600">
-                                🎉 Has recibido un nuevo mensaje.
-                            </p>
-                            <span className="text-xs text-gray-400">
-                                Hace 5 minutos
-                            </span>
-                        </div>
-                        <div className="p-3 rounded-md shadow bg-gray-50">
-                            <p className="text-sm text-gray-600">
-                                📢 Se ha actualizado el sistema.
-                            </p>
-                            <span className="text-xs text-gray-400">
-                                Hace 2 horas
-                            </span>
-                        </div>
-                        <div className="p-3 rounded-md shadow bg-gray-50">
-                            <p className="text-sm text-gray-600">
-                                ✅ Tu tarea ha sido aprobada.
-                            </p>
-                            <span className="text-xs text-gray-400">
-                                Hace 1 día
-                            </span>
-                        </div>
+                        {notificationsLoading ? (
+                            <div className="flex justify-center">
+                                <Loader className="w-6 h-6 animate-spin" />
+                            </div>
+                        ) : notificationsError ? (
+                            <div className="p-2 text-center text-red-500">
+                                Error cargando notificaciones
+                            </div>
+                        ) : notifications.length === 0 ? (
+                            <div className="p-2 text-center text-gray-500">
+                                No hay notificaciones nuevas
+                            </div>
+                        ) : (
+                            notifications.map(notification => (
+                                <div
+                                    key={notification.id}
+                                    className={`p-3 rounded-md shadow cursor-pointer transition-colors ${
+                                        !notification.read_at
+                                            ? 'bg-blue-50 border-l-4 border-blue-500'
+                                            : 'bg-gray-50'
+                                    }`}
+                                    onClick={() =>
+                                        handleNotificationClick(notification)
+                                    }>
+                                    <div className="flex items-start gap-2">
+                                        <div
+                                            className={`mt-1 w-2 h-2 rounded-full ${
+                                                !notification.read_at
+                                                    ? 'bg-blue-500'
+                                                    : 'bg-transparent'
+                                            }`}
+                                        />
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span
+                                                    className={`text-sm ${
+                                                        notification.type ===
+                                                        'success'
+                                                            ? 'text-green-600'
+                                                            : notification.type ===
+                                                                'warning'
+                                                              ? 'text-yellow-600'
+                                                              : notification.type ===
+                                                                  'danger'
+                                                                ? 'text-red-600'
+                                                                : 'text-gray-600'
+                                                    }`}>
+                                                    {notification.type ===
+                                                        'success' && '✅'}
+                                                    {notification.type ===
+                                                        'danger' && '❌'}
+                                                    {notification.type ===
+                                                        'warning' && '⚠️'}
+                                                </span>
+                                                <p className="text-sm font-medium text-gray-700">
+                                                    {notification.title}
+                                                </p>
+                                            </div>
+                                            <p className="text-sm text-gray-600">
+                                                {notification.message}
+                                            </p>
+                                            <div className="flex items-center justify-between mt-2">
+                                                <span className="text-xs text-gray-400">
+                                                    {formatDistanceToNow(
+                                                        new Date(
+                                                            notification.created_at,
+                                                        ),
+                                                        {
+                                                            addSuffix: true,
+                                                            locale: es,
+                                                        },
+                                                    )}
+                                                </span>
+                                                {notification.metadata
+                                                    ?.request_id && (
+                                                    <button
+                                                        className="text-xs text-blue-600 hover:underline"
+                                                        onClick={e => {
+                                                            e.stopPropagation()
+                                                            router.push(
+                                                                `/requests/${notification.metadata.request_id}`,
+                                                            )
+                                                        }}>
+                                                        Ver solicitud
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
+
+                    {hasMorePages && (
+                        <div className="p-4 border-t">
+                            <button
+                                onClick={loadMoreNotifications}
+                                className="w-full px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200"
+                                disabled={notificationsLoading}>
+                                Cargar más notificaciones
+                            </button>
+                        </div>
+                    )}
                 </aside>
             )}
 

@@ -99,8 +99,14 @@ class EmployeeController extends Controller
             $nextId = $lastContract ? $lastContract->id + 1 : 1; // Incrementar el ID o empezar desde 1
             $contractNumber = 'CON-' . str_pad($nextId, 4, '0', STR_PAD_LEFT); // Formatear a 4 dígitos
 
+
+            // Crear el empleado
+            $employee = Employee::create([
+                'person_id' => $candidate->person_id,
+            ]);
+
             // Crear un contrato con los datos proporcionados por el administrador
-            $contract = Contract::create([
+            Contract::create([
                 'contract_number' => $contractNumber,
                 'description' => 'Contrato para nuevo empleado',
                 'start_date' => $request->start_date,
@@ -112,14 +118,11 @@ class EmployeeController extends Controller
                 'employment_type_id' => $request->employment_type_id,
                 'position_id' => $candidate->vacancy->position_id,
                 'department_id' => $candidate->vacancy->department_id,
+                'employee_id' => $employee->id,
                 'status_id' => 1, // Estado por defecto
             ]);
 
-            // Crear el empleado
-            $employee = Employee::create([
-                'person_id' => $candidate->person_id,
-                'contract_id' => $contract->id,
-            ]);
+            
 
             // Crear un usuario para el empleado
             $password = Str::random(10); // Generar una contraseña aleatoria

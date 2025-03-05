@@ -18,7 +18,7 @@ class Level extends Model
         return $this->hasMany(Position::class, 'level_id');
     }
 
-    public function salary()
+    public function salaries()
     {
         return $this->hasMany(Salary::class, 'level_id');
     }

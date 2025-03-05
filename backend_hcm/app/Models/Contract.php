@@ -11,11 +11,12 @@ class Contract extends Model
 
     protected $fillable = [
         'contract_number', 'description',
-        'star_date', 'end_date',
+        'start_date', 'end_date',
         'payment_terms', 'notes',
         'file_path', 'contract_type_id',
         'department_id', 'position_id',
         'employment_type_id', 'status_id',
+        'employee_id'
     ];
 
     public function contractType()
@@ -41,6 +42,11 @@ class Contract extends Model
     public function department()
     {
         return $this->belongsTo(Department::class, 'department_id');
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 
 

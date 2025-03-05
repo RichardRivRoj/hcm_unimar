@@ -15,6 +15,18 @@ const useEmployeeFiles = (initialFilters = {}) => {
       }
     }
   });
+
+  // Estados para el detalle del empleado
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10
+  });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
@@ -26,6 +38,40 @@ const useEmployeeFiles = (initialFilters = {}) => {
     ...initialFilters
   });
 
+  // Función para obtener detalles del empleado con paginación
+  const fetchEmployeeDetails = async (id, category = 'Contratos', page = 1) => {
+    try {
+      setDetailLoading(true);
+      setDetailError(null);
+      
+      const response = await axios.get(
+        `/api/admin/departments/employees/${id}?category=${encodeURIComponent(category)}&page=${page}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+
+      setSelectedEmployee({
+        employee: response.data.employee,
+        documents: {
+          data: response.data.documents,
+          meta: response.data.meta
+        }
+      });
+      setPagination(
+        response.data.meta
+      );
+      
+    } catch (err) {
+      setDetailError(err.response?.data?.message || 'Error al cargar detalles del empleado');
+      setSelectedEmployee(null);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
   const fetchEmployees = async (page = 1) => {
     try {
       setLoading(true);
@@ -35,7 +81,6 @@ const useEmployeeFiles = (initialFilters = {}) => {
         ...filters
       };
   
-      // Eliminar parámetros vacíos
       Object.keys(params).forEach(key => {
         if (params[key] === '') delete params[key];
       });
@@ -48,7 +93,7 @@ const useEmployeeFiles = (initialFilters = {}) => {
       });
   
       setData(prev => ({
-        ...prev,  // Mantener datos anteriores durante la carga
+        ...prev,
         employees: response.data.data,
         meta: {
           total: response.data.meta.total,
@@ -66,19 +111,28 @@ const useEmployeeFiles = (initialFilters = {}) => {
   
     } catch (err) {
       setError(err.response?.data?.message || 'Error al cargar empleados');
-      // Mantener datos anteriores en caso de error
       setData(prev => prev);
     } finally {
       setLoading(false);
     }
   };
-  
-  // Y actualiza la función goToPage:
+
+  // Manejar cambio de página para documentos
+  const handlePageChange = (newPage, category) => {
+    if (selectedEmployee) {
+      fetchEmployeeDetails(
+        selectedEmployee.employee.id, 
+        category || 'Contratos', 
+        newPage
+      );
+    }
+  };
+
   const goToPage = (page) => {
     if (page >= 1 && page <= data.meta.lastPage) {
       setFilters(prev => ({
         ...prev,
-        page  // Agregar página a los filtros
+        page
       }));
     }
   };
@@ -94,6 +148,9 @@ const useEmployeeFiles = (initialFilters = {}) => {
     }));
   };
 
+  useEffect(() => {
+    fetchEmployees();
+  }, [filters]);
 
   return {
     employees: data.employees,
@@ -103,7 +160,16 @@ const useEmployeeFiles = (initialFilters = {}) => {
     filters,
     updateFilter,
     goToPage,
-    refetch: fetchEmployees
+    refetch: fetchEmployees,
+    
+    selectedEmployee,
+    detailLoading,
+    detailError,
+    fetchEmployeeDetails,
+    clearSelectedEmployee: () => setSelectedEmployee(null),
+
+    pagination,
+    handlePageChange
   };
 };
 

@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('candidate_id')->constrained('candidates')->onDelete('cascade');
             $table->foreignId('type_agenda_id')->constrained('type_agendas')->onDelete('cascade');
-            $table->date('scheduled_date');
-            $table->time('time');
+            $table->date('scheduled_date')->nullable();
+            $table->time('time')->nullable();
             $table->string('location', 220)->nullable();
             $table->foreignId('status_id')->default(1)->constrained('statuses')->onDelete('cascade');
             $table->timestamps();

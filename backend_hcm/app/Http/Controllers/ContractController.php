@@ -22,13 +22,16 @@ class ContractController extends Controller
 
         // Corregir la relación (de persons a person) y relaciones anidadas
         $person = $user->person->with([
-            'employee',
-            'identificationtype',
-            'country',
-            'employee.contract.contractType',
-            'employee.contract.employmentType',
-            'employee.contract.department',
-            'employee.contract.position',
+            'employee.contracts' => function ($query) {
+                $query->latest()->with([
+                    'contractType',
+                    'employmentType',
+                    'department',
+                    'position.level.salary.currency'
+                ]);
+            },
+            'identificationType',
+            'country'
         ])->first();
 
         if (!$person || !$person->employee) {
@@ -37,15 +40,15 @@ class ContractController extends Controller
 
         // Acceso seguro a relaciones anidadas
         $employee = $person->employee;
-        $contract = $employee->contract;
-        $position = $contract->position;
-        $department = $contract->department;
+        $latestContract = $employee->contracts->sortByDesc('start_date')->first();
+        $position = $latestContract->position ?? null;
+        $department = $latestContract->department ?? null;
         $level = $position->level ?? null;
         $salary = $level->salary->first() ?? null;
 
         // Paginación de contratos
-        $contracts = $person->contracts()
-            ->with(['contractType', 'employmentType', 'status'])
+        $contracts = $employee->contracts()
+            ->with(['contractType', 'employmentType', 'status', 'position', 'department'])
             ->paginate(4);
 
         return response()->json([
@@ -53,7 +56,7 @@ class ContractController extends Controller
                 'full_name' => $person->first_name . ' ' . $person->last_name,
                 'position' => $position->description ?? 'No especificado',
                 'department' => $department->name ?? 'Sin departamento',
-                'identification' => $person->identificationtype->code . '-'. $person->identification_value ?? 'Sin documento',
+                'identification' => $person->identificationtype->code . '-' . $person->identification_value ?? 'Sin documento',
                 'country' => $person->country->long_name,
             ],
             'contracts' => $contracts->map(function ($contract) {

@@ -6,6 +6,7 @@ import Loading from '@/app/(app)/Loading'
 import PageTitle from './PageTitle'
 import { Inter } from 'next/font/google'
 import Header from './Header'
+import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -32,6 +33,7 @@ const AppLayout = ({ children }) => {
                         {children}
                     </main>
                 </div>
+                <Toaster position="top-right" richColors />
             </div>
         </body>
     )

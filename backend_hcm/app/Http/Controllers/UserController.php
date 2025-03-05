@@ -24,7 +24,7 @@ class UserController extends Controller
         }
 
         // Obtener la información de la persona relacionada con el usuario
-        $person = $user->persons;
+        $person = $user->person;
 
         // Obtener los documentos de la persona
         $documents = $person ? $person->documents : collect();

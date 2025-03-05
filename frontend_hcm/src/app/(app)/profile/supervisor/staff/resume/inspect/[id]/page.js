@@ -26,7 +26,7 @@ const DepartmentEmployee = ({ params }) => {
     if (errorEmployee)
         return (
             <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>{errorEmployee}</AlertDescription>
             </Alert>
         )
     if (!employee)

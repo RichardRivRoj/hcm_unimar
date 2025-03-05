@@ -79,18 +79,6 @@ class Person extends Model
         return $this->hasOne(Candidate::class, 'person_id');
     }
 
-
-    public function contracts()
-    {
-        return $this->hasManyThrough(
-            Contract::class,
-            Employee::class,
-            'person_id', // Foreign key en employees
-            'id', // Foreign key en contracts
-            'id', // Local key en persons
-            'contract_id' // Local key en employees
-        );
-    }
     public function bankAccounts()
     {
         return $this->hasMany(BankAccount::class, 'person_id');

@@ -75,7 +75,7 @@ const AdminEmployeesList = () => {
                 icon: <Eye size={26} />,
                 color: 'text-blue-600',
                 handler: item =>
-                    router.push(`/admin/employees/${item.employee_id}`),
+                    router.push(`/profile/admin/staff/files/file/${item.employee_id}`),
             },
         ],
         currentPage: meta.currentPage,

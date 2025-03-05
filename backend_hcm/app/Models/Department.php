@@ -23,11 +23,6 @@ class Department extends Model
         'status_id'
     ];
 
-    public function employee()
-    {
-        return $this->hasMany(Employee::class, 'department_id');
-    }
-
     public function user()
     {
         return $this->hasOne(User::class, 'department_id');
@@ -48,8 +43,8 @@ class Department extends Model
         return $this->belongsTo(Status::class, 'status_id');
     }
 
-    public function contract()
+    public function contracts()
     {
-        return $this->hasOne(Department::class, 'department_id');
+        return $this->hasMany(Contract::class, 'department_id');
     }
 }

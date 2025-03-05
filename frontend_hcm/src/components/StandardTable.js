@@ -95,7 +95,7 @@ const StandardTable = ({
             </table>
 
             {/* Paginación */}
-            {totalPages > 1 && (
+            {totalPages >= 1 && (
                 <div className="flex items-center justify-center mt-6 space-x-2">
                     <button
                         onClick={() => onPageChange(currentPage - 1)}

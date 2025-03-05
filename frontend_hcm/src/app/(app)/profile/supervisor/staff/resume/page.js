@@ -65,7 +65,7 @@ const DepartmentEmployeesList = () => {
         ],
         currentPage: pagination.currentPage,
         totalPages: pagination.lastPage,
-        onPageChange: goToPage,
+        onPageChange: page => goToPage(page),
         onFilterChange: e =>
             setFilters(prev => ({
                 ...prev,

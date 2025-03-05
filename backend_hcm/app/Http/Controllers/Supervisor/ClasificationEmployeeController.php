@@ -43,12 +43,12 @@ class ClasificationEmployeeController extends Controller
 
         $query = Employee::with([
             'person.identificationtype',
-            'contract' => function($q) {
+            'contracts' => function($q) {
                 $q->with(['position', 'department']);
             },
             'person.user'
         ])
-        ->whereHas('contract', function ($query) use ($department) {
+        ->whereHas('contracts', function ($query) use ($department) {
             // Filtrar por departamento a través del contrato
             $query->where('department_id', $department->id)
                   ->where('status_id', 1);
@@ -63,7 +63,7 @@ class ClasificationEmployeeController extends Controller
         }
         
         if ($position) {
-            $query->whereHas('contract.position', function ($q) use ($position) {
+            $query->whereHas('contracts.position', function ($q) use ($position) {
                 $q->where('description', 'like', "%$position%");
             });
         }
@@ -75,12 +75,12 @@ class ClasificationEmployeeController extends Controller
                 'full_name' => $employee->person->first_name . ' ' . $employee->person->last_name, // Cambiar persons por person
                 'identification_type' => $employee->person->identificationtype->code,
                 'identification_value' => $employee->person->identification_value,
-                'position' => $employee->contract->position->description,
-                'department' => $employee->contract->department->name,
+                'position' => $employee->contracts->position->description,
+                'department' => $employee->contracts->department->name,
                 'email' => $employee->person->user->email,
-                'status' => $employee->contract->status,
-                'contract_start' => $employee->contract->start_date, // Corregir star_date por start_date
-                'contract_end' => $employee->contract->end_date ?? 'Indefinido'
+                'status' => $employee->contracts->status,
+                'contract_start' => $employee->contracts->start_date, // Corregir star_date por start_date
+                'contract_end' => $employee->contracts->end_date ?? 'Indefinido'
             ];
         });
 
@@ -123,7 +123,7 @@ class ClasificationEmployeeController extends Controller
         }
 
         // Obtener la información de la persona relacionada con el empleado
-        $person = $employee->persons;
+        $person = $employee->person;
 
         $user = $person->user;
 
@@ -195,11 +195,11 @@ class ClasificationEmployeeController extends Controller
             });
 
         // Obtener la información del departamento del empleado
-        $department = $employee->department;
+        $department = $employee->contract->department;
 
         return response()->json([
             'employee_id' => $employee->id,
-            'department_id' => $employee->department_id,
+            'department_id' => $employee->contract->department_id,
             'person_id' => $employee->person_id,
             'person' => $person ? [
                 'first_name' => $person->first_name,

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Request extends Model
 {
+
+    protected $primaryKey = 'id'; // Asegurar que sea el nombre correcto
     protected $fillable = [
         'employee_id',
         'request_type_id',
@@ -27,4 +29,10 @@ class Request extends Model
     {
         return $this->belongsTo(RequestStatus::class, 'request_status_id');
     }
+
+    public function person()
+    {
+        return $this->through('employee')->has('person');
+    }
+
 }

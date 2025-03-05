@@ -158,7 +158,7 @@ const ResultDetails = ({ params }) => {
                     />
                     <DetailCard
                         title="Vacante"
-                        value={result.candidate.vacancy_info.vacancy_title}
+                        value={result.candidate.vacancy_info.position}
                     />
                     <DetailCard
                         title="Modalidad"

@@ -20,13 +20,20 @@ class Employee extends Model
         return $this->belongsTo(Person::class, 'person_id');
     }
 
-    public function contract()
+    public function contracts()
     {
-        return $this->belongsTo(Contract::class, 'contract_id');
+        return $this->hasMany(Contract::class, 'employee_id');
     }
 
-    public function request()
+    public function requests()
     {
        return $this->hasMany(Request::class, 'employee_id');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->whereHas('contracts', function($q) {
+            $q->active();
+        });
     }
 }

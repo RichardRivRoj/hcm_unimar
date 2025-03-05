@@ -34,7 +34,7 @@ class ReferenceController extends BaseDocumentController
         $person = $user->person
             ->with([
                 'identificationtype',
-                'employee.contract.department' // Carga el departamento actual
+                'employee.contracts.department' // Carga el departamento actual
             ])->first();
 
         if (!$person) {
@@ -64,7 +64,7 @@ class ReferenceController extends BaseDocumentController
                 'referrer_identification' => $metadata['referrer_identification'] ?? 'No especificado',
                 'department_name' => $metadata['department_name'] ?? 'No especificado',
                 'issue_date' => Carbon::parse($doc->issue_date)->format('d-m-Y'),
-                'expiration_date' => $doc->expiration_date 
+                'expiration_date' => $doc->expiration_date
                     ? Carbon::parse($doc->expiration_date)->format('d-m-Y')
                     : 'Presente',
                 'years_known' => round($yearsKnown),
@@ -111,7 +111,6 @@ class ReferenceController extends BaseDocumentController
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        // Validar campos del request
         $validatedData = $request->validate([
             'document_name' => 'required|string|max:255',
             'referrer_name' => 'required|string|max:255',
@@ -121,28 +120,32 @@ class ReferenceController extends BaseDocumentController
             'file_path' => 'nullable|string|max:255',
         ]);
 
-        // Obtener la persona con relaciones necesarias
-        $person = $user->person->with('employee.contract.department')->first();
+        // Cargar relaciones correctamente
+        $person = $user->person()->with([
+            'employee.contracts' => function ($query) {
+                $query->latest()->with('department');
+            }
+        ])->first();
 
         if (!$person) {
             return response()->json(['error' => 'Persona no encontrada'], 404);
         }
 
-        DB::beginTransaction(); // Iniciar transacción
+        DB::beginTransaction();
 
         try {
-            // Obtener departamento actual (dentro de la transacción)
             $departmentName = 'Sin departamento';
-            if ($person->employee && $person->employee->contract->department) {
-                $departmentName = $person->employee->contract->department->description;
+
+            // Acceder al departamento del último contrato
+            if ($person->employee && $person->employee->contracts->isNotEmpty()) {
+                $latestContract = $person->employee->contracts->first();
+                $departmentName = $latestContract->department->description ?? 'Sin departamento';
             }
 
-            // Establecer expiration_date a "now" si no se proporciona
-            $expirationDate = $validatedData['expiration_date'] 
+            $expirationDate = $validatedData['expiration_date']
                 ? Carbon::parse($validatedData['expiration_date'])
                 : Carbon::now();
 
-            // Crear el documento
             $document = $person->documents()->create([
                 'document_name' => $validatedData['document_name'],
                 'document_type_id' => $this->documentType,
@@ -157,7 +160,7 @@ class ReferenceController extends BaseDocumentController
                 'status' => 1,
             ]);
 
-            DB::commit(); // Confirmar transacción si todo es exitoso
+            DB::commit();
 
             return response()->json([
                 'message' => 'Referencia personal creada con éxito',
@@ -172,9 +175,8 @@ class ReferenceController extends BaseDocumentController
                     'file_path' => $document->file_path,
                 ]
             ], 201);
-
         } catch (\Exception $e) {
-            DB::rollBack(); // Revertir transacción en caso de error
+            DB::rollBack();
             return response()->json([
                 'error' => 'Error al crear la referencia: ' . $e->getMessage()
             ], 500);

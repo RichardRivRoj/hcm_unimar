@@ -215,7 +215,6 @@ const ReferenceDocuments = () => {
             </div>
 
             {/* Modal de Vista Previa */}
-            {/* Modal de Vista Previa */}
             <Modal
                 isOpen={!!selectedReference}
                 onClose={() => setSelectedReference(null)}
