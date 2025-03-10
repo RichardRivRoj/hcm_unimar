@@ -1,5 +1,6 @@
 import { Montserrat } from 'next/font/google'
 import '@/app/global.css'
+import { NavigationProvider } from '@/providers/NavigationProvider'
 
 const montserratFont = Montserrat({
     subsets: ['latin'],
@@ -10,7 +11,7 @@ const RootLayout = ({ children }) => {
     return (
         <html lang="es" className={montserratFont.className}>
             <body className="antialiased">
-                {children}
+                <NavigationProvider>{children}</NavigationProvider>
             </body>
         </html>
     )

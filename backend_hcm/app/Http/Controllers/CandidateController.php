@@ -273,7 +273,8 @@ class CandidateController extends Controller
                     $query->orderBy('created_at', 'desc')
                         ->with('documenttype');
                 },
-                'vacancy',
+                'vacancy.position',
+                'vacancy.department',
                 'status_application'
             ])->findOrFail($candidateId);
 

@@ -523,11 +523,17 @@ const CandidateDetails = ({ params }) => {
                     <h2 className="text-xl font-semibold text-gray-900">
                         Información de la Vacante
                     </h2>
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-3">
                         <DetailCard
                             title="Vacante"
                             value={
-                                candidate.vacancy?.title || 'No especificado'
+                                candidate.vacancy?.position?.description || 'No especificado'
+                            }
+                        />
+                        <DetailCard
+                            title="Departamento"
+                            value={
+                                candidate.vacancy?.department?.name|| 'No especificado'
                             }
                         />
                         <DetailCard

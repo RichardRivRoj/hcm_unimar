@@ -14,12 +14,12 @@ class EvaluationSeeder extends Seeder
      */
     public function run(): void
     {
-        // Definir las secciones y preguntas
+        // Definir las secciones y preguntas REVISAR
         $sections = [
             'Calidad de Trabajo' => [
                 'max_score' => 20,
                 'questions' => [
-                    'Demuestra conocimiento e interés en áreas de la función de trabajo.',
+                    'Demuestra conocimiento y el interés en áreas de la función de trabajo.',
                     'Se expresa verbalmente y por escrito, usando el lenguaje técnico correspondiente.',
                     'Mantiene su puesto y herramientas de trabajo limpias y ordenadas.',
                     'Es capaz de comprender situaciones bajo presión y buscar soluciones rápidamente.'
@@ -29,7 +29,7 @@ class EvaluationSeeder extends Seeder
                 'max_score' => 20,
                 'questions' => [
                     'Necesita de supervisión continua para realizar los trabajos asignados.',
-                    'Mantiene una comunicación clara y asertiva con compañeros y supervisor inmediato.',
+                    'Mantiene una comunicación clara y asertiva con compañeros y supervisor inmediato durante períodos de mayor demanda en su dependencia.',
                     'Muestra compromiso con el desarrollo de las funciones de su puesto de trabajo.',
                     'Maneja y desarrolla varias actividades, sin descuidar el trabajo asignado por superiores.'
                 ]
@@ -39,8 +39,8 @@ class EvaluationSeeder extends Seeder
                 'questions' => [
                     'Asiste al trabajo de forma permanente, puntual y responsable.',
                     'Es una persona proactiva y capaz de aportar ideas innovadoras.',
-                    'Es disciplinado en la revisión, valores y objetivos de la empresa.',
-                    'Está dispuesto a rendir un servicio abundante y mejor.'
+                    'Cree en la misión, visión, valores y objetivos de la empresa.',
+                    'Está dispuesto a rendir un servicio abundante y mejor, es decir dar "la milla extra".'
                 ]
             ],
             'Relaciones Interpersonales' => [
@@ -56,7 +56,7 @@ class EvaluationSeeder extends Seeder
                 'max_score' => 20,
                 'questions' => [
                     'Comprende y acepta nuevas situaciones o cambios.',
-                    'Cumple con instrucciones asignadas por el supervisor de forma organizada.',
+                    'Cumple con instrucciones asignadas por el supervisor de forma organizada, sistemática y en menor tiempo.',
                     'Ejecuta sus funciones eficazmente, con un mínimo de instrucción.',
                     'Toma decisiones y realiza el trabajo asignado en ausencia de su superior.'
                 ]
@@ -74,7 +74,7 @@ class EvaluationSeeder extends Seeder
                 SectionQuestion::create([
                     'question_text' => $questionText,
                     'max_score' => 5, // Máximo puntaje por pregunta
-                    'evaluation_section_id' => $section->id,
+                    'section_id' => $section->id,
                 ]);
             }
         }

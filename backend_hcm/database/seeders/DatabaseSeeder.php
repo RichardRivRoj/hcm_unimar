@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             IdentificationTypesSeeder::class,
             BankAccountTypeSeeder::class,
             GendersSeeder::class,
+            EvaluationSeeder::class,
             EthnicitiesSeeder::class,
             CountriesSeeder::class,
             MaritalStatusSeeder::class,

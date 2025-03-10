@@ -128,4 +128,4 @@ const StandardTable = ({
     )
 }
 
-export default StandardTable
+export default StandardTable;

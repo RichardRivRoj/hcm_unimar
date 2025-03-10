@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminRequestController;
+use App\Http\Controllers\Admin\EvaluationPeriodController;
 use App\Http\Controllers\Admin\FileEmployeeController;
+use App\Http\Controllers\Admin\FormEvaluationDepartmentController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\AgendaResultController;
 use App\Http\Controllers\BankEmployeeController;
@@ -41,11 +43,14 @@ use App\Http\Controllers\StatusApplicationController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\StudyController;
 use App\Http\Controllers\Supervisor\ClasificationEmployeeController;
+use App\Http\Controllers\Supervisor\FormEvaluationController;
+use App\Http\Controllers\Supervisor\PerformanceEvaluationController;
 use App\Http\Controllers\TypeAgendaController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VacantyController;
 use App\Models\Employee;
 use App\Models\MaritalStatus;
+use App\Models\PerformanceEvaluation;
 use League\CommonMark\Reference\Reference;
 
 Route::middleware(['auth:sanctum'])->get('/user', [UserController::class, 'index']);
@@ -197,8 +202,22 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('employees', [ClasificationEmployeeController::class, 'index'])->name('supervisor.departments.employees.index');
             Route::get('employees/{id}', [ClasificationEmployeeController::class, 'show'])->name('supervisor.departments.employees.show');
         });
-    });
 
+        Route::prefix('evaluations')->group(function () {
+            Route::get('/evaluation-structure', [PerformanceEvaluationController::class, 'getFullStructure']);
+            Route::post('/', [PerformanceEvaluationController::class, 'store'])->name('supervisor.evaluations.store');
+            Route::get('/unevaluated-employees', [PerformanceEvaluationController::class, 'unevaluatedEmployees'])->name('supervisor.evaluations.unevaluatedEmployees');
+            Route::get('/{employeeId}', [PerformanceEvaluationController::class, 'show'])->name('supervisor.evaluations.show');
+            
+        });
+
+        Route::prefix('evaluation-forms')->group(function () {
+            Route::get('/', [FormEvaluationController::class, 'index']);
+            Route::get('/{id}', [FormEvaluationController::class, 'show']);
+            
+        });
+        
+    });
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -216,6 +235,22 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/{id}', [AdminRequestController::class, 'show'])->name('admin.requests.show');
             Route::put('/{id}', [AdminRequestController::class, 'update'])->name('admin.requests.update');
         });
+
+        Route::prefix('evaluation-periods')->group(function () {
+            
+            Route::get('/', [EvaluationPeriodController::class, 'index'])->name('admin.evaluation-period.index');
+            Route::post('/', [EvaluationPeriodController::class, 'store'])->name('admin.evaluation-period.store');
+            Route::put('/{id}', [EvaluationPeriodController::class, 'update'])->name('admin.evaluation-period.update');
+            Route::delete('/{id}', [EvaluationPeriodController::class, 'destroy'])->name('admin.evaluation-period.destroy');
+        });
+
+        Route::prefix('evaluation-forms')->group(function () {
+            Route::get('/', [FormEvaluationDepartmentController::class, 'index']);
+            Route::get('/{id}', [FormEvaluationDepartmentController::class, 'show']);
+            
+        });
+
+        
     });
 
 });

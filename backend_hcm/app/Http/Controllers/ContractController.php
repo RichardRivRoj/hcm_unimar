@@ -20,19 +20,21 @@ class ContractController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        // Corregir la relación (de persons a person) y relaciones anidadas
-        $person = $user->person->with([
-            'employee.contracts' => function ($query) {
+        // Después (corregido):
+        $user->load([
+            'person.employee.contracts' => function ($query) {
                 $query->latest()->with([
                     'contractType',
                     'employmentType',
                     'department',
-                    'position.level.salary.currency'
+                    'position.level.salaries.currency'
                 ]);
             },
-            'identificationType',
-            'country'
-        ])->first();
+            'person.identificationType',
+            'person.country'
+        ]);
+
+        $person = $user->person;
 
         if (!$person || !$person->employee) {
             return response()->json(['error' => 'No se encontró información completa del empleado'], 404);
@@ -40,11 +42,12 @@ class ContractController extends Controller
 
         // Acceso seguro a relaciones anidadas
         $employee = $person->employee;
-        $latestContract = $employee->contracts->sortByDesc('start_date')->first();
-        $position = $latestContract->position ?? null;
-        $department = $latestContract->department ?? null;
-        $level = $position->level ?? null;
-        $salary = $level->salary->first() ?? null;
+        $latestContract = optional($person->employee->contracts)->sortByDesc('start_date')->first();
+
+        $position = optional($latestContract)->position;
+        $department = optional($latestContract)->department;
+        $level = optional($position)->level;
+        $salary = optional($level->salaries)->first();
 
         // Paginación de contratos
         $contracts = $employee->contracts()

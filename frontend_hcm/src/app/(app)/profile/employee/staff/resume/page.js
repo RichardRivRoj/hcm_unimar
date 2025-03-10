@@ -44,7 +44,7 @@ const documentCategories = [
 ]
 
 export default function DigitalFile() {
-    const [selectedCategory, setSelectedCategory] = useState('Empleos')
+    const [selectedCategory, setSelectedCategory] = useState('Contratos')
     const [selectedDocument, setSelectedDocument] = useState(null)
 
     return (

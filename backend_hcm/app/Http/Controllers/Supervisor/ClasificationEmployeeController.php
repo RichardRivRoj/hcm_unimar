@@ -43,17 +43,18 @@ class ClasificationEmployeeController extends Controller
 
         $query = Employee::with([
             'person.identificationtype',
-            'contracts' => function($q) {
-                $q->with(['position', 'department']);
+            'contracts' => function ($q) {
+                $q->where('status_id', 1) // Filtra contratos activos
+                    ->with(['position', 'department']);
             },
             'person.user'
         ])
-        ->whereHas('contracts', function ($query) use ($department) {
-            // Filtrar por departamento a través del contrato
-            $query->where('department_id', $department->id)
-                  ->where('status_id', 1);
-        });
-        
+            ->whereHas('contracts', function ($query) use ($department) {
+                // Filtrar por departamento a través del contrato
+                $query->where('department_id', $department->id)
+                    ->where('status_id', 1);
+            });
+
         // Aplicar filtros corregidos
         if ($search) {
             $query->whereHas('person', function ($q) use ($search) {
@@ -61,26 +62,26 @@ class ClasificationEmployeeController extends Controller
                     ->orWhere('last_name', 'like', "%$search%");
             });
         }
-        
+
         if ($position) {
             $query->whereHas('contracts.position', function ($q) use ($position) {
                 $q->where('description', 'like', "%$position%");
             });
         }
-        
+
         // Transformación de datos corregida
         $employees = $query->paginate(4)->through(function ($employee) {
             return [
                 'employe_id' => $employee->id,
-                'full_name' => $employee->person->first_name . ' ' . $employee->person->last_name, // Cambiar persons por person
+                'full_name' => $employee->person->first_name . ' ' . $employee->person->last_name,
                 'identification_type' => $employee->person->identificationtype->code,
                 'identification_value' => $employee->person->identification_value,
-                'position' => $employee->contracts->position->description,
-                'department' => $employee->contracts->department->name,
+                'position' => $employee->contracts->first()->position->description, // Accede al primer contrato
+                'department' => $employee->contracts->first()->department->name,
                 'email' => $employee->person->user->email,
-                'status' => $employee->contracts->status,
-                'contract_start' => $employee->contracts->start_date, // Corregir star_date por start_date
-                'contract_end' => $employee->contracts->end_date ?? 'Indefinido'
+                'status' => $employee->contracts->first()->status,
+                'contract_start' => $employee->contracts->first()->start_date,
+                'contract_end' => $employee->contracts->first()->end_date ?? 'Indefinido'
             ];
         });
 
@@ -195,11 +196,12 @@ class ClasificationEmployeeController extends Controller
             });
 
         // Obtener la información del departamento del empleado
-        $department = $employee->contract->department;
+        $contract = $employee->contracts->first();
+        $department = $contract->department ?? null;
 
         return response()->json([
             'employee_id' => $employee->id,
-            'department_id' => $employee->contract->department_id,
+            'department_id' => $contract->department_id ?? null,
             'person_id' => $employee->person_id,
             'person' => $person ? [
                 'first_name' => $person->first_name,

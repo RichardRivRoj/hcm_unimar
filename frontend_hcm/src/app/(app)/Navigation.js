@@ -21,6 +21,13 @@ import {
     BookCheck,
     ClipboardPenLine,
     SendToBack,
+    ReplaceAll,
+    BookOpenCheck,
+    BookMarked,
+    CalendarSync,
+    BookCopy,
+    Captions,
+    ClipboardType,
 } from 'lucide-react'
 
 const Navigation = () => {
@@ -65,22 +72,33 @@ const Navigation = () => {
             subLinks: [
                 {
                     name: 'Publicar Programas',
-                    href: '/profile/admin/recruitment/job-postings',
-                    icon: Folder,
+                    href: '/profile/admin/training/publish-programs',
+                    icon: BookCopy,
                 },
                 {
                     name: 'Inscripciones',
-                    href: '/profile/admin/recruitment/applications-re',
-                    icon: FileText,
-                },
-                {
-                    name: 'Selección Final',
-                    href: '/profile/admin/recruitment/selection',
-                    icon: Briefcase,
+                    href: '/profile/admin/training/inscriptions',
+                    icon: Captions,
                 },
             ],
         },
-        { name: 'Evaluación', href: '/profile/admin/evaluate', icon: Eye },
+        {
+            name: 'Evaluación',
+            href: '#',
+            icon: Eye,
+            subLinks: [
+                {
+                    name: 'Planificación',
+                    href: '/profile/admin/evaluation/planning',
+                    icon: ReplaceAll,
+                },
+                {
+                    name: 'Planillas',
+                    href: '/profile/admin/evaluation/list-forms',
+                    icon: BookOpenCheck,
+                },
+            ],
+        },
         {
             name: 'Personal',
             href: '#',
@@ -108,8 +126,13 @@ const Navigation = () => {
             subLinks: [
                 {
                     name: 'Pruebas',
-                    href: '/profile/supervisor/staff/resume',
+                    href: '/profile/supervisor/evaluation/proof',
                     icon: Star,
+                },
+                {
+                    name: 'Planillas',
+                    href: '/profile/supervisor/evaluation/list-forms',
+                    icon: ClipboardType,
                 },
             ],
         },
@@ -134,14 +157,14 @@ const Navigation = () => {
             icon: ClipboardList,
             subLinks: [
                 {
-                    name: 'Expediente',
-                    href: '/profile/employee/staff/resume',
-                    icon: BookCheck,
+                    name: 'Programas',
+                    href: '/profile/employee/training/programs',
+                    icon: BookMarked,
                 },
                 {
-                    name: 'Solicitudes',
-                    href: '/profile/employee/staff/request',
-                    icon: ClipboardPenLine,
+                    name: 'Registro',
+                    href: '/profile/employee/training/record',
+                    icon: CalendarSync,
                 },
             ],
         },

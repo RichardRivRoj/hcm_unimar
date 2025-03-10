@@ -15,11 +15,6 @@ class PerformanceEvaluation extends Model
     ];
 
 
-    public function sections()
-    {
-        return $this->hasMany(EvaluationSection::class, 'evaluation_id');
-    }
-
     public function status()
     {
         return $this->belongsTo(EvaluationStatus::class, 'evaluation_status_id');
@@ -33,6 +28,16 @@ class PerformanceEvaluation extends Model
     public function response()
     {
         return $this->hasMany(QuestionResponse::class, 'evaluation_id');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 
 }

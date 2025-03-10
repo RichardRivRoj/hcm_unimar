@@ -30,13 +30,16 @@ const Header = ({ user }) => {
         try {
             setNotificationsLoading(true)
             const response = await axios.get(`/api/notifications?page=${page}`)
-            
-            setNotifications(prev => page === 1 
-                ? response.data.data 
-                : [...prev, ...response.data.data]
+
+            setNotifications(prev =>
+                page === 1
+                    ? response.data.data
+                    : [...prev, ...response.data.data],
             )
             setUnreadCount(response.data.unread_count)
-            setHasMorePages(response.data.meta.current_page < response.data.meta.last_page)
+            setHasMorePages(
+                response.data.meta.current_page < response.data.meta.last_page,
+            )
             setCurrentPage(response.data.meta.current_page)
         } catch (error) {
             setNotificationsError(error.message)
@@ -46,12 +49,16 @@ const Header = ({ user }) => {
     }
 
     // Marcar como leída
-    const markAsRead = async (notificationId) => {
+    const markAsRead = async notificationId => {
         try {
             await axios.put(`/api/notifications/${notificationId}/read`)
-            setNotifications(prev => prev.map(n => 
-                n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n
-            ))
+            setNotifications(prev =>
+                prev.map(n =>
+                    n.id === notificationId
+                        ? { ...n, read_at: new Date().toISOString() }
+                        : n,
+                ),
+            )
             setUnreadCount(prev => prev - 1)
         } catch (error) {
             console.error('Error marking as read:', error)
@@ -59,7 +66,7 @@ const Header = ({ user }) => {
     }
 
     // Manejar clic en notificación
-    const handleNotificationClick = (notification) => {
+    const handleNotificationClick = notification => {
         if (!notification.read_at) {
             markAsRead(notification.id)
         }
@@ -79,8 +86,6 @@ const Header = ({ user }) => {
             fetchNotifications()
         }
     }, [openNotifications])
-
-
 
     return (
         <header className="bg-white border-b border-gray-100">
@@ -145,9 +150,11 @@ const Header = ({ user }) => {
                                     </button>
                                 }>
                                 {/* Authentication */}
-                                <DropdownButton onClick={'/profile'}>
-                                    Perfil
-                                </DropdownButton>
+                                <Link href="/profile">
+                                    <DropdownButton onClick={'/profile'}>
+                                        Perfil
+                                    </DropdownButton>
+                                </Link>
                                 <DropdownButton onClick={logout}>
                                     Cerrar Sesión
                                 </DropdownButton>

@@ -31,9 +31,9 @@ class Position extends Model
         return $this->hasMany(Vacancy::class, 'position_id');
     }
 
-    public function contract()
+    public function contracts()
     {
-        return $this->hasOne(Contract::class, 'position_id');
+        return $this->hasMany(Contract::class, 'position_id');
     }
 
     // En el modelo Position

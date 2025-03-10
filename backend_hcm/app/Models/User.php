@@ -72,4 +72,9 @@ class User extends Authenticatable implements CanResetPassword
     {
         return $this->notify(new CustomResetPasswordNotification($token));
     }
+
+    public function isAdmin()
+    {
+        return $this->hasRole('admin'); // Asume que tu rol de administrador se llama "admin"
+    }
 }

@@ -30,6 +30,16 @@ class Employee extends Model
        return $this->hasMany(Request::class, 'employee_id');
     }
 
+    public function evaluations()
+    {
+        return $this->hasMany(PerformanceEvaluation::class, 'employee_id');
+    }
+
+    public function getFullNameAttribute()
+    {
+        return $this->person->first_name . ' ' . $this->person->last_name;
+    }
+
     public function scopeActive($query)
     {
         return $query->whereHas('contracts', function($q) {

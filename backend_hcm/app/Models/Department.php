@@ -47,4 +47,9 @@ class Department extends Model
     {
         return $this->hasMany(Contract::class, 'department_id');
     }
+
+    public function evaluations()
+    {
+        return $this->hasMany(PerformanceEvaluation::class, 'department_id');
+    }
 }
