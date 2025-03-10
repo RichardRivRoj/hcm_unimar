@@ -122,7 +122,7 @@ class EmployeeController extends Controller
                 'status_id' => 1, // Estado por defecto
             ]);
 
-            
+
 
             // Crear un usuario para el empleado
             $password = Str::random(10); // Generar una contraseña aleatoria
@@ -146,6 +146,14 @@ class EmployeeController extends Controller
             // Cambiar el estado de la aplicación del candidato a "Contratado"
             $statusContratado = StatusApplication::where('name', 'Contratado')->first();
             $candidate->update(['status_application_id' => $statusContratado->id]);
+
+            // Obtener el estado "Rechazado"
+            $statusRechazado = StatusApplication::where('name', 'Rechazado')->first();
+
+            // Actualizar el estado de todos los candidatos asociados a la vacante inactiva
+            Candidate::where('vacancy_id', $candidate->vacancy->id)
+                ->where('id', '!=', $candidate->id) // Excluir al candidato contratado
+                ->update(['status_application_id' => $statusRechazado->id]);
 
             // Enviar un correo electrónico al candidato con sus credenciales
             Mail::to($candidate->persons->email)->send(new EmployeeHiredNotification([

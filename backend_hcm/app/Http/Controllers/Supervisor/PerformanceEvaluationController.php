@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\EvaluationPeriod;
 use App\Models\EvaluationSection;
 use App\Models\EvaluationStatus;
+use App\Models\Notification;
 use App\Models\PerformanceEvaluation;
 use App\Models\Position;
 use App\Models\QuestionResponse;
@@ -140,6 +141,27 @@ class PerformanceEvaluationController extends Controller
                     'comments' => $response['comments'] ?? null,
                     'evaluation_id' => $evaluation->id,
                     'question_id' => $response['question_id']
+                ]);
+            }
+
+            // Notificación para administradores
+            $employee = Employee::with('person')->find($request->employee_id);
+            $full_name = $employee->person->first_name. ' ' . $employee->person->last_name;
+            $period = EvaluationPeriod::find($activePeriod->id);
+
+            $admins = User::role('admin')->get();
+
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'title' => 'Nueva evaluación completada',
+                    'message' => "Evaluación de {$full_name} para el período {$period->name}",
+                    'type' => 'info',
+                    'metadata' => [
+                        'evaluation_id' => $evaluation->id,
+                        'employee_id' => $employee->id,
+                        'period' => $period->name
+                    ]
                 ]);
             }
 

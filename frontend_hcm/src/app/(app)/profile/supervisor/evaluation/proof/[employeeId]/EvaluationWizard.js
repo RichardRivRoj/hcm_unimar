@@ -14,6 +14,7 @@ import CompetenceStep from './CompetenceStep'
 import ResultsStep from './ResultsStep'
 import ConfirmationStep from './ConfirmationStep'
 import { useNavigation } from '@/providers/NavigationProvider'
+import { toast } from 'sonner'
 
 const EvaluationWizard = ({ employeeId, departmentId, periodId }) => {
     const { navigation, updateNavigation } = useNavigation()
@@ -44,7 +45,7 @@ const EvaluationWizard = ({ employeeId, departmentId, periodId }) => {
             section.questions?.forEach(question => {
                 initialScores[section.id][question.id] = {
                     score: undefined,
-                    comment: ''
+                    comment: '',
                 }
             })
         })
@@ -66,10 +67,11 @@ const EvaluationWizard = ({ employeeId, departmentId, periodId }) => {
     }, [employeeId])
 
     const isAllSectionsComplete = useCallback(() => {
-        return sections.every(section => 
-            section.questions?.every(question => 
-                scores[section.id]?.[question.id]?.score !== undefined
-            )
+        return sections.every(section =>
+            section.questions?.every(
+                question =>
+                    scores[section.id]?.[question.id]?.score !== undefined,
+            ),
         )
     }, [scores, sections])
 
@@ -83,29 +85,43 @@ const EvaluationWizard = ({ employeeId, departmentId, periodId }) => {
     }
 
     const handleSubmit = async () => {
-      const formattedResponses = Object.entries(scores).flatMap(
-          ([sectionId, questions]) =>
-              Object.entries(questions).map(([questionId, data]) => ({
-                  question_id: parseInt(questionId),
-                  score: data.score,
-                  comments: data.comment || '', // Cambiar a 'comments' para coincidir con el backend
-                  section_id: parseInt(sectionId),
-              })),
-      )
-  
-      try {
-          await createEvaluation({
-              employee_id: employeeId,
-              department_id: departmentId, // Asegurar que estos valores existen
-              period_id: periodId,
-              responses: formattedResponses,
-          })
-          setIsOpen(false)
-      } catch (error) {
-          console.error('Error submitting evaluation:', error)
-          // Agregar manejo de errores visual
-      }
-  }
+        const formattedResponses = Object.entries(scores).flatMap(
+            ([sectionId, questions]) =>
+                Object.entries(questions).map(([questionId, data]) => ({
+                    question_id: parseInt(questionId),
+                    score: data.score,
+                    comments: data.comment || '',
+                    section_id: parseInt(sectionId),
+                })),
+        )
+
+        try {
+            toast.promise(
+                createEvaluation({
+                    employee_id: employeeId,
+                    department_id: departmentId,
+                    period_id: periodId,
+                    responses: formattedResponses,
+                }),
+                {
+                    loading: 'Enviando evaluación...',
+                    success: () => {
+                        setIsOpen(false)
+                        return 'Evaluación enviada exitosamente!'
+                    },
+                    error: error => {
+                        const message =
+                            error.response?.data?.message ||
+                            'Error al enviar la evaluación'
+                        return `${message} 🚨`
+                    },
+                },
+            )
+        } catch (error) {
+            console.error('Error al enviar la evaluación:', error)
+            toast.error('Ocurrió un error inesperado')
+        }
+    }
 
     const IntroContent = () => (
         <div className="max-w-4xl mx-auto space-y-8">
@@ -120,7 +136,7 @@ const EvaluationWizard = ({ employeeId, departmentId, periodId }) => {
             </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <motion.div
+                <motion.div
                     className="p-6 bg-gray-50 rounded-xl"
                     whileHover={{ scale: 1.02 }}>
                     <div className="flex items-center gap-3 mb-4">
@@ -265,7 +281,10 @@ const EvaluationWizard = ({ employeeId, departmentId, periodId }) => {
                             updateNavigation(section, 0)
                         }
                         setCurrentQuestionIndex={question =>
-                            updateNavigation(navigation.currentSection, question)
+                            updateNavigation(
+                                navigation.currentSection,
+                                question,
+                            )
                         }
                         onAllSectionsComplete={() => setCurrentStep(2)}
                     />
@@ -274,31 +293,37 @@ const EvaluationWizard = ({ employeeId, departmentId, periodId }) => {
                     <ResultsStep sections={sections} scores={scores} />
                 )}
                 {currentStep === 3 && (
-                    <ConfirmationStep 
-                    sections={sections} 
-                    data={data} 
-                    scores={scores}
-                    departmentId={departmentId}
-                    periodId={periodId}
-                />
+                    <ConfirmationStep
+                        sections={sections}
+                        data={data}
+                        scores={scores}
+                        departmentId={departmentId}
+                        periodId={periodId}
+                    />
                 )}
             </div>
 
-            <div className="flex justify-between pt-6 border-t">
-                {currentStep > 0 && (
+            {/* Botones solo desde el paso 2 en adelante */}
+            {currentStep >= 2 && (
+                <div className="flex justify-between pt-6 border-t">
                     <button
                         onClick={() => setCurrentStep(prev => prev - 1)}
                         className="px-8 py-3 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
                         Anterior
                     </button>
-                )}
-                <button
-                    onClick={handleStepChange}
-                    className="ml-auto px-8 py-3 bg-[#004b9a] text-white rounded-lg hover:bg-[#003a7a]"
-                    disabled={currentStep === 1 && !isAllSectionsComplete()}>
-                    {currentStep === 3 ? 'Finalizar Evaluación' : 'Siguiente Paso'}
-                </button>
-            </div>
+
+                    <button
+                        onClick={handleStepChange}
+                        className="ml-auto px-8 py-3 bg-[#004b9a] text-white rounded-lg hover:bg-[#003a7a]"
+                        disabled={
+                            currentStep === 3 && !isAllSectionsComplete()
+                        }>
+                        {currentStep === 3
+                            ? 'Finalizar Evaluación'
+                            : 'Siguiente Paso'}
+                    </button>
+                </div>
+            )}
         </div>
     )
 

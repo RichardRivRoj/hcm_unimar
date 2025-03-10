@@ -587,6 +587,7 @@ const JobDetails = ({ params }) => {
                                                             formData.ethnicity_id
                                                         }
                                                         onChange={handleChange}
+                                                        required
                                                         className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
                                                         <option value="">
                                                             Seleccionar etnia

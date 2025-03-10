@@ -177,8 +177,12 @@ class AgendaController extends Controller
         // Cargar la agenda con todas las relaciones necesarias
         $agenda = Agenda::with([
             'typeagenda', // Tipo de agenda
-            'candidate.persons', // Candidato y su información personal
-            'candidate.vacancy', // Vacante a la que se postula
+            'candidate.persons.identificationtype', // Candidato, persona y tipo de identificación
+            'candidate.persons.ethnicity', // Etnia
+            'candidate.persons.gender', // Género
+            'candidate.persons.country', // País
+            'candidate.persons.maritalstatus', // Estado civil
+            'candidate.vacancy.mode', // Vacante y modalidad
             'status', // Estado de la agenda
         ])->findOrFail($id);
 
@@ -204,10 +208,9 @@ class AgendaController extends Controller
                     'last_name' => $agenda->candidate->persons->last_name,
                     'email' => $agenda->candidate->persons->email,
                     'phone' => $agenda->candidate->persons->phone,
-                    'identification_value' => $agenda->candidate->persons->identification_value,
-                    'identification_type' => $agenda->candidate->persons->identificationtype->name, // Asumiendo que el modelo IdentificationType tiene un campo 'name'
+                    'identification_value' =>  $agenda->candidate->persons->identificationtype->code.' '. $agenda->candidate->persons->identification_value,
                     'ethnicity' => $agenda->candidate->persons->ethnicity->name, // Asumiendo que el modelo Ethnicity tiene un campo 'name'
-                    'gender' => $agenda->candidate->persons->gender->name, // Asumiendo que el modelo Gender tiene un campo 'name'
+                    'gender' => $agenda->candidate->person->gender->name ?? 'NA', // Asumiendo que el modelo Gender tiene un campo 'name'
                     'country' => $agenda->candidate->persons->country->name, // Asumiendo que el modelo Country tiene un campo 'name'
                     'marital_status' => $agenda->candidate->persons->maritalstatus->name, // Asumiendo que el modelo MaritalStatus tiene un campo 'name'
                 ],

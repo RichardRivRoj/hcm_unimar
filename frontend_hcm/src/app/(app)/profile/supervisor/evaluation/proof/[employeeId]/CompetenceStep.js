@@ -3,6 +3,7 @@
 import React, { useState, memo, useCallback, useEffect, useRef } from 'react'
 import SectionStep from './SectionStep'
 import { useNavigation } from '@/providers/NavigationProvider'
+import RatingScale from '@/components/RatingScale'
 
 const CompetenceStep = memo(
     ({ sections, scores, setScores, onAllSectionsComplete }) => {
@@ -102,6 +103,7 @@ const CompetenceStep = memo(
 
         return (
             <div className="space-y-8">
+                
                 {sections.map((section, index) => {
                     const sectionQuestions = section.questions || []
                     return (
@@ -123,6 +125,7 @@ const CompetenceStep = memo(
                                             {sections.length}
                                         </p>
                                     </div>
+                                    <RatingScale />
                                     <SectionStep
                                         section={{
                                             ...section,

@@ -328,7 +328,7 @@ const ResultDetails = ({ params }) => {
 
                 {/* Modal de Contratación */}
                 <Modal isOpen={isModalOpen} onClose={closeModal}>
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col w-[500px] max-w-full max-h-[65vh] overflow-y-auto gap-6 p-4 bg-white rounded-lg shadow-lg scrollbar-none">
                         <h2 className="text-xl font-semibold">
                             Contratar Candidato
                         </h2>

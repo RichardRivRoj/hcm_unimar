@@ -16,6 +16,7 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
         loading: loadingContract,
         error: errorContract,
     } = useContractTypes()
+    const [errors, setErrors] = useState([])
 
     // Estado para manejar los datos del formulario
     const [formData, setFormData] = useState({
@@ -25,6 +26,11 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
         employment_type_id: '',
         email: '',
     })
+
+    const validateEmailFormat = (email) => {
+        const regex = /^[a-zA-Z0-9._%+-]+@unimar\.edu\.ve$/i
+        return regex.test(email)
+    }
 
     // Manejar cambios en los campos del formulario
     const handleChange = e => {
@@ -38,6 +44,12 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
     // Manejar el envío del formulario
     const handleSubmit = async e => {
         e.preventDefault()
+
+        if (!validateEmailFormat(formData.email)) {
+            setErrors({ email: ['El correo debe tener dominio @unimar.edu.ve'] })
+            return
+        }
+        
         try {
             const response = await hireEmployee(candidateId, formData)
             onSuccess(response) // Llama a la función onSuccess si la contratación es exitosa
@@ -154,11 +166,19 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
+                    onBlur={() => {
+                        if (formData.email && !validateEmailFormat(formData.email)) {
+                            setErrors(prev => ({
+                                ...prev,
+                                email: ['El correo debe tener dominio @unimar.edu.ve']
+                            }))
+                        }
+                    }} 
                     required
                     className="block w-full p-2 mt-1 border border-gray-300 rounded-md"
                 />
-                {validationErrors.email && (
-                    <p className="text-sm text-red-600">{validationErrors.email[0]}</p>
+                {errors.email && (
+                    <p className="text-sm text-red-600">{errors.email[0]}</p>
                 )}
             </div>
 
