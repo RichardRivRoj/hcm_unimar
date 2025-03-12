@@ -21,7 +21,7 @@ const StandardTable = ({
 
             {/* Filtros */}
             {filters && (
-                <div className="grid grid-cols-1 gap-8 mb-8 md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-8 mb-8 md:grid-cols-4">
                     {filters.map((filter, index) => (
                         <select
                             key={index}

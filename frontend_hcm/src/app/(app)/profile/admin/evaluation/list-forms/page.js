@@ -79,12 +79,12 @@ const EvaluationPage = () => {
 
     return (
         <div className="container p-4 mx-auto">
-            <div className="p-4 mb-4 space-y-4">
+            <div className="ml-6 space-y-4">
                 
                 <div className="flex flex-col gap-4 md:flex-row">
                     <input
                         type="text"
-                        placeholder="Buscar por nombre, identificación o cargo"
+                        placeholder="Buscar por nombre o identificación"
                         className="w-full p-2 rounded md:max-w-lg"
                         value={searchInput}
                         onChange={(e) => setSearchInput(e.target.value)}

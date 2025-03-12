@@ -197,7 +197,7 @@ const Header = ({ user }) => {
 
             {/* Notifications Sidebar */}
             {openNotifications && (
-                <aside className="fixed top-0 right-0 z-50 h-full bg-white shadow-lg w-80">
+                <aside className="fixed top-0 right-0 z-50 h-full max-h-screen overflow-y-auto bg-white shadow-lg w-80 scrollbar-none">
                     <div className="flex items-center justify-between p-4 border-b">
                         <h2 className="text-lg font-semibold text-gray-700">
                             Notificaciones

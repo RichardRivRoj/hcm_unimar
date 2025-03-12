@@ -40,6 +40,19 @@ class Employee extends Model
         return $this->person->first_name . ' ' . $this->person->last_name;
     }
 
+    public function currentDepartment()
+    {
+        return $this->hasOneThrough(
+            Department::class,
+            Contract::class,
+            'employee_id',
+            'id',
+            'id',
+            'department_id'
+        )->whereNull('contracts.end_date')
+         ->latest('contracts.start_date');
+    }
+
     public function scopeActive($query)
     {
         return $query->whereHas('contracts', function($q) {

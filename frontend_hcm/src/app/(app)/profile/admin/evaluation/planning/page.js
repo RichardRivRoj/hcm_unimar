@@ -7,9 +7,9 @@ import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline'
 import Button from '@/components/Button'
 import { PlusCircle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/alert'
-import Modal from '@/components/Modal'
+import { Modal } from '@/components/Modal'
 import PeriodForm from './PeriodForm'
-import EditPeriodForm from './EditPeriodForm '
+import EditPeriodForm from './EditPeriodForm'
 import ConfirmationModal from '@/components/ConfirmationModal'
 
 const PlanningPage = () => {

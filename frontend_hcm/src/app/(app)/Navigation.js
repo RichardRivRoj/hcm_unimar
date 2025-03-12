@@ -28,6 +28,7 @@ import {
     BookCopy,
     Captions,
     ClipboardType,
+    ArchiveRestore,
 } from 'lucide-react'
 
 const Navigation = () => {
@@ -66,19 +67,24 @@ const Navigation = () => {
             ],
         },
         {
-            name: 'Capacitación',
+            name: 'Desarrollo Institucional',
             href: '#',
             icon: ClipboardList,
             subLinks: [
                 {
                     name: 'Publicar Programas',
-                    href: '/profile/admin/training/publish-programs',
+                    href: '/profile/admin/training/programs',
                     icon: BookCopy,
                 },
                 {
                     name: 'Inscripciones',
                     href: '/profile/admin/training/inscriptions',
                     icon: Captions,
+                },
+                {
+                    name: 'Resultados',
+                    href: '/profile/admin/training/training-results',
+                    icon: ArchiveRestore,
                 },
             ],
         },
@@ -133,6 +139,23 @@ const Navigation = () => {
                     name: 'Planillas',
                     href: '/profile/supervisor/evaluation/list-forms',
                     icon: ClipboardType,
+                },
+            ],
+        },
+        {
+        name: 'Capacitación',
+            href: '#',
+            icon: ClipboardList,
+            subLinks: [
+                {
+                    name: 'Programas y Evaluación',
+                    href: '/profile/supervisor/training/evaluations',
+                    icon: Captions,
+                },
+                {
+                    name: 'Resultados',
+                    href: '/profile/supervisor/training/training-results',
+                    icon: ArchiveRestore,
                 },
             ],
         },

@@ -17,7 +17,6 @@ class TrainingProgram extends Model
         'status_id',
         'training_type_id',
         'modality_id',
-        'department_id'
     ];
 
     public function enrollment()
@@ -25,10 +24,17 @@ class TrainingProgram extends Model
         return $this->hasMany(EmployeeTrainingEnrollment::class, 'training_program_id');
     }
 
-    public function department()
+    public function departments()
     {
-        return $this->belongsTo(Department::class, 'department_id');
+        return $this->belongsToMany(
+            Department::class,
+            'department_training_program',
+            'training_program_id',
+            'department_id'
+        )->using(DepartmentTrainingProgram::class);
     }
+
+
 
     public function modality()
     {
@@ -43,5 +49,29 @@ class TrainingProgram extends Model
     public function visibility()
     {
         return $this->belongsTo(ProgramVisibility::class, 'visibility_id');
+    }
+
+    public function status()
+    {
+        return $this->belongsTo(Status::class, 'status_id');
+    }
+
+    public function scopeFilter($query, $filters)
+    {
+        return $query->when(isset($filters['training_type_id']), function ($q) use ($filters) {
+            $q->where('training_type_id', $filters['training_type_id']);
+        })
+            ->when(isset($filters['modality_id']), function ($q) use ($filters) {
+                $q->where('modality_id', $filters['modality_id']);
+            })
+            ->when(isset($filters['visibility_id']), function ($q) use ($filters) {
+                $q->where('visibility_id', $filters['visibility_id']);
+            })
+            ->when(isset($filters['status_id']), function ($q) use ($filters) {
+                $q->where('status_id', $filters['status_id']);
+            })
+            ->when(isset($filters['name']), function ($q) use ($filters) {
+                $q->where('name', 'LIKE', '%' . $filters['name'] . '%');
+            });
     }
 }

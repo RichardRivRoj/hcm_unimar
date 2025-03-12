@@ -52,4 +52,9 @@ class Status extends Model
     {
        return $this->hasOne(EvaluationPeriod::class, 'status_id');
     }
+
+    public function training()
+    {
+       return $this->hasOne(TrainingProgram::class, 'status_id');
+    }
 }

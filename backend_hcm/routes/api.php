@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminRequestController;
 use App\Http\Controllers\Admin\EvaluationPeriodController;
 use App\Http\Controllers\Admin\FileEmployeeController;
 use App\Http\Controllers\Admin\FormEvaluationDepartmentController;
+use App\Http\Controllers\Admin\NewTrainingProgramController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\AgendaResultController;
 use App\Http\Controllers\BankEmployeeController;
@@ -25,6 +26,10 @@ use App\Http\Controllers\EmploymentController;
 use App\Http\Controllers\EmploymentTypeController;
 use App\Http\Controllers\EthnicityController;
 use App\Http\Controllers\GenderController;
+use App\Http\Controllers\General\ListDepartmentController;
+use App\Http\Controllers\General\ListEmployeeController;
+use App\Http\Controllers\General\ListTrainingModalityController;
+use App\Http\Controllers\General\ListTrainingTypeController;
 use App\Http\Controllers\IdentificationController;
 use App\Http\Controllers\IdentificationTypeController;
 use App\Http\Controllers\ListAccountTypeController;
@@ -250,6 +255,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
             
         });
 
+        Route::prefix('training-programs')->group(function () {
+            Route::post('/', [NewTrainingProgramController::class, 'store'])->name('training-programs.store');
+            Route::get('/', [NewTrainingProgramController::class, 'index'])->name('training-programs.index');
+            Route::get('/{id}', [NewTrainingProgramController::class, 'show'])->name('training-programs.show');
+        });
+
         
     });
 
@@ -270,6 +281,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::put('/{id}', [EmployeeRequestController::class, 'update'])->name('requests.update');
             Route::get('/{id}', [EmployeeRequestController::class, 'show'])->name('requests.show');
         });
+    });
+
+});
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::prefix('general')->group(function () {
+    
+        Route::prefix('list')->group(function () {
+            Route::get('/departments', [ListDepartmentController::class, 'index'])->name('list.departments.index');
+            Route::get('/employees', [ListEmployeeController::class, 'index'])->name('list.employees.index');
+            Route::get('/training-types', [ListTrainingTypeController::class, 'index'])->name('list.training-types.index');
+            Route::get('/modalities', [ListTrainingModalityController::class, 'index'])->name('list.training.index');
+        });
+
     });
 
 });

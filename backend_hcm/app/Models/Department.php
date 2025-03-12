@@ -33,10 +33,11 @@ class Department extends Model
         return $this->hasMany(Vacancy::class, 'department_id');
     }
 
-    public function program()
+    public function departments()
     {
-        return $this->hasOne(TrainingProgram::class, 'department_id');
+        return $this->belongsToMany(Department::class, 'department_training_program');
     }
+
 
     public function status()
     {
@@ -51,5 +52,19 @@ class Department extends Model
     public function evaluations()
     {
         return $this->hasMany(PerformanceEvaluation::class, 'department_id');
+    }
+
+    public function activeEmployees()
+    {
+        return $this->hasManyThrough(
+            Employee::class,
+            Contract::class,
+            'department_id', // FK en contracts
+            'id', // FK en employees (employee_id)
+            'id', // PK en departments
+            'employee_id' // FK en contracts (employee_id)
+        )->whereHas('contracts', function ($query) {
+            $query->active();
+        });
     }
 }
