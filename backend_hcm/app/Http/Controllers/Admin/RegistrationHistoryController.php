@@ -300,7 +300,7 @@ class RegistrationHistoryController extends Controller
                 'assigned_by' => $enrollment->assigned_by_admin // Asignado por
             ],
             'employee' => [
-                'full_name' => $enrollment->employee->person->first_name. ' ' .$enrollment->employee->person->last_name, // Nombre completo
+                'full_name' => $enrollment->employee->person->first_name . ' ' . $enrollment->employee->person->last_name, // Nombre completo
                 'identification' => [
                     'code' => $enrollment->employee->person->identificationtype->code, // Tipo de identificación
                     'number' => $enrollment->employee->person->identification_value // Número de identificación
@@ -345,7 +345,25 @@ class RegistrationHistoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validated = $request->validate([
+            'score' => 'required|numeric|between:0,100',
+            'attendance_rate' => 'required|numeric|between:0,100'
+        ]);
+
+        $enrollment = EmployeeTrainingEnrollment::findOrFail($id);
+
+        $updateData = [
+            'score' => $validated['score'],
+            'attendance_rate' => $validated['attendance_rate'],
+            'completion_status_id' => 3 // ID del estado "Completado"
+        ];
+
+        $enrollment->update($updateData);
+
+        return response()->json([
+            'message' => 'Calificaciones actualizadas exitosamente',
+            'enrollment' => $enrollment->load('completion', 'employee', 'training')
+        ]);
     }
 
     /**

@@ -100,9 +100,6 @@ const TrainingProgramsPage = () => {
 
     return (
         <div className="p-6">
-            <h1 className="mb-6 text-2xl font-bold">
-                Programas de Capacitación
-            </h1>
 
             {error && (
                 <Alert variant="destructive" className="mb-4">

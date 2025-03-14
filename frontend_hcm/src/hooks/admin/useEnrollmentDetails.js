@@ -89,7 +89,37 @@ const useEnrollmentDetails = (enrollmentId) => {
         }
     }, [enrollmentId])
 
-    return { data, loading, error }
+    // Nueva función de actualización
+    const updateEnrollment = async (score, attendanceRate) => {
+        try {
+            const response = await axios.put(
+                `/api/admin/registration-history/${enrollmentId}/enroll`,
+                {
+                    score: parseFloat(score),
+                    attendance_rate: parseFloat(attendanceRate)
+                }
+            )
+
+            // Actualizar datos locales
+            setData(prev => ({
+                ...prev,
+                enrollment: {
+                    ...prev.enrollment,
+                    ...response.data.enrollment,
+                    status: 'Completado'
+                }
+            }))
+            
+            return { success: true }
+        } catch (err) {
+            return { 
+                success: false,
+                error: err.response?.data?.message || 'Error al actualizar'
+            }
+        }
+    }
+
+    return { data, loading, error, updateEnrollment }
 }
 
 export default useEnrollmentDetails

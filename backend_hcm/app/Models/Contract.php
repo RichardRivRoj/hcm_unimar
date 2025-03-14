@@ -9,6 +9,11 @@ class Contract extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'start_date' => 'datetime:Y-m-d',
+        'end_date' => 'datetime:Y-m-d',
+    ];
+
     protected $fillable = [
         'contract_number', 'description',
         'start_date', 'end_date',

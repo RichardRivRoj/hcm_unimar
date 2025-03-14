@@ -147,11 +147,6 @@ const Navigation = () => {
                     href: '/profile/supervisor/training/evaluations',
                     icon: Captions,
                 },
-                {
-                    name: 'Resultados',
-                    href: '/profile/supervisor/training/training-results',
-                    icon: ArchiveRestore,
-                },
             ],
         },
         {

@@ -269,6 +269,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/', [RegistrationHistoryController::class, 'index'])->name('registration-history.index');
             Route::get('/{id}', [RegistrationHistoryController::class, 'show'])->name('registration-history.show');
             Route::get('/{id}/enroll', [RegistrationHistoryController::class, 'showEnroll'])->name('registration-history.showEnroll');
+            Route::put('/{id}/enroll', [RegistrationHistoryController::class, 'update'])->name('registration-history.update');
         });
 
         
