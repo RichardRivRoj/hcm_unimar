@@ -1,8 +1,10 @@
+'use client'
+
 import { useState } from 'react'
 import useStudy from '@/hooks/useStudy'
 import { Skeleton } from '@/components/skeleton'
 import { Alert, AlertDescription } from '@/components/alert'
-import Modal from '@/components/Modal'
+import { Modal } from '@/components/Modal'
 import axios from '@/lib/axios'
 
 const StudyDocuments = () => {

@@ -1,4 +1,4 @@
-export default function DocumentPreview({ document, onClose }) {
+const DocumentPreview = ({ document, onClose }) => {
     return (
         <div className="p-6 bg-white rounded-lg shadow-lg">
             <div className="flex items-center justify-between mb-4">
@@ -54,3 +54,5 @@ export default function DocumentPreview({ document, onClose }) {
         </div>
     )
 }
+
+export default DocumentPreview

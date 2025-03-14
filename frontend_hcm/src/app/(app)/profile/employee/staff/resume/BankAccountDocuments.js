@@ -1,8 +1,10 @@
+'use client'
+
 import { useState } from 'react'
 import useBankAccounts from '@/hooks/useBankAccounts'
 import { Skeleton } from '@/components/skeleton'
 import { Alert, AlertDescription } from '@/components/alert'
-import Modal from '@/components/Modal'
+import { Modal } from '@/components/Modal'
 import useListBanks from '@/hooks/useListBanks'
 import useListAccountTypes from '@/hooks/useListAccountTypes'
 import useListCurrencies from '@/hooks/useListCurrencies'

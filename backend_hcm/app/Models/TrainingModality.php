@@ -11,8 +11,8 @@ class TrainingModality extends Model
         'description',
     ];
 
-    public function program()
+    public function programs()
     {
-        return $this->hasOne(TrainingProgram::class, 'modality_id');
+        return $this->hasMany(TrainingProgram::class, 'modality_id');
     }
 }

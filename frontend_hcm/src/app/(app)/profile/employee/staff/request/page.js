@@ -8,10 +8,11 @@ import {
     useEmployeeRequests,
 } from '@/hooks/employee/useEmployeeRequests'
 import { EyeIcon, PencilIcon, PlusCircle, TrashIcon } from 'lucide-react'
-import Modal from '@/components/Modal'
+import { Modal } from '@/components/Modal'
 import CreateRequestForm from './CreateRequestForm'
 import { Alert, AlertDescription } from '@/components/alert'
 import EditRequestForm from './EditRequestForm'
+import Loader from '@/components/Loader'
 
 const EmployeeRequestsPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -99,7 +100,7 @@ const EmployeeRequestsPage = () => {
     }
 
     // Manejo de estados de carga y error
-    if (loading) return <div className="p-6">Cargando solicitudes...</div>
+    if (loading) return <Loader />
 
     if (error)
         return (

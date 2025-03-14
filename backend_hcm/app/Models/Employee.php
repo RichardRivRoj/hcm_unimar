@@ -10,8 +10,12 @@ class Employee extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'start_date'
+    ];
+
     protected $fillable = [
-        'person_id', 
+        'person_id',
         'contract_id'
     ];
 
@@ -27,7 +31,7 @@ class Employee extends Model
 
     public function requests()
     {
-       return $this->hasMany(Request::class, 'employee_id');
+        return $this->hasMany(Request::class, 'employee_id');
     }
 
     public function evaluations()
@@ -50,13 +54,21 @@ class Employee extends Model
             'id',
             'department_id'
         )->whereNull('contracts.end_date')
-         ->latest('contracts.start_date');
+            ->latest('contracts.start_date');
     }
 
     public function scopeActive($query)
     {
-        return $query->whereHas('contracts', function($q) {
+        return $query->whereHas('contracts', function ($q) {
             $q->active();
         });
+    }
+
+    public function currentContract()
+    {
+        return $this->hasOne(Contract::class, 'employee_id')
+            ->active()
+            ->with(['position:id,description', 'department:id,name'])
+            ->latest('start_date');
     }
 }

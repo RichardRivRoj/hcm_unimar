@@ -77,14 +77,9 @@ const Navigation = () => {
                     icon: BookCopy,
                 },
                 {
-                    name: 'Inscripciones',
+                    name: 'Historial',
                     href: '/profile/admin/training/inscriptions',
                     icon: Captions,
-                },
-                {
-                    name: 'Resultados',
-                    href: '/profile/admin/training/training-results',
-                    icon: ArchiveRestore,
                 },
             ],
         },
@@ -183,11 +178,6 @@ const Navigation = () => {
                     name: 'Programas',
                     href: '/profile/employee/training/programs',
                     icon: BookMarked,
-                },
-                {
-                    name: 'Registro',
-                    href: '/profile/employee/training/record',
-                    icon: CalendarSync,
                 },
             ],
         },

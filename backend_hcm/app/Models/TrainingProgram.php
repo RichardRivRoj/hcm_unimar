@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class TrainingProgram extends Model
 {
+
+    protected $casts = [
+        'start_date' => 'datetime:Y-m-d',
+        'end_date' => 'datetime:Y-m-d',
+    ];
+
     protected $fillable = [
         'name',
         'description',
@@ -73,5 +79,32 @@ class TrainingProgram extends Model
             ->when(isset($filters['name']), function ($q) use ($filters) {
                 $q->where('name', 'LIKE', '%' . $filters['name'] . '%');
             });
+    }
+
+    public function scopeFilterByRequest($query, $request)
+    {
+        return $query->when($request->filled('month'), function ($q) use ($request) {
+                $q->whereMonth('start_date', $request->month);
+            })
+            ->when($request->filled('year'), function ($q) use ($request) {
+                $q->whereYear('start_date', $request->year);
+            })
+            ->when($request->filled('training_type_id'), function ($q) use ($request) {
+                $q->where('training_type_id', $request->training_type_id);
+            });
+    }
+
+    public function employees()
+    {
+        return $this->belongsToMany(
+            Employee::class,
+            'employee_training_enrollments',
+            'training_program_id',
+            'employee_id'
+        )->select(
+            'employees.id', 
+            'employees.person_id', 
+            'employee_training_enrollments.enrollment_date'
+        );
     }
 }

@@ -44,11 +44,9 @@ const TrainingProgramsPage = () => {
         return () => clearTimeout(timer)
     }, [filters])
 
-    const handlePageChange = page => {
-        if (page >= 1 && page <= pagination.totalPages) {
-            fetchPrograms(page, filters)
-        }
-    }
+    const handlePageChange = useCallback((page) => {
+        fetchPrograms(page, filters)
+    }, [filters, fetchPrograms])
 
     const handleFilterChange = e => {
         const { name, value } = e.target

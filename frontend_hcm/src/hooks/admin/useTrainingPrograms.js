@@ -3,71 +3,71 @@ import { useState, useCallback } from 'react'
 import axios from '@/lib/axios'
 
 export const useTrainingProgram = () => {
-  const [state, setState] = useState({
-    loading: false,
-    error: null,
-    validationErrors: {},
-    programs: [],
-    selectedProgram: null,
-    filterOptions: {
-      training_types: [],
-      modalities: [],
-      visibilities: [],
-      statuses: []
-    },
-    pagination: {
-      currentPage: 1,
-      totalPages: 1,
-      totalItems: 0
-    }
-  })
+    const [state, setState] = useState({
+        loading: false,
+        error: null,
+        validationErrors: {},
+        programs: [],
+        selectedProgram: null,
+        filterOptions: {
+            training_types: [],
+            modalities: [],
+            visibilities: [],
+            statuses: [],
+        },
+        pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            totalItems: 0,
+        },
+    })
 
-  const normalizeFilters = (filters) => {
-    return {
-      training_types: filters.training_types || {},
-      modalities: filters.modalities || {},
-      visibilities: filters.visibilities || {},
-      statuses: filters.statuses || {}
-    }
-  }
-
-  const fetchPrograms = useCallback(async (page = 1, filters = {}) => {
-    setState(prev => ({ ...prev, loading: true }))
-    
-    try {
-      const { data } = await axios.get('/api/admin/training-programs', {
-        params: {
-          page,
-          ...filters,
-          per_page: 10 // Forzamos 10 items por página
+    const normalizeFilters = filters => {
+        return {
+            training_types: filters.training_types || {},
+            modalities: filters.modalities || {},
+            visibilities: filters.visibilities || {},
+            statuses: filters.statuses || {},
         }
-      })
-
-      if (data.success) {
-        setState(prev => ({
-          ...prev,
-          programs: data.programs.data,
-          filterOptions: normalizeFilters(data.filters),
-          pagination: {
-            currentPage: data.programs.current_page,
-            totalPages: data.programs.last_page,
-            totalItems: data.programs.total
-          },
-          error: null
-        }))
-      }
-      return data
-    } catch (error) {
-      const errorData = error.response?.data || {}
-      setState(prev => ({
-        ...prev,
-        error: errorData.message || 'Error al cargar programas'
-      }))
-      return { success: false, ...errorData }
-    } finally {
-      setState(prev => ({ ...prev, loading: false }))
     }
-  }, [])
+
+    const fetchPrograms = useCallback(async (page = 1, filters = {}) => {
+        setState(prev => ({ ...prev, loading: true }))
+
+        try {
+            const { data } = await axios.get('/api/admin/training-programs', {
+                params: {
+                    page,
+                    ...filters,
+                    per_page: 10, // Forzamos 10 items por página
+                },
+            })
+
+            if (data.success) {
+                setState(prev => ({
+                    ...prev,
+                    programs: data.programs.data,
+                    filterOptions: normalizeFilters(data.filters),
+                    pagination: {
+                        currentPage: data.programs.current_page,
+                        totalPages: data.programs.last_page,
+                        totalItems: data.programs.total,
+                    },
+                    error: null,
+                }))
+            }
+            return data
+        } catch (error) {
+            const errorData = error.response?.data || {}
+            setState(prev => ({
+                ...prev,
+                error: errorData.message || 'Error al cargar programas',
+            }))
+            return { success: false, ...errorData }
+        } finally {
+            setState(prev => ({ ...prev, loading: false }))
+        }
+    }, [])
 
     const createProgram = useCallback(async formData => {
         setState(prev => ({
@@ -106,37 +106,109 @@ export const useTrainingProgram = () => {
         }
     }, [])
 
-    const fetchProgram = useCallback(async (id) => {
-        setState(prev => ({ ...prev, loading: true, error: null }));
-        
+    const fetchProgram = useCallback(async id => {
+        setState(prev => ({ ...prev, loading: true, error: null }))
+
         try {
-          const { data } = await axios.get(`/api/admin/training-programs/${id}`);
-          
-          if (data.success) {
-            setState(prev => ({
-              ...prev,
-              selectedProgram: data.program,
-              error: null
-            }));
-          }
-          return data;
+          const { data } = await axios.get(`/api/admin/training-programs/${id}`, {
+            params: {
+              include: 'departments,employees' // Forzar carga de relaciones
+            }
+          });
+
+            if (data.success) {
+                setState(prev => ({
+                    ...prev,
+                    selectedProgram: data.program,
+                    error: null,
+                }))
+            }
+            return data
         } catch (error) {
-          const errorData = error.response?.data || {};
-          setState(prev => ({
-            ...prev,
-            error: errorData.message || 'Error al cargar el programa',
-            selectedProgram: null
-          }));
-          return { success: false, ...errorData };
+            const errorData = error.response?.data || {}
+            setState(prev => ({
+                ...prev,
+                error: errorData.message || 'Error al cargar el programa',
+                selectedProgram: null,
+            }))
+            return { success: false, ...errorData }
         } finally {
-          setState(prev => ({ ...prev, loading: false }));
+            setState(prev => ({ ...prev, loading: false }))
         }
-      }, []);
+    }, [])
+
+    const deleteProgram = useCallback(async id => {
+        setState(prev => ({ ...prev, loading: true, error: null }))
+
+        try {
+            const { data } = await axios.delete(
+                `/api/admin/training-programs/${id}`,
+            )
+
+            if (data.success) {
+                setState(prev => ({
+                    ...prev,
+                    programs: prev.programs.filter(
+                        program => program.id !== id,
+                    ),
+                    selectedProgram: null,
+                    error: null,
+                }))
+            }
+            return data
+        } catch (error) {
+            const errorData = error.response?.data || {}
+            setState(prev => ({
+                ...prev,
+                error: errorData.message || 'Error al eliminar el programa',
+            }))
+            return { success: false, ...errorData }
+        } finally {
+            setState(prev => ({ ...prev, loading: false }))
+        }
+    }, [])
+
+    const updateProgram = useCallback(async (id, formData) => {
+        setState(prev => ({
+            ...prev,
+            loading: true,
+            error: null,
+            validationErrors: {},
+        }))
+
+        try {
+            const { data } = await axios.put(
+                `/api/admin/training-programs/${id}`,
+                formData,
+            )
+
+            if (data.success) {
+                setState(prev => ({
+                    ...prev,
+                    selectedProgram: data.program,
+                    error: null,
+                }))
+            }
+            return data
+        } catch (error) {
+            const errorData = error.response?.data || {}
+            setState(prev => ({
+                ...prev,
+                error: errorData.message || 'Error al actualizar el programa',
+                validationErrors: errorData.errors || {},
+            }))
+            return { success: false, ...errorData }
+        } finally {
+            setState(prev => ({ ...prev, loading: false }))
+        }
+    }, [])
 
     return {
         ...state,
         createProgram,
         fetchPrograms,
         fetchProgram,
+        deleteProgram,
+        updateProgram
     }
 }

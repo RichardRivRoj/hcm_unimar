@@ -12,6 +12,7 @@ const StandardTable = ({
     onPageChange,
     onFilterChange,
     actions,
+    loading,
 }) => {
     return (
         <div className="max-w-full p-6 mx-auto mt-6 ml-6 overflow-hidden bg-white rounded-lg shadow-lg">
@@ -128,4 +129,4 @@ const StandardTable = ({
     )
 }
 
-export default StandardTable;
+export default StandardTable

@@ -1,8 +1,10 @@
+'use client'
+
 import { useState, useEffect } from 'react'
 import useEmployeeReferences from '@/hooks/useEmployeeReference'
 import { Skeleton } from '@/components/skeleton'
 import { Alert, AlertDescription } from '@/components/alert'
-import Modal from '@/components/Modal'
+import { Modal } from '@/components/Modal'
 import writtenNumber from 'written-number'
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import PDFReferenceDocument from '@/components/PDFReferenceDocument'

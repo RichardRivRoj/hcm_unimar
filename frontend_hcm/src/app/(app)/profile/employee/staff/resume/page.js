@@ -1,23 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-
-import DocumentPreview from './DocumentPreview'
-import EmploymentDocuments from './EmploymentDocuments'
-import StudyDocuments from './StudyDocuments'
-
 import {
     BookMarked,
     BookUser,
-    BriefcaseBusiness,
     ClipboardPlus,
     FileBadge,
     FileUser,
-    FolderCog,
     GraduationCap,
     IdCard,
     Newspaper,
-    NotepadText,
     School,
     ScrollText,
 } from 'lucide-react'
@@ -26,9 +18,12 @@ import CertificateDocuments from './CertificateDocuments'
 import DiplomaDocuments from './DiplomaDocuments'
 import IdentificationDocuments from './IdentificationDocuments'
 import ContractDocuments from './ContractDocuments'
-import BanckAccountDocuments from './BankAccounts'
+import BankAccountDocuments from './BankAccountDocuments'
 import ReposeDocuments from './ReposeDocuments'
 import ReferenceDocuments from './ReferenceDocuments'
+import DocumentPreview from '@/components/DocumentPreview'
+import EmploymentDocuments from './EmploymentDocuments'
+import StudyDocuments from './StudyDocuments'
 
 const documentCategories = [
     { id: 1, name: 'Contratos', icon: <ScrollText /> }, // Asegúrate que existe esta categoría
@@ -43,7 +38,7 @@ const documentCategories = [
     { id: 10, name: 'Referencias', icon: <BookMarked /> },
 ]
 
-export default function DigitalFile() {
+const DigitalFile = () => {
     const [selectedCategory, setSelectedCategory] = useState('Contratos')
     const [selectedDocument, setSelectedDocument] = useState(null)
 
@@ -84,70 +79,30 @@ export default function DigitalFile() {
                             </h1>
                         </div>
 
-                        {selectedCategory === 'Contratos' ? (
-                            <ContractDocuments /> // Componente personalizado para Contratos
-                        ) : (
-                            // Contenido original para otras categorías
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+                        {/* Renderizado condicional unificado */}
+                        {selectedCategory === 'Contratos' && (
+                            <ContractDocuments />
                         )}
-
-                        {selectedCategory === 'Empleos' ? (
-                            <EmploymentDocuments /> // Componente personalizado para empleos
-                        ) : (
-                            // Contenido original para otras categorías
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+                        {selectedCategory === 'Empleos' && (
+                            <EmploymentDocuments />
                         )}
-
-                        {selectedCategory === 'Estudios' ? (
-                            <StudyDocuments /> // Componente personalizado para Estudios
-                        ) : (
-                            // Contenido original para otras categorías
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+                        {selectedCategory === 'Estudios' && <StudyDocuments />}
+                        {selectedCategory === 'Cursos' && <CourseDocuments />}
+                        {selectedCategory === 'Certificados' && (
+                            <CertificateDocuments />
                         )}
-
-                        {selectedCategory === 'Cursos' ? (
-                            <CourseDocuments /> // Componente personalizado para Cursos
-                        ) : (
-                            // Contenido original para otras categorías
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+                        {selectedCategory === 'Diplomados' && (
+                            <DiplomaDocuments />
                         )}
-
-                        {selectedCategory === 'Certificados' ? (
-                            <CertificateDocuments /> // Componente personalizado para Cursos
-                        ) : (
-                            // Contenido original para otras categorías
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+                        {selectedCategory === 'Identificaciones' && (
+                            <IdentificationDocuments />
                         )}
-                        {selectedCategory === 'Diplomados' ? (
-                            <DiplomaDocuments /> // Componente personalizado para Cursos
-                        ) : (
-                            // Contenido original para otras categorías
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+                        {selectedCategory === 'Cuentas de Banco' && (
+                            <BankAccountDocuments />
                         )}
-
-                        {selectedCategory === 'Identificaciones' ? (
-                            <IdentificationDocuments /> // Componente personalizado para Cursos
-                        ) : (
-                            // Contenido original para otras categorías
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
-                        )}
-                        {selectedCategory === 'Cuentas de Banco' ? (
-                            <BanckAccountDocuments /> // Componente personalizado para Contratos
-                        ) : (
-                            // Contenido original para otras categorías
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
-                        )}
-                        {selectedCategory === 'Reposos' ? (
-                            <ReposeDocuments /> // Componente personalizado para Contratos
-                        ) : (
-                            // Contenido original para otras categorías
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
-                        )}
-                        {selectedCategory === 'Referencias' ? (
-                            <ReferenceDocuments /> // Componente personalizado para Contratos
-                        ) : (
-                            // Contenido original para otras categorías
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+                        {selectedCategory === 'Reposos' && <ReposeDocuments />}
+                        {selectedCategory === 'Referencias' && (
+                            <ReferenceDocuments />
                         )}
                     </>
                 ) : (
@@ -160,3 +115,5 @@ export default function DigitalFile() {
         </div>
     )
 }
+
+export default DigitalFile;

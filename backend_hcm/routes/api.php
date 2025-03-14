@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\EvaluationPeriodController;
 use App\Http\Controllers\Admin\FileEmployeeController;
 use App\Http\Controllers\Admin\FormEvaluationDepartmentController;
 use App\Http\Controllers\Admin\NewTrainingProgramController;
+use App\Http\Controllers\Admin\RegistrationHistoryController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\AgendaResultController;
 use App\Http\Controllers\BankEmployeeController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DiplomaController;
 use App\Http\Controllers\Employee\EmployeeRequestController;
+use App\Http\Controllers\Employee\EmployeeTrainingController;
 use App\Http\Controllers\Employee\NewPhotoController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmploymentController;
@@ -259,6 +261,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('/', [NewTrainingProgramController::class, 'store'])->name('training-programs.store');
             Route::get('/', [NewTrainingProgramController::class, 'index'])->name('training-programs.index');
             Route::get('/{id}', [NewTrainingProgramController::class, 'show'])->name('training-programs.show');
+            Route::put('/{id}', [NewTrainingProgramController::class, 'update'])->name('training-programs.update');
+            Route::delete('/{id}', [NewTrainingProgramController::class, 'destroy'])->name('training-programs.destroy');
+        });
+
+        Route::prefix('registration-history')->group(function () {
+            Route::get('/', [RegistrationHistoryController::class, 'index'])->name('registration-history.index');
+            Route::get('/{id}', [RegistrationHistoryController::class, 'show'])->name('registration-history.show');
+            Route::get('/{id}/enroll', [RegistrationHistoryController::class, 'showEnroll'])->name('registration-history.showEnroll');
         });
 
         
@@ -280,6 +290,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::delete('/{id}', [EmployeeRequestController::class, 'destroy'])->name('requests.destroy');
             Route::put('/{id}', [EmployeeRequestController::class, 'update'])->name('requests.update');
             Route::get('/{id}', [EmployeeRequestController::class, 'show'])->name('requests.show');
+        });
+
+        Route::prefix('training-programs')->group(function () {
+            Route::post('/enroll', [EmployeeTrainingController::class, 'store'])->name('training-programs.enroll.store');
+            Route::get('/', [EmployeeTrainingController::class, 'index'])->name('training-programs.index');
+            Route::get('/{id}', [EmployeeTrainingController::class, 'show'])->name('training-programs.show');
+            Route::delete('/{program}/cancel', [EmployeeTrainingController::class, 'destroy'])->name('training-programs.destroy');
         });
     });
 

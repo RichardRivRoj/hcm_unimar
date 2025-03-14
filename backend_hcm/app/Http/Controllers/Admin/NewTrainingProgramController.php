@@ -149,42 +149,73 @@ class NewTrainingProgramController extends Controller
 
     private function handleVisibilityRelations($program, $data)
     {
+        // Limpiar relaciones existentes solo si cambió la visibilidad
+        if ($program->wasChanged('visibility_id')) {
+            $program->departments()->detach();
+            EmployeeTrainingEnrollment::where('training_program_id', $program->id)->delete();
+        }
+
         switch ($program->visibility_id) {
-            case 1: // Público
+            case 1:
                 $this->sendPublicNotifications($program);
                 break;
 
-            case 3: // Departamento
-                $this->handleDepartmentalProgram($program, $data['departments']);
-                $this->sendDepartmentalNotifications($program, $data['departments']);
+            case 3:
+                $this->handleDepartmentalProgram($program, $data['departments'] ?? []);
+                $this->sendDepartmentalNotifications($program, $data['departments'] ?? []);
                 break;
 
-            case 2: // Privado
-                $this->handlePrivateProgram($program, $data['employees']);
-                $this->sendPrivateNotifications($program, $data['employees']);
+            case 2:
+                $this->handlePrivateProgram($program, $data['employees'] ?? []);
+                $this->sendPrivateNotifications($program, $data['employees'] ?? []);
                 break;
         }
     }
 
     private function handleDepartmentalProgram($program, $departments)
     {
-        // 1. Vincular departamentos (ahora usando belongsToMany)
+        // Sincronizar departamentos (evita duplicados)
         $program->departments()->sync($departments);
 
-        // 2. Obtener empleados activos en departamentos
-        $employeeIds = Employee::active()
+        // Obtener empleados actuales y nuevos
+        $currentEmployees = $program->employees()->pluck('employees.id');
+        $newEmployeeIds = Employee::active()
             ->whereHas('contracts', function ($query) use ($departments) {
                 $query->whereIn('department_id', $departments);
             })
-            ->pluck('id');
+            ->pluck('id')
+            ->diff($currentEmployees); // Solo nuevos empleados
 
-        // 3. Crear inscripciones masivas
-        $this->createEnrollments($program->id, collect($employeeIds));
+        // Crear inscripciones solo para nuevos
+        $this->createEnrollments($program->id, $newEmployeeIds);
+
+        // Eliminar empleados que ya no pertenecen
+        $removedEmployees = $currentEmployees->diff(
+            Employee::active()
+                ->whereHas('contracts', function ($query) use ($departments) {
+                    $query->whereIn('department_id', $departments);
+                })
+                ->pluck('id')
+        );
+        EmployeeTrainingEnrollment::where('training_program_id', $program->id)
+            ->whereIn('employee_id', $removedEmployees)
+            ->delete();
     }
 
     private function handlePrivateProgram($program, $employeeIds)
     {
-        $this->createEnrollments($program->id, collect($employeeIds));
+        // Sincronizar empleados (elimina los no seleccionados y agrega nuevos)
+        $currentEmployees = $program->employees()->pluck('employees.id');
+        $newEmployees = collect($employeeIds)->diff($currentEmployees);
+        $removedEmployees = $currentEmployees->diff($employeeIds);
+
+        // Eliminar relaciones removidas
+        EmployeeTrainingEnrollment::where('training_program_id', $program->id)
+            ->whereIn('employee_id', $removedEmployees)
+            ->delete();
+
+        // Crear nuevas inscripciones
+        $this->createEnrollments($program->id, $newEmployees);
     }
 
     private function createEnrollments($programId, $employeeIds)
@@ -312,12 +343,11 @@ class NewTrainingProgramController extends Controller
                 'visibility:id,name,description',
                 'status:id,name',
             ])->findOrFail($id);
-    
+
             return response()->json([
                 'success' => true,
                 'program' => $program
             ]);
-    
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -337,16 +367,102 @@ class NewTrainingProgramController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+        // Validación similar al store pero con reglas opcionales para algunos campos
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'start_date' => 'sometimes|date',
+            'content' => 'sometimes|json',
+            'end_date' => 'sometimes|date|after_or_equal:start_date',
+            'visibility_id' => 'sometimes|exists:program_visibilities,id',
+            'training_type_id' => 'sometimes|exists:training_types,id',
+            'modality_id' => 'sometimes|exists:training_modalities,id',
+            'status_id' => 'sometimes|exists:statuses,id',
+            'departments' => 'nullable|array',
+            'departments.*' => 'sometimes|exists:departments,id',
+            'employees' => 'nullable|array',
+            'employees.*' => 'sometimes|exists:employees,id',
+            'limit' => 'nullable|integer|min:1',
+        ]);
+
+        // Validaciones condicionales
+        $validator->sometimes('departments', 'required|min:1', function ($input) {
+            return $input->visibility_id == 3;
+        });
+
+        $validator->sometimes('employees', 'required|min:1', function ($input) {
+            return $input->visibility_id == 2;
+        });
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+                'message' => 'Error de validación'
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+    
+            $program = TrainingProgram::findOrFail($id);
+            $originalData = $program->toArray();
+    
+            // Actualizar campos principales
+            $program->update($validator->validated());
+    
+            // Manejar relaciones siempre, no solo si cambia la visibilidad
+            $this->handleVisibilityRelations($program, $validator->validated());
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'program' => $program->load(['departments', 'employees']), // Incluir ambas relaciones
+                'message' => 'Programa actualizado exitosamente'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->validator->errors(),
+                'message' => 'Error de validación'
+            ], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        //
+        try {
+            DB::beginTransaction();
+
+            $program = TrainingProgram::findOrFail($id);
+
+            $program->update(['status_id' => 2]); // Verificar ID correcto para "Inactivo"
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'program' => $program,
+                'message' => 'Programa desactivado exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al desactivar el programa: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

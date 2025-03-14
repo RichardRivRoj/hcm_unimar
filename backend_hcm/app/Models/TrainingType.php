@@ -11,8 +11,8 @@ class TrainingType extends Model
         'description',
     ];
 
-    public function program()
+    public function programs()
     {
-        return $this->hasOne(TrainingProgram::class, 'training_type_id');
+        return $this->hasMany(TrainingProgram::class, 'training_type_id');
     }
 }

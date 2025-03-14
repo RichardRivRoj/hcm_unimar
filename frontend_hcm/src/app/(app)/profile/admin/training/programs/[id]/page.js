@@ -1,28 +1,40 @@
 'use client'
 
 import { useTrainingProgram } from '@/hooks/admin/useTrainingPrograms'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Loader from '@/components/Loader'
 import { Alert, AlertDescription } from '@/components/alert'
-import { ArrowLeft, Calendar, CalendarCheck, Trash2 } from 'lucide-react'
+import { ArrowLeft, Calendar, CalendarCheck, Edit, Trash2 } from 'lucide-react'
+import { DeleteModal, GeneralModal } from '@/components/Modal'
+import UpdateTrainingProgramForm from './UpdateTrainingForm'
 
 const ProgramDetailPage = ({ params }) => {
     const id = params.id
-    const { selectedProgram, fetchProgram, loading, error } =
+    const { selectedProgram, fetchProgram, loading, error, deleteProgram } =
         useTrainingProgram()
-    const router = useRouter();
+    const router = useRouter()
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
     useEffect(() => {
         fetchProgram(id)
     }, [id])
 
-    if (loading) return <Loader />;
-    if (error) return <Alert>
-        <AlertDescription>
-            {error}
-        </AlertDescription>
-    </Alert>
+    const handleDelete = async () => {
+        const { success } = await deleteProgram(id)
+        if (success) {
+            router.push('/profile/admin/training/programs')
+        }
+    }
+
+    if (loading) return <Loader />
+    if (error)
+        return (
+            <Alert>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        )
 
     return (
         <div className="min-h-screen p-6 ml-12 bg-gray-50">
@@ -38,17 +50,61 @@ const ProgramDetailPage = ({ params }) => {
 
                     <div className="flex gap-4">
                         {/* Botón Eliminar */}
-                        <button className="p-2 text-red-600 transition-colors rounded-md hover:bg-red-100">
-                            <Trash2 size={24} />
-                        </button>
+                        {selectedProgram?.status?.name === 'Activo' && (
+                            <button
+                                onClick={() => setIsDeleteModalOpen(true)}
+                                className="p-2 text-red-600 transition-colors rounded-md hover:bg-red-100">
+                                <Trash2 size={24} />
+                            </button>
+                        )}
 
                         {/* Botón Editar */}
-                        <button className="px-4 py-2 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7a] transition-colors">
-                            Editar Programa
-                        </button>
+                        <div className="flex flex-row">
+                            <button
+                                onClick={() => setIsEditModalOpen(true)}
+                                className="px-6 py-2 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7a] transition-colors flex flex-row">
+                                <Edit size={20} className="mr-2" />
+                                Editar Programa
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* Modal de Eliminación */}
+            <DeleteModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                title="Eliminar Programa"
+                actions={
+                    <>
+                        <button
+                            onClick={() => setIsDeleteModalOpen(false)}
+                            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={handleDelete}
+                            className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">
+                            Eliminar
+                        </button>
+                    </>
+                }>
+                <p>¿Estás seguro de que deseas eliminar este programa?</p>
+            </DeleteModal>
+
+            {/* Modal de Edición */}
+            <GeneralModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                title="Editar Programa"
+                size="p2xl" // Asegúrate de que tu Modal soporte diferentes tamaños
+            >
+                <UpdateTrainingProgramForm
+                    programId={id}
+                    onClose={() => setIsEditModalOpen(false)}
+                />
+            </GeneralModal>
 
             {/* Contenido principal */}
             <div className="p-6 bg-white rounded-lg shadow-lg">
@@ -101,7 +157,11 @@ const ProgramDetailPage = ({ params }) => {
                                     <span className="text-gray-600">
                                         Inicio:{' '}
                                         {new Date(
-                                            selectedProgram?.start_date,
+                                            new Date(
+                                                selectedProgram?.start_date,
+                                            ).toLocaleString('en-US', {
+                                                timeZone: 'America/Caracas',
+                                            }),
                                         ).toLocaleDateString()}
                                     </span>
                                 </div>
@@ -113,7 +173,11 @@ const ProgramDetailPage = ({ params }) => {
                                     <span className="text-gray-600">
                                         Fin:{' '}
                                         {new Date(
-                                            selectedProgram?.end_date,
+                                            new Date(
+                                                selectedProgram?.end_date,
+                                            ).toLocaleString('en-US', {
+                                                timeZone: 'America/Caracas',
+                                            }),
                                         ).toLocaleDateString()}
                                     </span>
                                 </div>
