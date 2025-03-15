@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
         paddingBottom: 15,
     },
     logo: {
-        width: 60,
-        height: 60,
+        width: 270,
+        height: 50,
         marginRight: 20,
     },
     headerText: {
@@ -183,26 +183,46 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: 'bold',
     },
+    footer: {
+        position: 'absolute',
+        bottom: 30,
+        left: 40,
+        right: 40,
+        fontSize: 8,
+        color: '#666',
+        textAlign: 'center',
+    },
 })
 
 const EvaluationPDF = ({ evaluationDetail }) => {
     if (!evaluationDetail || !evaluationDetail.evaluation_details) {
-        return <div>No hay datos disponibles para generar el PDF.</div>;
+        return <div>No hay datos disponibles para generar el PDF.</div>
     }
     const totalScoreText = writtenNumber(
         Math.floor(evaluationDetail.evaluation_details.total_score),
-        { noAnd: true }
+        { noAnd: true },
     )
+
+    const currentDate = new Date().toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        timeZone: 'UTC',
+    })
 
     return (
         <Document>
             <Page size="A4" style={styles.page}>
                 {/* Encabezado */}
                 <View style={styles.header}>
-                    <Image src="/logo-unimar.png" style={styles.logo} />
+                    <Image src="/logo-5.png" style={styles.logo} />
                     <View style={styles.headerText}>
-                        <Text style={styles.title}>Evaluación de Desempeño</Text>
-                        <Text style={styles.subtitle}>Dirección de Talento Humano</Text>
+                        <Text style={styles.title}>
+                            Evaluación de Desempeño
+                        </Text>
+                        <Text style={styles.subtitle}>
+                            Dirección de Talento Humano
+                        </Text>
                     </View>
                 </View>
 
@@ -218,8 +238,15 @@ const EvaluationPDF = ({ evaluationDetail }) => {
                     <View style={styles.dataRow}>
                         <Text style={styles.dataLabel}>Cédula:</Text>
                         <Text style={styles.dataValue}>
-                            {evaluationDetail.evaluated_employee.identification.type}-
-                            {evaluationDetail.evaluated_employee.identification.value}
+                            {
+                                evaluationDetail.evaluated_employee
+                                    .identification.type
+                            }
+                            -
+                            {
+                                evaluationDetail.evaluated_employee
+                                    .identification.value
+                            }
                         </Text>
                     </View>
                     <View style={styles.dataRow}>
@@ -250,27 +277,33 @@ const EvaluationPDF = ({ evaluationDetail }) => {
 
                 {/* Factores de evaluación */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>FACTORES DE EVALUACIÓN</Text>
+                    <Text style={styles.sectionTitle}>
+                        FACTORES DE EVALUACIÓN
+                    </Text>
                     <View style={styles.factorTable}>
                         <View style={styles.tableHeader}>
                             <Text style={styles.headerFactor}>Factor</Text>
-                            <Text style={styles.headerDescription}>Descripción</Text>
+                            <Text style={styles.headerDescription}>
+                                Descripción
+                            </Text>
                             <Text style={styles.headerScore}>Puntuación</Text>
                             <Text style={styles.headerScore}>Comentarios</Text>
                         </View>
-                        
-                        {evaluationDetail.sections.map((section) => (
+
+                        {evaluationDetail.sections.map(section => (
                             <View key={section.section_id}>
                                 {section.questions.map((question, index) => (
-                                    <View 
-                                        key={question.question_id} 
+                                    <View
+                                        key={question.question_id}
                                         style={[
                                             styles.factorRow,
-                                            index === section.questions.length - 1 && { borderBottom: 0 }
-                                        ]}
-                                    >
+                                            index ===
+                                                section.questions.length -
+                                                    1 && { borderBottom: 0 },
+                                        ]}>
                                         <Text style={styles.factorCell}>
-                                            {index === 0 && section.section_name}
+                                            {index === 0 &&
+                                                section.section_name}
                                         </Text>
                                         <Text style={styles.questionCell}>
                                             {question.question_text}
@@ -292,9 +325,11 @@ const EvaluationPDF = ({ evaluationDetail }) => {
                 <View style={styles.ratingTable}>
                     <View style={styles.tableHeader}>
                         <Text style={styles.ratingCell}>Puntuación</Text>
-                        <Text style={styles.ratingCell}>Nivel de desempeño</Text>
+                        <Text style={styles.ratingCell}>
+                            Nivel de desempeño
+                        </Text>
                     </View>
-                    {evaluationDetail.rating_scale.map((nivel) => (
+                    {evaluationDetail.rating_scale.map(nivel => (
                         <View key={nivel.score} style={styles.ratingRow}>
                             <Text style={styles.ratingCell}>{nivel.score}</Text>
                             <Text style={styles.ratingCell}>{nivel.label}</Text>
@@ -305,8 +340,9 @@ const EvaluationPDF = ({ evaluationDetail }) => {
                 {/* Puntuación total */}
                 <View style={styles.totalScore}>
                     <Text>
-                        PUNTAJE TOTAL: {evaluationDetail.evaluation_details.total_score} 
-                        ({totalScoreText})
+                        PUNTAJE TOTAL:{' '}
+                        {evaluationDetail.evaluation_details.total_score}(
+                        {totalScoreText})
                     </Text>
                 </View>
 
@@ -315,7 +351,10 @@ const EvaluationPDF = ({ evaluationDetail }) => {
                     <Text style={styles.sectionTitle}>OBSERVACIONES</Text>
                     <View style={styles.observationBox}>
                         {[...Array(4)].map((_, i) => (
-                            <View key={i} style={{ height: 20, marginBottom: 5 }} />
+                            <View
+                                key={i}
+                                style={{ height: 20, marginBottom: 5 }}
+                            />
                         ))}
                     </View>
                 </View>
@@ -335,6 +374,18 @@ const EvaluationPDF = ({ evaluationDetail }) => {
                         <View style={styles.signatureLine} />
                     </View>
                 </View>
+
+                {/* Pie de página */}
+                <View style={styles.footer}>
+                    <Text>
+                        Certificado generado electrónicamente el {currentDate} -
+                        Válido mediante resolución N° 001-2024
+                    </Text>
+                    <Text style={{ marginTop: 4 }}>
+                        Este documento es de carácter oficial y forma parte de
+                        los registros corporativos
+                    </Text>
+                </View>
             </Page>
         </Document>
     )
@@ -343,11 +394,12 @@ const EvaluationPDF = ({ evaluationDetail }) => {
 const DownloadEvaluationPDF = ({ evaluationDetail }) => (
     <PDFDownloadLink
         document={<EvaluationPDF evaluationDetail={evaluationDetail} />}
-        fileName={`evaluacion_${evaluationDetail?.evaluated_employee?.full_name?.replace(/ /g, '_') || 'evaluacion'}.pdf`}
-    >
+        fileName={`evaluacion_${evaluationDetail?.evaluated_employee?.full_name?.replace(/ /g, '_') || 'evaluacion'}.pdf`}>
         {({ loading, error }) => {
             if (error) console.error('Error generando PDF:', error)
-            return loading ? 'Generando documento...' : 'Descargar evaluación PDF'
+            return loading
+                ? 'Generando documento...'
+                : 'Descargar evaluación PDF'
         }}
     </PDFDownloadLink>
 )

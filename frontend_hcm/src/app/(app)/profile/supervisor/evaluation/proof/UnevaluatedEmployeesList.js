@@ -6,6 +6,7 @@ import StandardTable from '@/components/StandardTable'
 import { useRouter } from 'next/navigation'
 import { FaClipboardList } from 'react-icons/fa'
 import Loader from '@/components/Loader'
+import StandardLoader from '@/components/StandardLoader'
 
 const UnevaluatedEmployeesList = () => {
     const router = useRouter()
@@ -65,7 +66,7 @@ const UnevaluatedEmployeesList = () => {
         },
     ]
 
-    if (loading) return <Loader />
+    if (loading) return <StandardLoader />
 
     if (error)
         return (

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import useCandidates from '@/hooks/useCandidate'
 import { Eye } from 'lucide-react' // Importar ícono de "ver detalles"
 import useStatusApplications from '@/hooks/statusApplicationsView'
+import StandardLoader from '@/components/StandardLoader'
 
 const CandidatesPage = () => {
     const router = useRouter()
@@ -32,13 +33,7 @@ const CandidatesPage = () => {
     }
 
     if (loading)
-        return (
-            <div className="p-6 space-y-4">
-                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-        )
+        return <StandardLoader />
     if (error) return <div className="p-6 text-red-600">Error: {error}</div>
 
     return (

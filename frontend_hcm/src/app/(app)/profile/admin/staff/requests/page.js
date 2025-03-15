@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/alert'
 import { Skeleton } from '@/components/skeleton'
 import useDebounce from '@/hooks/general/useDebounce'
 import { useAdminRequests } from '@/hooks/admin/useAdminRequests'
+import StandardLoader from '@/components/StandardLoader'
 
 const AdminRequests = () => {
     const router = useRouter()
@@ -89,13 +90,7 @@ const AdminRequests = () => {
     }
 
     if (loading) {
-        return (
-            <div className="p-6 space-y-4">
-                {[...Array(meta.per_page || 6)].map((_, i) => (
-                    <Skeleton key={i} className="w-full h-16 rounded-lg" />
-                ))}
-            </div>
-        )
+        return <StandardLoader />
     }
 
     return (

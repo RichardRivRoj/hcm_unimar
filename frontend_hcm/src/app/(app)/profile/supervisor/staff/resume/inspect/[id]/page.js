@@ -12,10 +12,11 @@ import useDepartmentEmployees from '@/hooks/supervisor/useDepartmentEmployees'
 import Button from '@/components/Button'
 import { Alert, AlertDescription } from '@/components/alert'
 import { Skeleton } from '@/components/skeleton'
+import StandardLoader from '@/components/StandardLoader'
 
 const DepartmentEmployee = ({ params }) => {
     const { id } = params
-    const { employee, fetchEmployee, errorEmployee } = useDepartmentEmployees()
+    const { employee, fetchEmployee, errorEmployee, loading } = useDepartmentEmployees()
 
     useEffect(() => {
         if (id) {
@@ -23,12 +24,15 @@ const DepartmentEmployee = ({ params }) => {
         }
     }, [id])
 
+    if (loading) return <StandardLoader />
+
     if (errorEmployee)
         return (
             <Alert variant="destructive">
                 <AlertDescription>{errorEmployee}</AlertDescription>
             </Alert>
         )
+
     if (!employee)
         return (
             <div className="space-y-4">
@@ -37,6 +41,7 @@ const DepartmentEmployee = ({ params }) => {
                 ))}
             </div>
         )
+
     return (
         <div className="max-w-5xl p-6 mx-auto rounded-lg shadow-md bg-gray-50">
             <div className="mb-8">

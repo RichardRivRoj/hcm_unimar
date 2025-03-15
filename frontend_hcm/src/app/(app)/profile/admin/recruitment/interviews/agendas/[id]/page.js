@@ -9,6 +9,7 @@ import useStatuses from '@/hooks/useStatuses'
 import DetailCard from '@/components/DetailCard'
 import Modal from '@/components/Modal'
 import axios from '@/lib/axios'
+import StandardLoader from '@/components/StandardLoader'
 
 const AgendaDetail = ({ params }) => {
     const router = useRouter()
@@ -155,22 +156,7 @@ const AgendaDetail = ({ params }) => {
     }
 
     if (loading) {
-        return (
-            <div className="max-w-4xl p-8 mx-auto space-y-6 animate-pulse">
-                <div className="w-3/4 h-10 bg-gray-100 rounded-full"></div>
-                <div className="w-2/3 h-4 bg-gray-100 rounded"></div>
-                <div className="grid gap-4 mt-8 md:grid-cols-2">
-                    {[...Array(5)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="p-4 space-y-2 rounded-lg bg-gray-50">
-                            <div className="w-1/4 h-4 bg-gray-100 rounded"></div>
-                            <div className="w-3/4 h-6 bg-gray-100 rounded"></div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
+        return <StandardLoader />
     }
 
     if (error) {

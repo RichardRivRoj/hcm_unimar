@@ -5,11 +5,12 @@ import { useState } from 'react'
 import axios from '@/lib/axios'
 import useCandidate from '@/hooks/useCandidateShow'
 import DetailCard from '@/components/DetailCard'
-import Modal from '@/components/Modal'
+import { Modal } from '@/components/Modal'
 import useScheduleInterview from '@/hooks/useScheduleInterview'
 import useTypeAgendas from '@/hooks/typeAgendasView'
 import DownloadCVButton from '@/components/DownloadCVButton'
 import { Alert, AlertDescription } from '@/components/alert'
+import StandardLoader from '@/components/StandardLoader'
 
 const CandidateDetails = ({ params }) => {
     const router = useRouter()
@@ -141,22 +142,7 @@ const CandidateDetails = ({ params }) => {
     }
 
     if (loadingCandidate) {
-        return (
-            <div className="max-w-4xl p-8 mx-auto space-y-6 animate-pulse">
-                <div className="w-3/4 h-10 bg-gray-100 rounded-full"></div>
-                <div className="w-2/3 h-4 bg-gray-100 rounded"></div>
-                <div className="grid gap-4 mt-8 md:grid-cols-2">
-                    {[...Array(5)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="p-4 space-y-2 rounded-lg bg-gray-50">
-                            <div className="w-1/4 h-4 bg-gray-100 rounded"></div>
-                            <div className="w-3/4 h-6 bg-gray-100 rounded"></div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
+        return <StandardLoader />
     }
 
     if (errorCandidate) return <div>Error: {errorCandidate}</div>

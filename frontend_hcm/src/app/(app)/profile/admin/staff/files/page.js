@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/alert'
 import { Skeleton } from '@/components/skeleton'
 import useEmployeeFiles from '@/hooks/admin/useEmployeeFiles'
 import useDebounce from '@/hooks/general/useDebounce'
+import StandardLoader from '@/components/StandardLoader'
 
 const AdminEmployeesList = () => {
     const router = useRouter()
@@ -93,14 +94,7 @@ const AdminEmployeesList = () => {
     }, [debouncedIdentification])
 
     if (loading)
-        return (
-            <div className="space-y-4">
-                {[...Array(meta.perPage)].map((_, i) => (
-                    <Skeleton key={i} className="w-full h-16 rounded-lg" />
-                ))}
-            </div>
-        )
-
+        return <StandardLoader />
     if (error) {
         return (
             <Alert variant="destructive">

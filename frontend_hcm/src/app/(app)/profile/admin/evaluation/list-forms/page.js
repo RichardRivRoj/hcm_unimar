@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Eye } from 'lucide-react';
 import StandardTable from '@/components/StandardTable';
 import useFormEvaluationDepartments from '@/hooks/admin/useFormEvaluationDepartments';
+import StandardLoader from '@/components/StandardLoader';
 
 const EvaluationPage = () => {
     const router = useRouter();
@@ -76,6 +77,8 @@ const EvaluationPage = () => {
             }))
         }
     ];
+
+    if (loading) return <StandardLoader />
 
     return (
         <div className="container p-4 mx-auto">

@@ -9,6 +9,7 @@ import usePositions from '@/hooks/usePositions'
 import useCreateVacancies from '@/hooks/useCreateVacancies'
 import useVacancies from '@/hooks/useVacancies'
 import useStatuses from '@/hooks/useStatuses'
+import StandardLoader from '@/components/StandardLoader'
 
 const JobListPage = () => {
     const router = useRouter()
@@ -144,13 +145,7 @@ const JobListPage = () => {
         formState.mode_id
 
     if (loading)
-        return (
-            <div className="p-6 space-y-4">
-                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-        )
+        return <StandardLoader />
     if (error) return <div className="p-6 text-red-600">Error: {error}</div>
 
     return (

@@ -92,7 +92,6 @@ class RegistrationHistoryController extends Controller
     {
 
         // Validación de parámetros
-        // Validación de parámetros
         $validated = $request->validate([
             'completion_status' => 'nullable|exists:completion_statuses,name',
             'name' => 'nullable|string|max:255',
@@ -331,6 +330,7 @@ class RegistrationHistoryController extends Controller
             ]
         ]);
     }
+
 
     /**
      * Show the form for editing the specified resource.

@@ -12,7 +12,7 @@ import {
     PhoneIcon,
     DocumentArrowDownIcon,
 } from '@heroicons/react/24/outline'
-import useEnrollmentDetails from '@/hooks/admin/useEnrollmentDetails'
+import useDeparmentEnrollments from '@/hooks/supervisor/useDepartmentEnrollments'
 import Loader from '@/components/Loader'
 import { ArrowLeft, CheckCircleIcon } from 'lucide-react'
 import Button from '@/components/Button'
@@ -24,9 +24,9 @@ import { useState } from 'react'
 import { getAssignedByText } from '@/utils/helpers'
 import StandardLoader from '@/components/StandardLoader'
 
-const EnrollmentDetailPage = ({ params }) => {
+const DepartmentEnrollmentDetailPage = ({ params }) => {
     const { id } = params
-    const { data, loading, error, updateEnrollment } = useEnrollmentDetails(id)
+    const { data, loading, error, updateEnrollment } = useDeparmentEnrollments(id)
     const [showModal, setShowModal] = useState(false)
 
     const router = useRouter()
@@ -139,39 +139,6 @@ const EnrollmentDetailPage = ({ params }) => {
                             icon={IdentificationIcon}
                         />
 
-                        <div className="p-4 rounded-lg bg-blue-50">
-                            <h3 className="text-sm font-semibold text-[#004b9a] mb-2">
-                                Detalles del Contrato
-                            </h3>
-                            <InfoItem
-                                label="Departamento"
-                                value={
-                                    data.employee.current_contract.department
-                                }
-                            />
-                            <InfoItem
-                                label="Cargo"
-                                value={data.employee.current_contract.position}
-                            />
-                            <InfoItem
-                                label="Tipo de Contrato"
-                                value={
-                                    data.employee.current_contract.contract_type
-                                }
-                            />
-                            <InfoItem
-                                label="Fecha de Inicio"
-                                value={
-                                    new Date(
-                                        data.employee.current_contract.start_date,
-                                    ).toLocaleDateString('es-ES', {
-                                        timeZone: 'UTC',
-                                    }) || 'N/A'
-                                }
-                                icon={CalendarIcon}
-                            />
-                        </div>
-
                         <div className="mt-4 space-y-2">
                             <InfoItem
                                 label="Email Corporativo"
@@ -213,11 +180,6 @@ const EnrollmentDetailPage = ({ params }) => {
                             <InfoItem
                                 label="Tipo"
                                 value={data?.program?.type}
-                                className="p-4 bg-white rounded-lg shadow-sm"
-                            />
-                            <InfoItem
-                                label="Estado"
-                                value={data?.program?.status}
                                 className="p-4 bg-white rounded-lg shadow-sm"
                             />
                         </div>
@@ -327,4 +289,4 @@ const StatusBadge = ({ status }) => {
     )
 }
 
-export default EnrollmentDetailPage
+export default DepartmentEnrollmentDetailPage

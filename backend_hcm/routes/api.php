@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\EvaluationPeriodController;
 use App\Http\Controllers\Admin\FileEmployeeController;
 use App\Http\Controllers\Admin\FormEvaluationDepartmentController;
 use App\Http\Controllers\Admin\NewTrainingProgramController;
+use App\Http\Controllers\Admin\RecruitmentDashboardController;
 use App\Http\Controllers\Admin\RegistrationHistoryController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\AgendaResultController;
@@ -52,6 +53,7 @@ use App\Http\Controllers\StudyController;
 use App\Http\Controllers\Supervisor\ClasificationEmployeeController;
 use App\Http\Controllers\Supervisor\FormEvaluationController;
 use App\Http\Controllers\Supervisor\PerformanceEvaluationController;
+use App\Http\Controllers\Supervisor\RegistrationDepartmentHistoryController;
 use App\Http\Controllers\TypeAgendaController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VacantyController;
@@ -223,12 +225,30 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/{id}', [FormEvaluationController::class, 'show']);
             
         });
+
+        Route::prefix('registration-history')->group(function () {
+            Route::get('/', [RegistrationDepartmentHistoryController::class, 'index'])->name('registration-history.index');
+            Route::get('/{id}', [RegistrationDepartmentHistoryController::class, 'show'])->name('registration-history.show');
+            Route::get('/{id}/enroll', [RegistrationDepartmentHistoryController::class, 'showEnroll'])->name('registration-history.showEnroll');
+            Route::put('/{id}/enroll', [RegistrationHistoryController::class, 'update'])->name('registration-history.update');
+        });
         
     });
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('admin')->group(function () {
+
+        Route::prefix('recruitment-dashboard')->group(function () {
+            Route::get('average-hiring-time', [RecruitmentDashboardController::class, 'averageHiringTime']);
+            Route::get('conversion-rate', [RecruitmentDashboardController::class, 'conversionRate']);
+            Route::get('interview-ratio', [RecruitmentDashboardController::class, 'interviewRatio']);
+            Route::get('retention-rate', [RecruitmentDashboardController::class, 'sixMonthRetention']);
+            Route::get('average-performance', [RecruitmentDashboardController::class, 'averageInitialPerformance']);
+            Route::get('vacancies-analysis', [RecruitmentDashboardController::class, 'vacanciesAnalysis']);
+            Route::get('diversity-stats', [RecruitmentDashboardController::class, 'diversityStats']);
+            
+        });
     
         Route::prefix('departments')->group(function () {
             

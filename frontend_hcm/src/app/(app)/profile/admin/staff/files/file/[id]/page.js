@@ -24,6 +24,7 @@ import DocumentPreview from '@/components/DocumentPreview'
 import EmployeeHeader from './EmployeeHeader'
 import { Alert, AlertDescription } from '@/components/alert'
 import { Skeleton } from '@/components/skeleton'
+import StandardLoader from '@/components/StandardLoader'
 
 export default function DigitalFiles() {
     const params = useParams()
@@ -82,14 +83,8 @@ export default function DigitalFiles() {
         { id: 10, name: 'Referencias', icon: <BookMarked /> },
     ]
 
-    if (detailLoading)
-        return (
-            <div className="space-y-4">
-                {[...Array([4,4])].map((_, i) => (
-                    <Skeleton key={i} className="w-full h-16 rounded-lg" />
-                ))}
-            </div>
-        )
+    if (detailLoading) return <StandardLoader />
+
     if (detailError)
         return (
             <Alert>

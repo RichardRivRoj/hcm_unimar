@@ -11,6 +11,7 @@ import { Modal } from '@/components/Modal'
 import PeriodForm from './PeriodForm'
 import EditPeriodForm from './EditPeriodForm'
 import ConfirmationModal from '@/components/ConfirmationModal'
+import StandardLoader from '@/components/StandardLoader'
 
 const PlanningPage = () => {
     const {
@@ -144,6 +145,8 @@ const PlanningPage = () => {
     useEffect(() => {
         fetchEvaluationPeriods()
     }, [])
+
+    if (loading) return <StandardLoader />
 
     return (
         <>

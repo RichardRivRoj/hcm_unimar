@@ -7,6 +7,8 @@ import CreateTrainingProgramForm from './CreateTrainingForm'
 import { Eye } from 'lucide-react'
 import StandardTable from '@/components/StandardTable'
 import { useTrainingProgram } from '@/hooks/admin/useTrainingPrograms'
+import StandardLoader from '@/components/StandardLoader'
+import { Alert, AlertDescription } from '@/components/alert'
 
 const TrainingProgramsPage = () => {
     const router = useRouter()
@@ -44,9 +46,12 @@ const TrainingProgramsPage = () => {
         return () => clearTimeout(timer)
     }, [filters])
 
-    const handlePageChange = useCallback((page) => {
-        fetchPrograms(page, filters)
-    }, [filters, fetchPrograms])
+    const handlePageChange = useCallback(
+        page => {
+            fetchPrograms(page, filters)
+        },
+        [filters, fetchPrograms],
+    )
 
     const handleFilterChange = e => {
         const { name, value } = e.target
@@ -152,6 +157,8 @@ const TrainingProgramsPage = () => {
         fetchData(1)
     }
 
+    if (loading) return <StandardLoader />
+
     return (
         <div className="p-6">
             <div className="flex items-center justify-between mb-6">
@@ -166,9 +173,9 @@ const TrainingProgramsPage = () => {
             </div>
 
             {error && (
-                <div className="p-4 mb-4 text-red-700 bg-red-100 rounded-lg">
-                    Error: {error}
-                </div>
+                <Alert>
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
             )}
 
             <StandardTable

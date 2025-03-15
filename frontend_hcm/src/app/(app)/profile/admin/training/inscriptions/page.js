@@ -6,6 +6,7 @@ import { useRegistrationHistory } from '@/hooks/admin/useRegistrationHistory'
 import StandardTable from '@/components/StandardTable'
 import { Alert, AlertDescription } from '@/components/alert'
 import { Eye } from 'lucide-react'
+import StandardLoader from '@/components/StandardLoader'
 
 const TrainingProgramsPage = () => {
     const [filters, setFilters] = useState({
@@ -14,8 +15,17 @@ const TrainingProgramsPage = () => {
         completion_status: '',
     })
 
-    const { programs, filters: filtersType, meta, loading, error, params, updateParams, goToPage } = useRegistrationHistory(filters)
-    
+    const {
+        programs,
+        filters: filtersType,
+        meta,
+        loading,
+        error,
+        params,
+        updateParams,
+        goToPage,
+    } = useRegistrationHistory(filters)
+
     const router = useRouter()
 
     // Configuración de columnas para la tabla
@@ -27,8 +37,12 @@ const TrainingProgramsPage = () => {
         {
             header: 'Fechas',
             render: item =>
-                `${new Date(item.start_date).toLocaleDateString()} - 
-                ${new Date(item.end_date).toLocaleDateString()}`,
+                `${new Date(item.start_date).toLocaleDateString('es-ES', {
+                    timeZone: 'UTC',
+                })} - 
+                ${new Date(item.end_date).toLocaleDateString('es-ES', {
+                    timeZone: 'UTC',
+                })}`,
         },
         {
             header: 'Visibilidad',
@@ -53,7 +67,9 @@ const TrainingProgramsPage = () => {
             icon: <Eye size={26} />,
             color: 'text-blue-600',
             handler: item =>
-                router.push(`/profile/admin/training/inscriptions/program/${item.id}`),
+                router.push(
+                    `/profile/admin/training/inscriptions/program/${item.id}`,
+                ),
         },
     ]
 
@@ -67,7 +83,7 @@ const TrainingProgramsPage = () => {
                 ...(filtersType?.visibilities?.map(v => ({
                     value: String(v.id), // Convertir a string
                     label: v.name,
-                })) || [])
+                })) || []),
             ],
         },
         {
@@ -79,10 +95,10 @@ const TrainingProgramsPage = () => {
                 ...(filtersType?.training_types?.map(t => ({
                     value: String(t.id), // Convertir a string
                     label: t.name,
-                })) || [])
+                })) || []),
             ],
         },
-    ];
+    ]
 
     // Manejadores
     const handlePageChange = page => {
@@ -98,9 +114,10 @@ const TrainingProgramsPage = () => {
         updateParams({ [name]: value })
     }
 
+    if (loading) return <StandardLoader />
+
     return (
         <div className="p-6">
-
             {error && (
                 <Alert variant="destructive" className="mb-4">
                     <AlertDescription>{error}</AlertDescription>

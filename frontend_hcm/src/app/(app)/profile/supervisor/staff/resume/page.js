@@ -8,6 +8,7 @@ import Input from '@/components/Input'
 import { Eye } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/alert'
 import { Skeleton } from '@/components/skeleton'
+import StandardLoader from '@/components/StandardLoader'
 
 const DepartmentEmployeesList = () => {
     const router = useRouter()
@@ -74,14 +75,8 @@ const DepartmentEmployeesList = () => {
     }
 
     // Manejar estados de carga y error
-    if (loading)
-        return (
-            <div className="space-y-4">
-                {[1, 2].map(i => (
-                    <Skeleton key={i} className="w-full h-24 rounded-lg" />
-                ))}
-            </div>
-        )
+    if (loading) return <StandardLoader />
+    
     if (error) {
         return (
             <Alert variant="destructive">

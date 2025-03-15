@@ -6,6 +6,7 @@ import useAgendas from '@/hooks/useAgendas';
 import useTypeAgendas from '@/hooks/typeAgendasView';
 import useStatuses from '@/hooks/useStatuses';
 import { Eye } from 'lucide-react';
+import StandardLoader from '@/components/StandardLoader';
 
 const CandidateAgendas = ({ params }) => {
     const { candidateId } = params;
@@ -32,13 +33,7 @@ const CandidateAgendas = ({ params }) => {
     };
 
     if (loading) {
-        return (
-            <div className="p-6 space-y-4">
-                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-        );
+        return <StandardLoader />
     }
 
     if (error) {

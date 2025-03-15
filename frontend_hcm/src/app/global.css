@@ -11,6 +11,32 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
+
+    .multiselect__tag {
+      background-color: #004b9a !important;
+    }
+  
+    .multiselect__option--highlight {
+      background-color: #004b9a !important;
+    }  
+}
+
+.input-select {
+  @apply w-full p-2 text-sm border rounded-md focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a] transition-colors;
+}
+
+.table-header {
+  @apply text-xs font-semibold tracking-wider text-gray-700 uppercase;
+}
+
+.metric-value {
+  @apply text-2xl font-bold text-[#004b9a] transition-all;
+}
+
+.input-filter {
+  @apply w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-xl 
+         focus:border-[#004b9a] focus:ring-2 focus:ring-blue-100 
+         transition-all duration-200;
 }
 
 @keyframes fadeIn {
@@ -21,3 +47,6 @@
   .group:hover .group-hover\:animate-fadeIn {
     animation: fadeIn 0.3s ease-in-out;
   }
+
+
+

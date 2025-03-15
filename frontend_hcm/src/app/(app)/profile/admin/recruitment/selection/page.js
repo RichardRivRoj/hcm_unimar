@@ -5,6 +5,7 @@ import useAgendaResults from '@/hooks/useAgendaResult'
 import { useRouter } from 'next/navigation'
 import { Eye } from 'lucide-react'
 import axios from '@/lib/axios'
+import StandardLoader from '@/components/StandardLoader'
 
 const SelectionPage = () => {
     const router = useRouter()
@@ -33,13 +34,7 @@ const SelectionPage = () => {
     }
 
     if (loading)
-        return (
-            <div className="p-6 space-y-4">
-                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-        )
+        return <StandardLoader />
 
     if (error)
         return <div className="p-6 text-red-600">Error: {error.message}</div>

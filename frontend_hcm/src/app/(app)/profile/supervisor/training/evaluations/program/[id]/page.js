@@ -6,14 +6,13 @@ import { motion } from 'framer-motion'
 import StandardTable from '@/components/StandardTable'
 import { EyeIcon } from '@heroicons/react/24/solid'
 import { ArrowLeft } from 'lucide-react'
-import { useRegistrationProgramDetail } from '@/hooks/admin/useRegistrationDetail'
-import { toast } from 'sonner'
 import { useState } from 'react'
-import { DeleteModal } from '@/components/Modal'
+import useSupervisorProgramDetail from '@/hooks/supervisor/useRegistrationDepartmentDetails'
 import StandardLoader from '@/components/StandardLoader'
 
 const RegistrationProgram = ({ params }) => {
     const router = useRouter()
+    const { id } = params
     const {
         program,
         participants,
@@ -24,9 +23,9 @@ const RegistrationProgram = ({ params }) => {
         params: filterParams,
         updateParams,
         goToPage,
-    } = useRegistrationProgramDetail(params.id)
+    } = useSupervisorProgramDetail(id)
 
-    // Configuración de la tabla
+    // Configuración de la tabla (mantenido igual)
     const tableColumns = [
         {
             header: 'Nombre',
@@ -71,22 +70,23 @@ const RegistrationProgram = ({ params }) => {
             color: 'text-[#004b9a]',
             handler: item =>
                 router.push(
-                    `/profile/admin/training/inscriptions/inspect/${item.id}`,
+                    `/profile/supervisor/training/evaluations/inspect/${item.id}`,
                 ),
         },
     ]
 
     const tableFilters = [
         {
-            name: 'status',
-            value: filterParams.status,
+            name: 'completion_status',
+            value: filterParams.completion_status,
             placeholder: 'Filtrar por estado',
-            type: 'select',
-            options:
-                filters?.completion_statuses?.map(status => ({
+            options: [
+                { value: '', label: 'Todos' },
+                ...(filters?.completion_statuses?.map(status => ({
                     value: status,
                     label: status,
-                })) || [],
+                })) || []),
+            ],
         },
     ]
 
@@ -100,7 +100,7 @@ const RegistrationProgram = ({ params }) => {
     }
 
     if (loading) return <StandardLoader />
-    
+
     if (error) {
         return (
             <div className="p-6">
@@ -122,21 +122,25 @@ const RegistrationProgram = ({ params }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="p-6 ml-6 bg-white rounded-lg shadow-lg">
-            {/* Encabezado */}
+            {/* Sección de encabezado */}
             <div className="border-b-2 border-[#004b9a] pb-4 mb-6">
                 <div className="flex items-center gap-4 mb-4">
                     <button
-                        onClick={() => router.back()}
+                        onClick={() =>
+                            router.back()
+                        }
                         className="flex items-center text-[#004b9a] hover:text-[#003a7a]">
                         <ArrowLeft size={20} className="mr-2" />
-                        Volver
+                        Volver a Programas
                     </button>
                 </div>
 
+                {/* Detalles del programa */}
                 <h1 className="text-3xl font-bold text-[#004b9a]">
                     {program?.name || 'Cargando...'}
                 </h1>
 
+                {/* Badges de estado */}
                 <div className="flex flex-wrap gap-2 mt-4">
                     <span className="px-3 py-1 text-sm text-blue-800 bg-blue-100 rounded-full">
                         {program?.metadata?.type || 'N/A'}
@@ -155,9 +159,9 @@ const RegistrationProgram = ({ params }) => {
                 </div>
             </div>
 
-            {/* Contenido Principal */}
+            {/* Contenido principal */}
             <div className="grid gap-8 md:grid-cols-2">
-                {/* Columna Izquierda */}
+                {/* Columna izquierda - Detalles del programa */}
                 <div className="space-y-6">
                     <div>
                         <h3 className="text-lg font-semibold text-[#004b9a] mb-3">
@@ -166,6 +170,7 @@ const RegistrationProgram = ({ params }) => {
                         <p className="text-gray-600">{program?.description}</p>
                     </div>
 
+                    {/* Sección de fechas y capacidad */}
                     <div className="space-y-4">
                         <div className="space-y-4">
                             <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50">
@@ -178,7 +183,6 @@ const RegistrationProgram = ({ params }) => {
                                         {new Date(
                                             program?.schedule?.start,
                                         ).toLocaleDateString('es-ES', {
-                                            timeZone: 'UTC',
                                             day: 'numeric',
                                             month: 'long',
                                             year: 'numeric',
@@ -197,7 +201,6 @@ const RegistrationProgram = ({ params }) => {
                                         {new Date(
                                             program?.schedule?.end,
                                         ).toLocaleDateString('es-ES', {
-                                            timeZone: 'UTC',
                                             day: 'numeric',
                                             month: 'long',
                                             year: 'numeric',
@@ -223,8 +226,8 @@ const RegistrationProgram = ({ params }) => {
                                     <UserGroupIcon className="w-5 h-5 text-[#004b9a]" />
                                     <span>
                                         Disponible:{' '}
-                                        {program?.metadata?.capacity
-                                            ?.available || 0}
+                                        {Math.abs(program?.metadata?.capacity
+                                            ?.available || 0)}
                                     </span>
                                 </div>
                             </div>
@@ -232,7 +235,7 @@ const RegistrationProgram = ({ params }) => {
                     </div>
                 </div>
 
-                {/* Columna Derecha */}
+                {/* Columna derecha - Contenido programático */}
                 <div className="space-y-6">
                     <div>
                         <h3 className="text-lg font-semibold text-[#004b9a] mb-3">
@@ -287,13 +290,14 @@ const RegistrationProgram = ({ params }) => {
                             </div>
                         </div>
                     </div>
+                    
                 </div>
             </div>
 
-            {/* Tabla de Participantes */}
+            {/* Tabla de participantes */}
             <div className="mt-8">
                 <StandardTable
-                    title="Participantes"
+                    title="Participantes de Mi Departamento"
                     columns={tableColumns}
                     data={participants || []}
                     filters={tableFilters}

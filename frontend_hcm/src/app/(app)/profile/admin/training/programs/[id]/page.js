@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/alert'
 import { ArrowLeft, Calendar, CalendarCheck, Edit, Trash2 } from 'lucide-react'
 import { DeleteModal, GeneralModal } from '@/components/Modal'
 import UpdateTrainingProgramForm from './UpdateTrainingForm'
+import StandardLoader from '@/components/StandardLoader'
 
 const ProgramDetailPage = ({ params }) => {
     const id = params.id
@@ -28,7 +29,7 @@ const ProgramDetailPage = ({ params }) => {
         }
     }
 
-    if (loading) return <Loader />
+    if (loading) return <StandardLoader />
     if (error)
         return (
             <Alert>

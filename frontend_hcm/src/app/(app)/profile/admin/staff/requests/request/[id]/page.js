@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 import axios from '@/lib/axios'
 import ConstanciaLaborPDF from '@/components/ConstanciaLabor'
 import { PDFDownloadLink } from '@react-pdf/renderer'
+import StandardLoader from '@/components/StandardLoader'
 
 
 const AdminRequestDetails = ({ params }) => {
@@ -63,11 +64,7 @@ const AdminRequestDetails = ({ params }) => {
 
     // Manejar estados de carga y error
     if (singleLoading)
-        return (
-            <div className="flex justify-center p-8">
-                <Loader className="w-full animate-spin" />
-            </div>
-        )
+        return <StandardLoader />
 
     if (singleError)
         return (
