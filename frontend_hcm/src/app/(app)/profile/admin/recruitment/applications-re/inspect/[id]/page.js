@@ -11,6 +11,8 @@ import useTypeAgendas from '@/hooks/typeAgendasView'
 import DownloadCVButton from '@/components/DownloadCVButton'
 import { Alert, AlertDescription } from '@/components/alert'
 import StandardLoader from '@/components/StandardLoader'
+import { DocumentIcon } from '@heroicons/react/24/outline'
+import { GlobeIcon, Sun } from 'lucide-react'
 
 const CandidateDetails = ({ params }) => {
     const router = useRouter()
@@ -54,6 +56,7 @@ const CandidateDetails = ({ params }) => {
         // Experiencia laboral (jobs)
         company_name: 'Nombre de la empresa',
         position: 'Cargo',
+        responsibilities: 'Responsabilidades',
 
         // Estudios (studies)
         institution: 'Institución',
@@ -129,7 +132,7 @@ const CandidateDetails = ({ params }) => {
                 setTimeout(() => {
                     closeModal() // Cerrar el modal
                     window.location.reload() // Refrescar la página
-                }, 1000)
+                }, 500)
             }
         } catch (error) {
             // Mostrar mensajes de error si la solicitud falla
@@ -148,41 +151,48 @@ const CandidateDetails = ({ params }) => {
     if (errorCandidate) return <div>Error: {errorCandidate}</div>
 
     return (
-        <div className="max-w-4xl p-8 mx-auto text-justify bg-white shadow-sm rounded-xl">
-            {/* Controles superiores */}
-            <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
-                {/* Botón Volver */}
+        <div className="max-w-6xl px-4 py-8 mx-auto lg:px-8">
+            {/* Header superior */}
+            <div className="flex flex-col justify-between gap-6 mb-8 md:flex-row md:items-center">
                 <button
                     onClick={() => router.back()}
-                    className="flex items-center text-gray-600 hover:text-blue-800 group w-fit">
-                    <span className="mr-2 text-2xl transition-transform group-hover:-translate-x-1">
-                        ←
-                    </span>
-                    <span className="font-medium">Volver</span>
+                    className="flex items-center text-[#004b9a] hover:text-[#003a7d] transition-colors duration-200 w-fit">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-6 h-6 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                        />
+                    </svg>
+                    <span className="font-semibold">Volver a aplicaciones</span>
                 </button>
-                {candidate.status_application.name !== 'Contratado' && (
-                    <>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                            {/* Botones con confirmación */}
-                            <button
-                                onClick={() => setShowConfirm('aceptado')}
-                                disabled={loading}
-                                className="px-4 py-2 text-white transition-colors bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50">
-                                {loading && showConfirm === 'aceptado'
-                                    ? 'Procesando...'
-                                    : 'Aceptar'}
-                            </button>
 
-                            <button
-                                onClick={() => setShowConfirm('rechazado')}
-                                disabled={loading}
-                                className="px-4 py-2 text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50">
-                                {loading && showConfirm === 'rechazado'
-                                    ? 'Procesando...'
-                                    : 'Rechazar'}
-                            </button>
-                        </div>
-                    </>
+                {candidate.status_application.name !== 'Contratado' && (
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => setShowConfirm('aceptado')}
+                            disabled={loading}
+                            className="px-6 py-2 text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700">
+                            {loading && showConfirm === 'aceptado'
+                                ? 'Procesando...'
+                                : 'Aceptar'}
+                        </button>
+
+                        <button
+                            onClick={() => setShowConfirm('rechazado')}
+                            disabled={loading}
+                            className="px-6 py-2 text-white transition-colors duration-200 bg-red-600 rounded-lg shadow-sm hover:bg-red-700">
+                            {loading && showConfirm === 'rechazado'
+                                ? 'Procesando...'
+                                : 'Rechazar'}
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -229,96 +239,113 @@ const CandidateDetails = ({ params }) => {
                 </div>
             )}
 
-            {/* Vista de solo lectura */}
-            <div className="space-y-8">
-                {/* Encabezado */}
-                <div className="space-y-4">
-                    {candidate.person && (
-                        <div className="flex items-center gap-4">
-                            {/* Foto del candidato */}
-                            {candidate.person.photo_url && (
-                                <img
-                                    src={candidate.person.photo_url}
-                                    alt={`${candidate.person.first_name} ${candidate.person.last_name}`}
-                                    className="object-cover w-24 h-24 border-2 border-gray-200 rounded-full"
-                                />
-                            )}
-                            <div>
-                                <h1 className="text-3xl font-bold text-gray-900">
-                                    {candidate.person.first_name}{' '}
-                                    {candidate.person.last_name}
-                                </h1>
-                                <p className="text-lg text-gray-600">
-                                    {candidate.person.summary ||
-                                        'No hay descripción disponible.'}
-                                </p>
-                            </div>
+            {/* Tarjeta principal del candidato */}
+            <div className="p-6 mb-8 bg-white border border-gray-100 shadow-sm rounded-xl">
+                <div className="flex flex-col items-start gap-6 md:flex-row">
+                    {candidate.person.photo_url && (
+                        <div className="overflow-hidden rounded-lg w-36 h-36">
+                            <img
+                                src={candidate.person.photo_url}
+                                alt={`${candidate.person.first_name} ${candidate.person.last_name}`}
+                                className="object-cover w-full h-full"
+                            />
                         </div>
                     )}
-                </div>
 
-                {/* Detalles en tarjetas */}
+                    <div className="flex-1">
+                        <h1 className="text-3xl font-bold text-[#004b9a] mb-2">
+                            {candidate.person.first_name}{' '}
+                            {candidate.person.last_name}
+                        </h1>
+                        <p className="mb-4 text-lg text-gray-600">
+                            {candidate.person.summary ||
+                                'Sin descripción adicional'}
+                        </p>
+
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            <DetailCard
+                                title="Estado de la aplicación"
+                                value={candidate.status_application?.name}
+                                highlight={true}
+                                color="#004b9a"
+                            />
+                            <DetailCard
+                                title="Postulado a"
+                                value={candidate.vacancy?.position?.description}
+                            />
+                            <DetailCard
+                                title="Ubicación"
+                                value={candidate.vacancy?.department?.name}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Sección de información personal */}
+            <section className="p-6 mb-8 bg-white border border-gray-100 shadow-sm rounded-xl">
+                <h2 className="text-2xl font-semibold text-[#004b9a] mb-6">
+                    Información Personal
+                </h2>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {/* Información Personal */}
-                    <DetailCard title="Email" value={candidate.person.email} />
                     <DetailCard
-                        title="Teléfono"
-                        value={candidate.person.phone}
-                    />
-                    <DetailCard
-                        title="Fecha de Nacimiento"
-                        value={new Date(
-                            candidate.person.birth_date,
-                        ).toLocaleDateString()}
-                    />
-                    <DetailCard
-                        title="Tipo de Identificación"
-                        value={
-                            candidate.person.identificationtype?.code ||
-                            'No especificado'
-                        }
-                    />
-                    <DetailCard
-                        title="Número de documento"
-                        value={
-                            candidate.person.identification_value ||
-                            'No especificado'
-                        }
-                    />
-                    <DetailCard
-                        title="Estado Civil"
-                        value={
-                            candidate.person.maritalstatus?.name ||
-                            'No especificado'
-                        }
+                        title="Contacto"
+                        items={[
+                            { label: 'Email', value: candidate.person.email },
+                            {
+                                label: 'Teléfono',
+                                value: candidate.person.phone,
+                            },
+                        ]}
                     />
 
                     <DetailCard
-                        title="Género"
-                        value={
-                            candidate.person.gender?.name || 'No especificado'
-                        }
+                        title="Documentación"
+                        items={[
+                            {
+                                label: 'Tipo de documento',
+                                value: candidate.person.identificationtype
+                                    ?.code,
+                            },
+                            {
+                                label: 'Número de documento',
+                                value: candidate.person.identification_value,
+                            },
+                        ]}
                     />
+
                     <DetailCard
-                        title="País"
-                        value={
-                            candidate.person.country?.name || 'No especificado'
-                        }
-                    />
-                    <DetailCard
-                        title="Etnia"
-                        value={
-                            candidate.person.ethnicity?.name ||
-                            'No especificado'
-                        }
+                        title="Detalles personales"
+                        items={[
+                            {
+                                label: 'Fecha de nacimiento',
+                                value: new Date(
+                                    candidate.person.birth_date,
+                                ).toLocaleDateString(),
+                            },
+                            {
+                                label: 'Género',
+                                value: candidate.person.gender?.name,
+                            },
+                            {
+                                label: 'Estado civil',
+                                value: candidate.person.maritalstatus?.name,
+                            },
+                        ]}
                     />
                 </div>
+            </section>
 
-                {/* Documentos */}
-                <div className="space-y-4">
-                    <h2 className="text-xl font-semibold text-gray-900">
-                        Documentos
+            {/* Sección de documentos */}
+            <section className="p-6 mb-8 bg-white border border-gray-100 shadow-sm rounded-xl">
+                <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
+                    <h2 className="text-2xl font-semibold text-[#004b9a] mb-4 md:mb-0">
+                        Documentos Adjuntos
                     </h2>
+                    <DownloadCVButton resumeUrl={candidate.person.resume_url} />
+                </div>
+
+                <div className="space-y-8">
                     {candidate.documents?.length > 0 ? (
                         Object.entries(
                             candidate.documents.reduce((acc, doc) => {
@@ -328,126 +355,146 @@ const CandidateDetails = ({ params }) => {
                                 return acc
                             }, {}),
                         ).map(([type, documents]) => (
-                            <div key={type} className="space-y-3">
-                                {/* Subtítulo del tipo de documento */}
-                                <h3 className="text-lg font-semibold text-gray-800">
-                                    {type}
-                                </h3>
-                                {documents.map(doc => {
-                                    const metadata =
-                                        typeof doc.metadata === 'string'
-                                            ? JSON.parse(doc.metadata)
-                                            : doc.metadata
-                                    const detail =
-                                        typeof doc.detail === 'string'
-                                            ? JSON.parse(doc.detail)
-                                            : doc.detail
+                            <div key={type} className="space-y-4">
+                                {/* Encabezado del tipo de documento */}
+                                <div className="px-4 py-3 bg-[#004b9a] rounded-lg">
+                                    <h3 className="text-lg font-semibold text-white">
+                                        {type}
+                                    </h3>
+                                </div>
 
-                                    return (
-                                        <div
-                                            key={doc.id}
-                                            className="p-4 rounded-lg bg-gray-50">
-                                            {/* Nombre del documento */}
-                                            <p className="font-medium text-gray-900">
-                                                {doc.document_name}
-                                            </p>
+                                {/* Listado de documentos */}
+                                <div className="grid gap-4 md:grid-cols-2">
+                                    {documents.map(doc => {
+                                        const metadata =
+                                            typeof doc.metadata === 'string'
+                                                ? JSON.parse(doc.metadata)
+                                                : doc.metadata
+                                        const detail =
+                                            typeof doc.detail === 'string'
+                                                ? JSON.parse(doc.detail)
+                                                : doc.detail
 
-                                            {/* Renderizado para documentos especiales */}
-                                            {[9, 10].includes(
-                                                doc.document_type_id,
-                                            ) ? (
-                                                <div className="mt-2 text-base text-gray-600">
-                                                    {doc.document_type_id ===
-                                                        10 && (
-                                                        <div>
-                                                            <p className="font-medium">
-                                                                Habilidades:
-                                                            </p>
-                                                            <ul className="pl-5 list-disc">
-                                                                {detail?.map(
-                                                                    (
-                                                                        skill,
-                                                                        index,
-                                                                    ) => (
-                                                                        <li
-                                                                            key={
-                                                                                index
-                                                                            }>
-                                                                            {
-                                                                                skill
-                                                                            }
-                                                                        </li>
-                                                                    ),
-                                                                )}
-                                                            </ul>
-                                                        </div>
-                                                    )}
-                                                    {doc.document_type_id ===
-                                                        9 && (
-                                                        <div>
-                                                            <p className="font-medium">
-                                                                Nivel:
-                                                            </p>
-                                                            <p>
-                                                                {detail?.level}
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                // Renderizado normal para otros documentos
-                                                <>
-                                                    <div className="mt-2 text-base text-gray-600">
-                                                        <p>
-                                                            <span className="font-medium">
-                                                                Fecha de Inicio:
-                                                            </span>{' '}
-                                                            {new Date(
-                                                                doc.issue_date,
-                                                            ).toLocaleDateString()}
-                                                        </p>
-                                                        <p>
-                                                            <span className="font-medium">
-                                                                Fecha de
-                                                                Finalización:
-                                                            </span>{' '}
-                                                            {doc.expiration_date
-                                                                ? new Date(
-                                                                      doc.expiration_date,
-                                                                  ).toLocaleDateString()
-                                                                : 'No expira'}
-                                                        </p>
+                                        return (
+                                            <div
+                                                key={doc.id}
+                                                className="p-4 transition-shadow bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md">
+                                                {/* Encabezado del documento */}
+                                                <div className="flex items-center gap-3 mb-4">
+                                                    <div className="p-2 bg-[#004b9a]/10 rounded-lg">
+                                                        {doc.document_type_id ===
+                                                        9 ? (
+                                                            <GlobeIcon className="w-5 h-5 text-[#004b9a]" />
+                                                        ) : doc.document_type_id ===
+                                                          10 ? (
+                                                            <Sun className="w-5 h-5 text-[#004b9a]" />
+                                                        ) : (
+                                                            <DocumentIcon className="w-5 h-5 text-[#004b9a]" />
+                                                        )}
                                                     </div>
+                                                    <h4 className="text-base font-semibold text-[#004b9a]">
+                                                        {doc.document_name}
+                                                    </h4>
+                                                </div>
 
-                                                    {metadata && (
-                                                        <div className="mt-2 text-sm text-gray-600">
-                                                            <p className="font-medium">
-                                                                Detalles:
-                                                            </p>
-                                                            <ul className="list-disc list-inside">
-                                                                {Object.entries(
-                                                                    metadata,
-                                                                ).map(
-                                                                    ([
-                                                                        key,
-                                                                        value,
-                                                                    ]) => (
-                                                                        <li
-                                                                            key={
-                                                                                key
-                                                                            }>
-                                                                            {/* Caso especial para responsabilidades */}
-                                                                            {key ===
-                                                                            'responsibilities' ? (
-                                                                                <div>
-                                                                                    <span className="capitalize">
-                                                                                        {translateMetadataKey(
-                                                                                            key,
-                                                                                        )}
+                                                {/* Contenido específico */}
+                                                {[9, 10].includes(
+                                                    doc.document_type_id,
+                                                ) ? (
+                                                    <div className="space-y-2">
+                                                        {doc.document_type_id ===
+                                                            10 && (
+                                                            <>
+                                                                <p className="text-sm font-medium text-gray-600">
+                                                                    Habilidades
+                                                                    requeridas:
+                                                                </p>
+                                                                <div className="flex flex-wrap gap-2">
+                                                                    {detail?.map(
+                                                                        (
+                                                                            skill,
+                                                                            index,
+                                                                        ) => (
+                                                                            <span
+                                                                                key={
+                                                                                    index
+                                                                                }
+                                                                                className="px-2 py-1 text-sm bg-[#004b9a]/10 text-[#004b9a] rounded-full">
+                                                                                {
+                                                                                    skill
+                                                                                }
+                                                                            </span>
+                                                                        ),
+                                                                    )}
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                        {doc.document_type_id ===
+                                                            9 && (
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-sm font-medium text-gray-600">
+                                                                    Nivel:
+                                                                </p>
+                                                                <span className="px-2 py-1 text-sm bg-[#004b9a]/10 text-[#004b9a] rounded-full">
+                                                                    {
+                                                                        detail?.level
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-3">
+                                                        {/* Fechas */}
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div>
+                                                                <p className="text-sm font-medium text-[#004b9a]">
+                                                                    Fecha inicio
+                                                                </p>
+                                                                <p className="text-sm text-gray-600">
+                                                                    {new Date(
+                                                                        doc.issue_date,
+                                                                    ).toLocaleDateString()}
+                                                                </p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-medium text-[#004b9a]">
+                                                                    Fecha final
+                                                                </p>
+                                                                <p
+                                                                    className={`text-sm ${doc.expiration_date ? 'text-gray-600' : 'text-[#004b9a]'}`}>
+                                                                    {doc.expiration_date
+                                                                        ? new Date(
+                                                                              doc.expiration_date,
+                                                                          ).toLocaleDateString()
+                                                                        : 'No expira'}
+                                                                </p>
+                                                            </div>
+                                                        </div>
 
-                                                                                        :
-                                                                                    </span>
-                                                                                    <ul className="pl-5 list-[circle]">
+                                                        {/* Metadatos */}
+                                                        {metadata && (
+                                                            <div className="pt-3 border-t border-gray-100">
+                                                                <div className="grid grid-cols-2 gap-3">
+                                                                    {Object.entries(
+                                                                        metadata,
+                                                                    ).map(
+                                                                        ([
+                                                                            key,
+                                                                            value,
+                                                                        ]) => (
+                                                                            <div
+                                                                                key={
+                                                                                    key
+                                                                                }>
+                                                                                <p className="text-sm font-medium text-[#004b9a]">
+                                                                                    {translateMetadataKey(
+                                                                                        key,
+                                                                                    )}
+                                                                                </p>
+                                                                                {key ===
+                                                                                'responsibilities' ? (
+                                                                                    <ul className="pl-4 list-disc">
                                                                                         {value
                                                                                             .split(
                                                                                                 '\n',
@@ -461,7 +508,7 @@ const CandidateDetails = ({ params }) => {
                                                                                                         key={
                                                                                                             index
                                                                                                         }
-                                                                                                        className="mt-1">
+                                                                                                        className="text-sm text-gray-600">
                                                                                                         {
                                                                                                             responsibility
                                                                                                         }
@@ -469,196 +516,192 @@ const CandidateDetails = ({ params }) => {
                                                                                                 ),
                                                                                             )}
                                                                                     </ul>
-                                                                                </div>
-                                                                            ) : (
-                                                                                // Renderizado normal para otros campos
-                                                                                <>
-                                                                                    <span className="capitalize">
-                                                                                        {translateMetadataKey(
-                                                                                            key,
-                                                                                        )}
-
-                                                                                        :
-                                                                                    </span>{' '}
-                                                                                    {value ||
-                                                                                        'No especificado'}
-                                                                                </>
-                                                                            )}
-                                                                        </li>
-                                                                    ),
-                                                                )}
-                                                            </ul>
-                                                        </div>
-                                                    )}
-                                                </>
-                                            )}
-                                        </div>
-                                    )
-                                })}
+                                                                                ) : (
+                                                                                    <p className="text-sm text-gray-600">
+                                                                                        {value ||
+                                                                                            '-'}
+                                                                                    </p>
+                                                                                )}
+                                                                            </div>
+                                                                        ),
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
                             </div>
                         ))
                     ) : (
-                        <p className="text-gray-500">
-                            No hay documentos disponibles.
-                        </p>
-                    )}
-                </div>
-
-                {/* Vacante y Estado de Aplicación */}
-                <div className="space-y-4">
-                    <h2 className="text-xl font-semibold text-gray-900">
-                        Información de la Vacante
-                    </h2>
-                    <div className="grid gap-4 md:grid-cols-3">
-                        <DetailCard
-                            title="Vacante"
-                            value={
-                                candidate.vacancy?.position?.description || 'No especificado'
-                            }
-                        />
-                        <DetailCard
-                            title="Departamento"
-                            value={
-                                candidate.vacancy?.department?.name|| 'No especificado'
-                            }
-                        />
-                        <DetailCard
-                            title="Estado de la Aplicación"
-                            value={
-                                candidate.status_application?.name ||
-                                'No especificado'
-                            }
-                        />
-                    </div>
-                </div>
-
-                <div className="flex justify-end gap-4">
-                    <DownloadCVButton resumeUrl={candidate.person.resume_url} />
-
-                    {/* Botón de Agendar Entrevista (solo si es Aceptado) */}
-                    {(candidate.status_application.name === 'Aceptado' ||
-                        candidate.status_application.name ===
-                            'En Progreso') && (
-                        <div className="flex gap-4">
-                            <button
-                                onClick={openModal}
-                                className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                                Agendar Eventos
-                            </button>
-                            <button
-                                onClick={() =>
-                                    router.push(
-                                        `/profile/admin/recruitment/applications-re/agendas/${id}`,
-                                    )
-                                }
-                                className="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700">
-                                Ver Eventos
-                            </button>
+                        <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50 rounded-xl">
+                            <DocumentMissingIcon className="w-12 h-12 text-[#004b9a]/50" />
+                            <p className="mt-4 text-gray-500">
+                                No se encontraron documentos adjuntos
+                            </p>
                         </div>
                     )}
                 </div>
+            </section>
+
+            {/* Sección de acciones */}
+            <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:justify-end">
+                {(candidate.status_application.name === 'Aceptado' ||
+                    candidate.status_application.name === 'En Progreso') && (
+                    <div className="flex gap-4">
+                        <button
+                            onClick={openModal}
+                            className="flex items-center gap-2 px-6 py-2 text-white bg-[#004b9a] rounded-lg shadow-sm hover:bg-[#003a7d] transition-colors duration-200">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-5 h-5"
+                                viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path
+                                    fillRule="evenodd"
+                                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+                            <span>Agendar nuevo evento</span>
+                        </button>
+
+                        <button
+                            onClick={() =>
+                                router.push(
+                                    `/profile/admin/recruitment/applications-re/agendas/${id}`,
+                                )
+                            }
+                            className="flex items-center gap-2 px-6 py-2 text-[#004b9a] bg-white border-2 border-[#004b9a] rounded-lg hover:bg-[#f5f8ff] transition-colors duration-200">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-5 h-5"
+                                viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                <path
+                                    fillRule="evenodd"
+                                    d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+                            <span>Ver eventos programados</span>
+                        </button>
+                    </div>
+                )}
             </div>
 
-            {/* Modal para Agendar Entrevista */}
+            {/* Modal de agendar entrevista (mejorado) */}
             <Modal isOpen={isModalOpen} onClose={closeModal}>
-                <h2 className="mb-6 text-2xl font-bold">Agendar Evento</h2>
-                {/* Mostrar mensajes de error */}
-                {errorInterview && (
-                    <Alert>
-                        <AlertDescription>{errorInterview}</AlertDescription>
-                    </Alert>
-                )}
-                {successInterview && (
-                    <p className="text-green-500">
-                        ¡Entrevista agendada con éxito!
-                    </p>
-                )}
+                <div className="p-6 bg-white rounded-xl">
+                    <h2 className="text-2xl font-bold text-[#004b9a] mb-6">
+                        Programar nuevo evento
+                    </h2>
 
-                <form onSubmit={handleSubmit}>
-                    {/* Fecha */}
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700">
-                            Fecha
-                        </label>
-                        <input
-                            type="date"
-                            name="scheduled_date"
-                            value={formData.scheduled_date}
-                            onChange={handleChange}
-                            className="w-full p-2 mt-1 border rounded-lg"
-                            required
-                        />
-                    </div>
+                    {errorInterview && (
+                        <Alert>
+                            <AlertDescription>
+                                {errorInterview}
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                    {successInterview && (
+                        <p className="mb-4 space-y-2 text-green-500">
+                            ¡Entrevista agendada con éxito!
+                        </p>
+                    )}
 
-                    {/* Hora */}
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700">
-                            Hora
-                        </label>
-                        <input
-                            type="time"
-                            name="time"
-                            value={formData.time}
-                            onChange={handleChange}
-                            className="w-full p-2 mt-1 border rounded-lg"
-                            required
-                        />
-                    </div>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Fecha del evento
+                                </label>
+                                <input
+                                    type="date"
+                                    name="scheduled_date"
+                                    value={formData.scheduled_date}
+                                    onChange={handleChange}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a]"
+                                    required
+                                />
+                            </div>
 
-                    {/* Tipo de Entrevista */}
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700">
-                            Tipo de Entrevista
-                        </label>
-                        <select
-                            name="type_agenda_id"
-                            value={formData.type_agenda_id}
-                            onChange={handleChange}
-                            className="w-full p-2 mt-1 border rounded-lg"
-                            required>
-                            <option value="">Seleccionar tipo</option>
-                            {typeAgendas.map(type => (
-                                <option key={type.id} value={type.id}>
-                                    {type.name}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Hora del evento
+                                </label>
+                                <input
+                                    type="time"
+                                    name="time"
+                                    value={formData.time}
+                                    onChange={handleChange}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a]"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Tipo de evento
+                            </label>
+                            <select
+                                name="type_agenda_id"
+                                value={formData.type_agenda_id}
+                                onChange={handleChange}
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a]"
+                                required>
+                                <option value="">
+                                    Seleccione un tipo de evento
                                 </option>
-                            ))}
-                        </select>
-                    </div>
+                                {typeAgendas.map(type => (
+                                    <option
+                                        key={type.id}
+                                        value={type.id}
+                                        className="py-2">
+                                        {type.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                    {/* Ubicación */}
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700">
-                            Ubicación
-                        </label>
-                        <input
-                            type="text"
-                            name="location"
-                            value={formData.location}
-                            onChange={handleChange}
-                            className="w-full p-2 mt-1 border rounded-lg"
-                            placeholder="Ej: Sala de reuniones A"
-                            required
-                        />
-                    </div>
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Ubicación o enlace
+                            </label>
+                            <input
+                                type="text"
+                                name="location"
+                                value={formData.location}
+                                onChange={handleChange}
+                                placeholder="Ej: Sala de conferencias A o enlace Zoom"
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a]"
+                                required
+                            />
+                        </div>
 
-                    {/* Botones del Formulario */}
-                    <div className="flex justify-end space-x-4">
-                        <button
-                            type="button"
-                            onClick={closeModal}
-                            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loadingInterview}
-                            className="w-full p-2 text-white transition-colors bg-blue-500 rounded-md hover:bg-blue-600">
-                            {loadingInterview
-                                ? 'Agendando...'
-                                : 'Agendar Entrevista'}
-                        </button>
-                    </div>
-                </form>
+                        <div className="flex justify-end gap-4 mt-8">
+                            <button
+                                type="button"
+                                onClick={closeModal}
+                                className="px-6 py-2 text-gray-700 transition-colors duration-200 bg-gray-100 rounded-lg hover:bg-gray-200">
+                                Cancelar
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={loadingInterview}
+                                className="px-6 py-2 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7d] transition-colors duration-200">
+                                {loadingInterview
+                                    ? 'Agendando...'
+                                    : 'Programar Evento'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </Modal>
         </div>
     )

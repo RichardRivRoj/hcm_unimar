@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trash2 } from 'lucide-react'
+import { CheckIcon, StarIcon, Trash2 } from 'lucide-react'
 import useAgenda from '@/hooks/useAgendasShow'
 import useTypeAgendas from '@/hooks/typeAgendasView'
 import useStatuses from '@/hooks/useStatuses'
 import DetailCard from '@/components/DetailCard'
-import Modal from '@/components/Modal'
+import { GeneralModal, Modal } from '@/components/Modal'
 import axios from '@/lib/axios'
 import StandardLoader from '@/components/StandardLoader'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 
 const AgendaDetail = ({ params }) => {
     const router = useRouter()
@@ -270,74 +271,132 @@ const AgendaDetail = ({ params }) => {
 
             {/* Modal de calificación */}
             {isRatingModalOpen && (
-                <Modal
+                <GeneralModal
+                    size='lg'
                     isOpen={isRatingModalOpen}
-                    onClose={() => setIsRatingModalOpen(false)}>
-                    <h2 className="mb-6 text-2xl font-bold">
-                        Calificar Evento
-                    </h2>
-                    <form onSubmit={handleRatingSubmit}>
-                        {/* Campo para la puntuación */}
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Puntuación (0-10) *
-                            </label>
-                            <input
-                                type="number"
-                                name="score"
-                                value={ratingForm.score}
-                                onChange={e =>
-                                    setRatingForm({
-                                        ...ratingForm,
-                                        score: Math.min(
-                                            10,
-                                            Math.max(0, e.target.value),
-                                        ),
-                                    })
-                                }
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                min="0"
-                                max="10"
-                                required
-                            />
+                    onClose={() => setIsRatingModalOpen(false)}
+                    overlayClassName="bg-[#004b9a]/20 backdrop-blur-sm">
+                    <div className="max-w-md max-h-screen p-6 overflow-auto bg-white rounded-xl">
+                        {/* Encabezado */}
+                        <div className="flex items-center gap-3 mb-6 border-b border-[#004b9a]/20 pb-4">
+                            <div className="p-2 bg-[#004b9a]/10 rounded-lg">
+                                <StarIcon className="w-6 h-6 text-[#004b9a]" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-[#004b9a]">
+                                Evaluar Evento
+                            </h2>
                         </div>
 
-                        {/* Campo para los comentarios */}
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Comentarios *
-                            </label>
-                            <textarea
-                                name="comments"
-                                value={ratingForm.comments}
-                                onChange={e =>
-                                    setRatingForm({
-                                        ...ratingForm,
-                                        comments: e.target.value,
-                                    })
-                                }
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                rows="4"
-                                required
-                            />
-                        </div>
+                        <form
+                            onSubmit={handleRatingSubmit}
+                            className="space-y-6">
+                            {/* Campo de puntuación */}
+                            <div>
+                                <label className="block mb-2 text-sm font-medium text-[#004b9a]">
+                                    Calificación del 1 al 10
+                                    <span className="ml-1 text-[#004b9a]/70">
+                                        (requerido)
+                                    </span>
+                                </label>
 
-                        {/* Botones del formulario */}
-                        <div className="flex justify-end gap-4">
-                            <button
-                                type="button"
-                                onClick={() => setIsRatingModalOpen(false)}
-                                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-                                Cancelar
-                            </button>
-                            <button
-                                type="submit"
-                                className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                                Guardar Calificación
-                            </button>
-                        </div>
-                    </form>
-                </Modal>
+                                <div className="relative">
+                                    <input
+                                        type="range"
+                                        name="score"
+                                        value={ratingForm.score}
+                                        onChange={e =>
+                                            setRatingForm({
+                                                ...ratingForm,
+                                                score: Math.min(
+                                                    10,
+                                                    Math.max(1, e.target.value),
+                                                ),
+                                            })
+                                        }
+                                        min="1"
+                                        max="10"
+                                        step="1"
+                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg accent-[#004b9a]"
+                                    />
+
+                                    {/* Marcadores de escala */}
+                                    <div className="flex justify-between px-1 mt-2 text-sm text-[#004b9a]/80">
+                                        {[...Array(10)].map((_, i) => (
+                                            <span
+                                                key={i + 1}
+                                                className="w-4 text-center">
+                                                {i + 1}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <p className="mt-2 text-sm text-[#004b9a]/70">
+                                    Seleccione un valor entre 1 (Muy deficiente)
+                                    y 10 (Excelente)
+                                </p>
+                            </div>
+
+                            {/* Campo de comentarios */}
+                            <div>
+                                <label className="block mb-2 text-sm font-medium text-[#004b9a]">
+                                    Comentarios detallados
+                                    <span className="ml-1 text-[#004b9a]/70">
+                                        (requerido)
+                                    </span>
+                                </label>
+
+                                <div className="relative">
+                                    <textarea
+                                        name="comments"
+                                        value={ratingForm.comments}
+                                        onChange={e =>
+                                            setRatingForm({
+                                                ...ratingForm,
+                                                comments: e.target.value.slice(
+                                                    0,
+                                                    500,
+                                                ),
+                                            })
+                                        }
+                                        className="w-full p-3 border-2 border-[#004b9a]/20 rounded-lg focus:border-[#004b9a] focus:ring-2 focus:ring-[#004b9a]/30 transition-all"
+                                        rows="4"
+                                        placeholder="Ej: Detalla aspectos relevantes del evento, puntos fuertes y áreas de mejora..."
+                                        required
+                                    />
+
+                                    {/* Contador de caracteres */}
+                                    <div className="absolute bottom-2 right-2 text-sm text-[#004b9a]/70 bg-white px-2 rounded">
+                                        {ratingForm.comments.length}/500
+                                    </div>
+                                </div>
+
+                                <p className="mt-2 text-sm text-[#004b9a]/70">
+                                    Por favor sea específico y objetivo en sus
+                                    comentarios
+                                </p>
+                            </div>
+
+                            {/* Botones */}
+                            <div className="flex justify-end gap-3 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsRatingModalOpen(false)}
+                                    className="flex items-center gap-2 px-5 py-2.5 text-[#004b9a] bg-white border-2 border-[#004b9a]/20 rounded-lg hover:border-[#004b9a]/40 hover:bg-[#004b9a]/5 transition-all">
+                                    <XMarkIcon className="w-5 h-5" />
+                                    Cancelar
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    className="flex items-center gap-2 px-5 py-2.5 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7d] transition-colors">
+                                    <CheckIcon className="w-5 h-5" />
+                                    Guardar Evaluación
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </GeneralModal>
             )}
 
             {isEditing ? (

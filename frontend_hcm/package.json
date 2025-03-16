@@ -21,6 +21,7 @@
     "@react-pdf/renderer": "^4.2.2",
     "axios": "^0.21.1",
     "chart.js": "^4.4.8",
+    "classnames": "^2.5.1",
     "date-fns": "^4.1.0",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.4.10",

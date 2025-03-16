@@ -107,10 +107,10 @@ const CandidatesPage = () => {
                                 {candidate.persons.last_name}
                             </td>
                             <td className="px-6 py-2 text-sm">
-                                {candidate.persons.identification_value}
+                               {candidate.persons.identificationtype.code} {' - '} {candidate.persons.identification_value}
                             </td>
                             <td className="px-6 py-2 text-sm">
-                                {candidate.vacancy.position.description}
+                                {candidate.vacancy.position.description} {' - '} {candidate.vacancy.department.name}
                             </td>
                             <td className="px-6 py-2 text-sm">
                                 {candidate.status_application.short_name}

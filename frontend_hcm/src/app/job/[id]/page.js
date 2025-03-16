@@ -2,16 +2,25 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import DetailCard from '@/components/DetailCard'
 import useVacancyDetail from '@/hooks/useVacancyDetail'
-import CheckIcon from '@/components/CheckIcon'
 import useCandidateForm from '@/hooks/createCandidate'
 import useIdentificacitionTypes from '@/hooks/identificationsView'
 import useGenders from '@/hooks/gendersView'
 import useEthnicities from '@/hooks/ethnicitiesView'
 import useMaritalStatuses from '@/hooks/maritalStatusesView'
 import useCountries from '@/hooks/countryView'
-import { FileText, PencilIcon } from 'lucide-react'
+import JobDetailContent from './JobDetailContent'
+import PersonalDataStep from './PersonalDataStep'
+import JobExperienceStep from './JobExperienceStep'
+import StudyData from './StudyData'
+import CourseData from './CourseData'
+import CompetencyData from './CompetencyData'
+import LanguageData from './LanguageData'
+import { GeneralModal } from '@/components/Modal'
+import useCandidateValidation from '@/hooks/general/useCandidateValidation'
+import StandardLoader from '@/components/StandardLoader'
+import { Alert, AlertDescription } from '@/components/alert'
+import { toast } from 'sonner'
 
 const JobDetails = ({ params }) => {
     const router = useRouter()
@@ -46,6 +55,12 @@ const JobDetails = ({ params }) => {
         loading: loadingCountries,
         error: errorCountries,
     } = useCountries()
+    const {
+        loading: loadingValidation,
+        error: errorValidation,
+        result: validationResult,
+        checkCandidate,
+    } = useCandidateValidation()
     const {
         loading: loadingCandidate,
         error: errorCandidate,
@@ -92,6 +107,16 @@ const JobDetails = ({ params }) => {
             ],
         },
     })
+    // Nuevo estado para el modal de validación
+    const [showValidationModal, setShowValidationModal] = useState(false)
+    const [validationData, setValidationData] = useState({
+        identification_type_id: '',
+        identification_value: '',
+    })
+    const [currentValidation, setCurrentValidation] = useState({
+        type: '',
+        value: '',
+    })
 
     const validateImage = file => {
         if (!file) return false
@@ -115,10 +140,10 @@ const JobDetails = ({ params }) => {
 
     // Función para manejar cambios en los campos del formulario
     const handleChange = e => {
-        const { name, value } = e.target
+        const { name, value, files } = e.target
         setFormData(prev => ({
             ...prev,
-            [name]: value,
+            [name]: files ? files[0] : value,
         }))
     }
 
@@ -230,152 +255,497 @@ const JobDetails = ({ params }) => {
         })
     }
 
+    // Manejar la validación inicial
+    const handleInitialValidation = async e => {
+        e.preventDefault()
+        try {
+            // Guardar la validación actual
+            setCurrentValidation({
+                type: validationData.identification_type_id,
+                value: validationData.identification_value,
+            })
+
+            const result = await checkCandidate(validationData, id)
+
+            // Si no existe persona, limpiar datos
+            if (!result.person_exists) {
+                setFormData(prev => ({
+                    ...prev,
+                    first_name: '',
+                    last_name: '',
+                    email: '',
+                    phone: '',
+                    identification_value: '',
+                    ethnicity_id: '',
+                    identification_type_id: '',
+                    marital_status_id: '',
+                    gender_id: '',
+                    countries_id: '',
+                    birth_date: '',
+                    documents: {
+                        jobs: [],
+                        studies: [],
+                        courses: [],
+                        competencies: [],
+                        languages: [
+                            {
+                                name: '',
+                                detail: { level: '' },
+                            },
+                        ],
+                    },
+                }))
+            }
+
+            if (result.error) {
+                throw new Error(result.error)
+            }
+
+            if (result.is_employee) {
+                throw new Error(
+                    'Los empleados activos no pueden aplicar a vacantes',
+                )
+            }
+
+            if (result.has_applied) {
+                throw new Error('Ya has aplicado a esta vacante anteriormente')
+            }
+
+            // Precargar datos existentes
+            if (result.person_exists) {
+                setFormData(prev => ({
+                    ...prev,
+                    ...validationData,
+                    ...result.person_data,
+                    documents: {
+                        jobs: result.documents.jobs.map(j => ({
+                            name: j.document_name,
+                            issue_date: j.issue_date,
+                            expiration_date: j.expiration_date,
+                            metadata: j.metadata ? JSON.parse(j.metadata) : {},
+                        })),
+                        studies: result.documents.studies.map(s => ({
+                            name: s.document_name,
+                            issue_date: s.issue_date,
+                            expiration_date: s.expiration_date,
+                            metadata: s.metadata ? JSON.parse(s.metadata) : {},
+                        })),
+                        courses: result.documents.courses.map(c => ({
+                            name: c.document_name,
+                            issue_date: c.issue_date,
+                            expiration_date: c.expiration_date,
+                            metadata: c.metadata ? JSON.parse(c.metadata) : {},
+                        })),
+                        competencies: result.documents.competencies.map(c => ({
+                            name: c.document_name,
+                            detail: c.detail ? JSON.parse(c.detail) : [],
+                        })),
+                        languages: result.documents.languages.map(l => ({
+                            name: l.document_name,
+                            detail: l.detail
+                                ? JSON.parse(l.detail)
+                                : { level: '' },
+                        })),
+                    },
+                }))
+
+                toast.success('Datos personales cargados exitosamente', {
+                    description:
+                        'Por favor verifique la información y complete los pasos restantes',
+                })
+            }
+
+            setIsApplicationModalOpen(true)
+        } catch (error) {
+            setFormData(prev => ({
+                ...prev,
+                first_name: '',
+                last_name: '',
+                email: '',
+                phone: '',
+                identification_value: '',
+                ethnicity_id: '',
+                identification_type_id: '',
+                marital_status_id: '',
+                gender_id: '',
+                countries_id: '',
+                birth_date: '',
+                documents: {
+                    jobs: [],
+                    studies: [],
+                    courses: [],
+                    competencies: [],
+                    languages: [
+                        {
+                            name: '',
+                            detail: { level: '' },
+                        },
+                    ],
+                },
+            }))
+            toast.error('Error en validación', {
+                description:
+                    error.message ||
+                    'Error al verificar los datos del candidato',
+            })
+        }
+    }
+
     // Función de submit actualizada
     const handleSubmit = async e => {
         e.preventDefault()
 
-        if (currentStep < 6) {
-            setCurrentStep(prev => prev + 1)
-            return
-        }
-
         try {
-            // Validar foto antes de enviar
-            if (!formData.photo || !validateImage(formData.photo)) {
-                throw new Error('Foto requerida o inválida')
+            if (currentStep < 6) {
+                setCurrentStep(prev => prev + 1)
+                return
             }
 
-            await submitForm(formData, id)
+            if (!formData.photo || !validateImage(formData.photo)) {
+                toast.warning('Archivo de foto requerido', {
+                    description:
+                        'Debe subir una imagen válida (JPG/PNG, máximo 2MB)',
+                })
+                return
+            }
+
+            const result = await submitForm(formData, id)
+
+            if (result.success) {
+                toast.success('Aplicación completada', {
+                    description:
+                        'Su postulación ha sido registrada exitosamente',
+                    action: {
+                        label: 'Cerrar',
+                        onClick: () => {},
+                    },
+                })
+            }
         } catch (error) {
-            console.error('Error submitting form:', error)
+            const errorMessage = error.response?.data?.errors
+                ? Object.values(error.response.data.errors).flat().join(', ')
+                : error.message || 'Error desconocido al procesar la solicitud'
+
+            toast.error('Error en la aplicación', {
+                description: errorMessage,
+                action: {
+                    label: 'Reintentar',
+                    onClick: () => handleSubmit(e),
+                },
+            })
         }
     }
 
+    useEffect(() => {
+        if (validationResult?.person_exists) {
+            // Verificar que coincida con la última validación realizada
+            const isCurrentValidation =
+                validationData.identification_type_id ===
+                    currentValidation.type &&
+                validationData.identification_value === currentValidation.value
+
+            if (isCurrentValidation) {
+                setFormData(prev => ({
+                    ...prev,
+                    identification_type_id:
+                        validationData.identification_type_id,
+                    identification_value: validationData.identification_value,
+                    ...validationResult.person_data,
+                    documents: {
+                        jobs:
+                            validationResult.documents.jobs?.map(item => ({
+                                name: item.document_name,
+                                issue_date: item.issue_date,
+                                expiration_date: item.expiration_date,
+                                metadata: item.metadata
+                                    ? JSON.parse(item.metadata)
+                                    : {},
+                            })) || [],
+                        studies:
+                            validationResult.documents.studies?.map(item => ({
+                                name: item.document_name,
+                                issue_date: item.issue_date,
+                                expiration_date: item.expiration_date,
+                                metadata: item.metadata
+                                    ? JSON.parse(item.metadata)
+                                    : {},
+                            })) || [],
+                        courses:
+                            validationResult.documents.courses?.map(item => ({
+                                name: item.document_name,
+                                issue_date: item.issue_date,
+                                expiration_date: item.expiration_date,
+                                metadata: item.metadata
+                                    ? JSON.parse(item.metadata)
+                                    : {},
+                            })) || [],
+                        competencies:
+                            validationResult.documents.competencies?.map(
+                                item => ({
+                                    name: item.document_name,
+                                    detail: item.detail
+                                        ? JSON.parse(item.detail)
+                                        : [],
+                                }),
+                            ) || [],
+                        languages:
+                            validationResult.documents.languages?.map(item => ({
+                                name: item.document_name,
+                                detail: item.detail
+                                    ? JSON.parse(item.detail)
+                                    : { level: '' },
+                            })) || [],
+                    },
+                }))
+            }
+        }
+    }, [validationResult])
+
+    useEffect(() => {
+        if (candidateResponse?.success) {
+            toast.success('¡Aplicación registrada!', {
+                description: 'Hemos recibido tu postulación exitosamente',
+                duration: 5000,
+                action: {
+                    label: 'Cerrar',
+                    onClick: () => {},
+                },
+            })
+            setIsApplicationModalOpen(false)
+            setCurrentStep(1)
+            resetForm()
+        }
+    }, [candidateResponse])
+
     if (loading) {
-        return (
-            <div className="max-w-4xl p-8 mx-auto space-y-6 animate-pulse">
-                <div className="w-3/4 h-10 bg-gray-100 rounded-full"></div>
-                <div className="w-2/3 h-4 bg-gray-100 rounded"></div>
-                <div className="grid gap-4 mt-8 md:grid-cols-2">
-                    {[...Array(5)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="p-4 space-y-2 rounded-lg bg-gray-50">
-                            <div className="w-1/4 h-4 bg-gray-100 rounded"></div>
-                            <div className="w-3/4 h-6 bg-gray-100 rounded"></div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
+        return <StandardLoader />
     }
 
-    if (error) return <div>Error: {error}</div>
+    if (error)
+        return (
+            <Alert>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        )
 
     return (
         <>
-            <div className="max-w-4xl p-10 mx-auto my-8 text-justify bg-white shadow-lg rounded-xl">
-                <div className="p-4 space-y-8">
-                    <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
+            <JobDetailContent
+                vacancy={vacancy}
+                handleBack={() => router.back()}
+                onClick={() => setShowValidationModal(true)}
+            />
+
+            <GeneralModal
+                isOpen={showValidationModal}
+                onClose={() => {
+                    setShowValidationModal(false)
+                    // Resetear todos los datos relacionados con validación
+                    setValidationData({
+                        identification_type_id: '',
+                        identification_value: '',
+                    })
+                    setCurrentValidation({ type: '', value: '' })
+                    setFormData(prev => ({
+                        ...prev,
+                        // Limpiar solo campos sensibles, mantener vacancy_id
+                        first_name: '',
+                        last_name: '',
+                        email: '',
+                        phone: '',
+                        identification_value: '',
+                        ethnicity_id: '',
+                        identification_type_id: '',
+                        marital_status_id: '',
+                        gender_id: '',
+                        countries_id: '',
+                        birth_date: '',
+                        documents: {
+                            jobs: [],
+                            studies: [],
+                            courses: [],
+                            competencies: [],
+                            languages: [
+                                {
+                                    name: '',
+                                    detail: { level: '' },
+                                },
+                            ],
+                        },
+                    }))
+                }}
+                title="Verificación de Identidad"
+                size="lg"
+                titleStyle="text-[#004b9a] text-2xl font-bold border-b-2 border-[#004b9a] pb-2"
+                actions={
+                    <div className="flex justify-end w-full gap-3">
                         <button
-                            onClick={() => router.back()}
-                            className="flex items-center text-gray-600 hover:text-blue-800 group w-fit">
-                            <span className="mr-2 text-2xl transition-transform group-hover:-translate-x-1">
-                                ←
-                            </span>
-                            <span className="font-medium">Volver</span>
+                            type="button"
+                            onClick={() => setShowValidationModal(false)}
+                            className="px-6 py-2 text-[#004b9a] border border-[#004b9a] rounded-lg hover:bg-blue-50 transition-colors duration-200">
+                            Cancelar
                         </button>
-
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                            <button
-                                onClick={() => setIsApplicationModalOpen(true)}
-                                className="px-4 py-2 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700">
-                                Postularse
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Encabezado y detalles de la vacante */}
-                    <div className="space-y-4">
-                        <h1 className="text-3xl font-bold text-gray-900">
-                            {vacancy.position?.description}
-                            {' - '}
-                            {vacancy.department?.name}
-                        </h1>
-                        <p className="text-base text-gray-600">
-                            {vacancy.description}
-                        </p>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
-                        <DetailCard
-                            title="Cargo"
-                            value={vacancy.position?.description}
-                        />
-                        <DetailCard
-                            title="Departamento"
-                            value={vacancy.department?.name}
-                        />
-                        <DetailCard
-                            title="Modalidad"
-                            value={vacancy.mode?.name}
-                        />
-                        <DetailCard
-                            title="Vacantes"
-                            value={vacancy.num_vacancy}
-                        />
-                    </div>
-
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-gray-900">
-                            Requisitos principales
-                        </h2>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            {vacancy.requirements?.length > 0 ? (
-                                vacancy.requirements.map((req, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-start p-4 rounded-lg bg-gray-50">
-                                        <CheckIcon />
-                                        <span className="ml-3 text-gray-700">
-                                            {req}
-                                        </span>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="p-4 text-gray-500 rounded-lg bg-gray-50">
-                                    No se han definido requisitos específicos
-                                </div>
+                        <button
+                            type="submit"
+                            form="validation-form"
+                            className="px-6 py-2 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7d] transition-colors duration-200 flex items-center justify-center gap-2"
+                            disabled={loadingValidation}>
+                            {loadingValidation && (
+                                <svg
+                                    className="w-5 h-5 text-white animate-spin"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24">
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"></circle>
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
                             )}
-                        </div>
+                            {loadingValidation ? 'Validando...' : 'Continuar'}
+                        </button>
                     </div>
+                }>
+                <form id="validation-form" onSubmit={handleInitialValidation}>
+                    <div className="space-y-6">
+                        {/* Mensaje de ayuda */}
+                        <div className="p-4 rounded-lg bg-blue-50">
+                            <p className="text-sm text-[#004b9a] flex items-start gap-2">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="w-5 h-5 shrink-0"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor">
+                                    <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-11v6h2v-6h-2zm0-4v2h2V7h-2z" />
+                                </svg>
+                                <span>
+                                    Para continuar con tu postulación,
+                                    necesitamos validar tu identidad.
+                                    <br />
+                                    <span className="text-xs opacity-80">
+                                        Este proceso es seguro y tus datos están
+                                        protegidos.
+                                    </span>
+                                </span>
+                            </p>
+                        </div>
 
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-gray-900">
-                            Responsabilidades principales
-                        </h2>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            {vacancy.responsability?.length > 0 ? (
-                                vacancy.responsability.map((req, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-start p-4 rounded-lg bg-gray-50">
-                                        <CheckIcon />
-                                        <span className="ml-3 text-gray-700">
-                                            {req}
-                                        </span>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="p-4 text-gray-500 rounded-lg bg-gray-50">
-                                    No se han definido responsabilidades
-                                    específicas
+                        {errorValidation && (
+                            <div className="flex items-center gap-2 p-3 mb-4 text-red-700 border border-red-200 rounded-lg bg-red-50">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="w-5 h-5"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor">
+                                    <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z" />
+                                </svg>
+                                <span>{errorValidation.message}</span>
+                            </div>
+                        )}
+
+                        <div className="space-y-6">
+                            {/* Campo Tipo de Documento */}
+                            <div>
+                                <label className="block mb-2 text-sm font-medium text-gray-700">
+                                    Tipo de Documento *
+                                    <span className="ml-1 text-xs text-gray-500">
+                                        (Requerido)
+                                    </span>
+                                </label>
+                                <div className="relative">
+                                    <select
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a] outline-none transition-all appearance-none pr-10"
+                                        value={
+                                            validationData.identification_type_id
+                                        }
+                                        onChange={e =>
+                                            setValidationData(prev => ({
+                                                ...prev,
+                                                identification_type_id:
+                                                    e.target.value,
+                                            }))
+                                        }
+                                        required>
+                                        <option value="">
+                                            Selecciona tu tipo de documento...
+                                        </option>
+                                        {identifications.map(iden => (
+                                            <option
+                                                key={iden.id}
+                                                value={iden.id}>
+                                                {iden.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 pointer-events-none"></div>
                                 </div>
-                            )}
+                            </div>
+
+                            {/* Campo Número de Documento */}
+                            <div>
+                                <label className="block mb-2 text-sm font-medium text-gray-700">
+                                    Número de Documento *
+                                    <span className="ml-1 text-xs text-gray-500">
+                                        (Requerido)
+                                    </span>
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a] outline-none transition-all"
+                                        value={
+                                            validationData.identification_value
+                                        }
+                                        onChange={e =>
+                                            setValidationData(prev => ({
+                                                ...prev,
+                                                identification_value:
+                                                    e.target.value,
+                                            }))
+                                        }
+                                        placeholder="Ej: 12345678"
+                                        required
+                                    />
+                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                                        <svg
+                                            className="w-5 h-5 text-gray-400"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20">
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Texto de seguridad */}
+                        <div className="pt-4 text-center border-t border-gray-200">
+                            <p className="text-xs text-gray-500">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="inline-block w-4 h-4 mr-1"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor">
+                                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" />
+                                </svg>
+                                Tus datos están protegidos bajo nuestra política
+                                de seguridad
+                            </p>
                         </div>
                     </div>
-                </div>
-            </div>
+                </form>
+            </GeneralModal>
 
             {/* Modal de postulación */}
             {isApplicationModalOpen && (
@@ -395,1365 +765,80 @@ const JobDetails = ({ params }) => {
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 {/* Paso 1: Datos personales */}
                                 {currentStep === 1 && (
-                                    <>
-                                        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                                            {/* Sección Información Básica */}
-                                            <div className="space-y-4">
-                                                <h3 className="text-lg font-medium text-gray-900">
-                                                    Información Básica
-                                                </h3>
-
-                                                <div>
-                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                        Nombres *
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        name="first_name"
-                                                        value={
-                                                            formData.first_name
-                                                        }
-                                                        onChange={handleChange}
-                                                        required
-                                                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                    />
-                                                </div>
-
-                                                <div>
-                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                        Apellidos *
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        name="last_name"
-                                                        value={
-                                                            formData.last_name
-                                                        }
-                                                        onChange={handleChange}
-                                                        required
-                                                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                    />
-                                                </div>
-
-                                                <div>
-                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                        Fecha de Nacimiento *
-                                                    </label>
-                                                    <input
-                                                        type="date"
-                                                        name="birth_date"
-                                                        value={
-                                                            formData.birth_date
-                                                        }
-                                                        onChange={handleChange}
-                                                        required
-                                                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* Sección Contacto */}
-                                            <div className="space-y-4">
-                                                <h3 className="text-lg font-medium text-gray-900">
-                                                    Datos de Contacto
-                                                </h3>
-
-                                                <div>
-                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                        Correo Electrónico *
-                                                    </label>
-                                                    <input
-                                                        type="email"
-                                                        name="email"
-                                                        value={formData.email}
-                                                        onChange={handleChange}
-                                                        required
-                                                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                    />
-                                                </div>
-
-                                                <div>
-                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                        Teléfono/Celular *
-                                                    </label>
-                                                    <input
-                                                        type="tel"
-                                                        name="phone"
-                                                        value={formData.phone}
-                                                        onChange={handleChange}
-                                                        required
-                                                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* Sección Identificación */}
-                                            <div className="space-y-4">
-                                                <h3 className="text-lg font-medium text-gray-900">
-                                                    Identificación
-                                                </h3>
-
-                                                <div>
-                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                        Tipo de Documento *
-                                                    </label>
-                                                    <select
-                                                        name="identification_type_id"
-                                                        value={
-                                                            formData.identification_type_id
-                                                        }
-                                                        onChange={handleChange}
-                                                        required
-                                                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                                                        <option value="">
-                                                            Seleccionar tipo
-                                                        </option>
-                                                        {identifications.map(
-                                                            iden => (
-                                                                <option
-                                                                    key={
-                                                                        iden.id
-                                                                    }
-                                                                    value={
-                                                                        iden.id
-                                                                    }>
-                                                                    {iden.code}{' '}
-                                                                    -{' '}
-                                                                    {iden.name}
-                                                                </option>
-                                                            ),
-                                                        )}
-                                                    </select>
-                                                </div>
-
-                                                <div>
-                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                        Número de Documento *
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        name="identification_value"
-                                                        value={
-                                                            formData.identification_value
-                                                        }
-                                                        onChange={handleChange}
-                                                        required
-                                                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* Sección Demográficos */}
-                                            <div className="space-y-4">
-                                                <h3 className="text-lg font-medium text-gray-900">
-                                                    Información Demográfica
-                                                </h3>
-
-                                                <div>
-                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                        Género *
-                                                    </label>
-                                                    <select
-                                                        name="gender_id"
-                                                        value={
-                                                            formData.gender_id
-                                                        }
-                                                        onChange={handleChange}
-                                                        required
-                                                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                                                        <option value="">
-                                                            Seleccionar género
-                                                        </option>
-                                                        {genders.map(gend => (
-                                                            <option
-                                                                key={gend.id}
-                                                                value={gend.id}>
-                                                                {
-                                                                    gend.short_name
-                                                                }{' '}
-                                                                - {gend.name}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-
-                                                <div>
-                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                        Etnia
-                                                    </label>
-                                                    <select
-                                                        name="ethnicity_id"
-                                                        value={
-                                                            formData.ethnicity_id
-                                                        }
-                                                        onChange={handleChange}
-                                                        required
-                                                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                                                        <option value="">
-                                                            Seleccionar etnia
-                                                        </option>
-                                                        {ethnicities.map(
-                                                            eth => (
-                                                                <option
-                                                                    key={eth.id}
-                                                                    value={
-                                                                        eth.id
-                                                                    }>
-                                                                    {
-                                                                        eth.short_name
-                                                                    }{' '}
-                                                                    - {eth.name}
-                                                                </option>
-                                                            ),
-                                                        )}
-                                                    </select>
-                                                </div>
-
-                                                <div>
-                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                        Estado Civil
-                                                    </label>
-                                                    <select
-                                                        name="marital_status_id"
-                                                        value={
-                                                            formData.marital_status_id
-                                                        }
-                                                        onChange={handleChange}
-                                                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                                                        <option value="">
-                                                            Seleccionar estado
-                                                        </option>
-                                                        {marital.map(mar => (
-                                                            <option
-                                                                key={mar.id}
-                                                                value={mar.id}>
-                                                                {mar.short_name}{' '}
-                                                                - {mar.name}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            {/* Sección Adicional */}
-                                            <div className="space-y-4 col-span-full">
-                                                <h3 className="text-lg font-medium text-gray-900">
-                                                    Información Adicional
-                                                </h3>
-
-                                                <div>
-                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                        País de Residencia *
-                                                    </label>
-                                                    <select
-                                                        name="countries_id"
-                                                        value={
-                                                            formData.countries_id
-                                                        }
-                                                        onChange={handleChange}
-                                                        required
-                                                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                                                        <option value="">
-                                                            Seleccionar país
-                                                        </option>
-                                                        {countries.map(con => (
-                                                            <option
-                                                                key={con.id}
-                                                                value={con.id}>
-                                                                {con.name}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-
-                                                <div>
-                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                        Resumen Profesional *
-                                                    </label>
-                                                    <textarea
-                                                        name="summary"
-                                                        value={formData.summary}
-                                                        onChange={handleChange}
-                                                        required
-                                                        rows="4"
-                                                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-4">
-                                                    <label className="block text-sm font-medium text-gray-700">
-                                                        Foto tipo carnet (JPG,
-                                                        PNG - Máx. 2MB) *
-                                                    </label>
-
-                                                    <div
-                                                        className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg 
-      ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'} 
-      transition-colors duration-200 cursor-pointer`}
-                                                        onDragOver={e => {
-                                                            e.preventDefault()
-                                                            setDragActive(true)
-                                                        }}
-                                                        onDragLeave={() =>
-                                                            setDragActive(false)
-                                                        }
-                                                        onDrop={e => {
-                                                            e.preventDefault()
-                                                            setDragActive(false)
-                                                            const file =
-                                                                e.dataTransfer
-                                                                    .files[0]
-                                                            if (
-                                                                validateImage(
-                                                                    file,
-                                                                )
-                                                            ) {
-                                                                setFormData(
-                                                                    prev => ({
-                                                                        ...prev,
-                                                                        photo: file,
-                                                                    }),
-                                                                )
-                                                            }
-                                                        }}
-                                                        onClick={() =>
-                                                            document
-                                                                .getElementById(
-                                                                    'photoInput',
-                                                                )
-                                                                .click()
-                                                        }>
-                                                        {formData.photo ? (
-                                                            <>
-                                                                <div className="relative group">
-                                                                    <img
-                                                                        src={URL.createObjectURL(
-                                                                            formData.photo,
-                                                                        )}
-                                                                        alt="Previsualización de foto"
-                                                                        className="object-cover w-32 h-32 rounded-full shadow-lg"
-                                                                    />
-                                                                    <div className="absolute inset-0 flex items-center justify-center transition-opacity bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100">
-                                                                        <PencilIcon className="w-8 h-8 text-white" />
-                                                                    </div>
-                                                                </div>
-                                                                <p className="mt-2 text-sm text-gray-600">
-                                                                    Haz clic
-                                                                    para cambiar
-                                                                    la foto
-                                                                </p>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <svg
-                                                                    className="w-12 h-12 mb-2 text-gray-400"
-                                                                    fill="none"
-                                                                    stroke="currentColor"
-                                                                    viewBox="0 0 24 24">
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth="2"
-                                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                                                    />
-                                                                </svg>
-                                                                <div className="text-center">
-                                                                    <p className="text-sm text-gray-600">
-                                                                        <span className="font-semibold text-blue-600">
-                                                                            Haz
-                                                                            clic
-                                                                            para
-                                                                            subir
-                                                                        </span>{' '}
-                                                                        o
-                                                                        arrastra
-                                                                        aquí
-                                                                    </p>
-                                                                    <p className="text-xs text-gray-500">
-                                                                        Tamaño
-                                                                        recomendado:
-                                                                        300x300
-                                                                        px
-                                                                    </p>
-                                                                </div>
-                                                            </>
-                                                        )}
-
-                                                        <input
-                                                            id="photoInput"
-                                                            type="file"
-                                                            name="photo"
-                                                            onChange={e => {
-                                                                const file =
-                                                                    e.target
-                                                                        .files[0]
-                                                                if (
-                                                                    validateImage(
-                                                                        file,
-                                                                    )
-                                                                ) {
-                                                                    setFormData(
-                                                                        prev => ({
-                                                                            ...prev,
-                                                                            photo: file,
-                                                                        }),
-                                                                    )
-                                                                }
-                                                            }}
-                                                            accept=".jpg,.jpeg,.png"
-                                                            className="hidden"
-                                                            required
-                                                        />
-                                                    </div>
-
-                                                    {errorPhoto && (
-                                                        <p className="mt-2 text-sm text-red-600">
-                                                            {errorPhoto}
-                                                        </p>
-                                                    )}
-                                                </div>
-
-                                                <div className="space-y-4">
-                                                    <label className="block text-sm font-medium text-gray-700">
-                                                        Curriculum Vitae (PDF) *
-                                                    </label>
-
-                                                    <div
-                                                        className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg 
-            ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'} 
-            transition-colors duration-200 cursor-pointer`}
-                                                        onDragOver={e => {
-                                                            e.preventDefault()
-                                                            setDragActive(true)
-                                                        }}
-                                                        onDragLeave={() =>
-                                                            setDragActive(false)
-                                                        }
-                                                        onDrop={e => {
-                                                            e.preventDefault()
-                                                            setDragActive(false)
-                                                            const file =
-                                                                e.dataTransfer
-                                                                    .files[0]
-                                                            if (
-                                                                file?.type ===
-                                                                'application/pdf'
-                                                            ) {
-                                                                setFormData(
-                                                                    prev => ({
-                                                                        ...prev,
-                                                                        resume: file,
-                                                                    }),
-                                                                )
-                                                            }
-                                                        }}
-                                                        onClick={() =>
-                                                            document
-                                                                .getElementById(
-                                                                    'resumeInput',
-                                                                )
-                                                                .click()
-                                                        }>
-                                                        {formData.resume ? (
-                                                            <div className="text-center">
-                                                                <FileText className="w-12 h-12 mx-auto text-blue-600" />
-                                                                <p className="mt-2 text-sm font-medium text-gray-900">
-                                                                    {
-                                                                        formData
-                                                                            .resume
-                                                                            .name
-                                                                    }
-                                                                </p>
-                                                                <p className="text-xs text-gray-500">
-                                                                    Haz clic
-                                                                    para cambiar
-                                                                    el archivo
-                                                                </p>
-                                                            </div>
-                                                        ) : (
-                                                            <>
-                                                                <svg
-                                                                    className="w-12 h-12 mb-2 text-gray-400"
-                                                                    fill="none"
-                                                                    stroke="currentColor"
-                                                                    viewBox="0 0 24 24">
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth="2"
-                                                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                                                    />
-                                                                </svg>
-                                                                <div className="text-center">
-                                                                    <p className="text-sm text-gray-600">
-                                                                        <span className="font-semibold text-blue-600">
-                                                                            Haz
-                                                                            clic
-                                                                            para
-                                                                            subir
-                                                                        </span>{' '}
-                                                                        o
-                                                                        arrastra
-                                                                        aquí
-                                                                    </p>
-                                                                    <p className="text-xs text-gray-500">
-                                                                        Formato
-                                                                        requerido:
-                                                                        PDF
-                                                                    </p>
-                                                                </div>
-                                                            </>
-                                                        )}
-
-                                                        <input
-                                                            id="resumeInput"
-                                                            type="file"
-                                                            name="resume"
-                                                            onChange={e => {
-                                                                const file =
-                                                                    e.target
-                                                                        .files[0]
-                                                                if (
-                                                                    file?.type ===
-                                                                    'application/pdf'
-                                                                ) {
-                                                                    setFormData(
-                                                                        prev => ({
-                                                                            ...prev,
-                                                                            resume: file,
-                                                                        }),
-                                                                    )
-                                                                }
-                                                            }}
-                                                            accept=".pdf"
-                                                            className="hidden"
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </>
+                                    <PersonalDataStep
+                                        formData={formData}
+                                        handleChange={handleChange}
+                                        setFormData={setFormData} // Nueva prop
+                                        identifications={identifications}
+                                        genders={genders}
+                                        ethnicities={ethnicities}
+                                        marital={marital}
+                                        countries={countries}
+                                        errorPhoto={errorPhoto}
+                                        validateImage={validateImage}
+                                        dragActive={dragActive}
+                                        setDragActive={setDragActive}
+                                    />
                                 )}
 
                                 {/* Paso 2: Empleos */}
                                 {currentStep === 2 && (
-                                    <>
-                                        <h3 className="mb-4 text-lg font-semibold text-gray-900">
-                                            Experiencia Laboral (Máximo 2
-                                            empleos)
-                                        </h3>
-
-                                        {formData.documents.jobs.map(
-                                            (job, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="p-4 mb-6 space-y-4 border rounded-lg">
-                                                    {/* Document Name (Nombre del empleo) */}
-                                                    <div>
-                                                        <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                            Nombre del empleo *
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={
-                                                                job.name || ''
-                                                            }
-                                                            onChange={e =>
-                                                                handleDocumentChange(
-                                                                    'jobs',
-                                                                    index,
-                                                                    'name',
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            required
-                                                            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            placeholder="Ej: Experiencia como Desarrollador Frontend en Google"
-                                                        />
-                                                    </div>
-
-                                                    {/* Fechas principales */}
-                                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                                        <div>
-                                                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                                Fecha de inicio
-                                                            </label>
-                                                            <input
-                                                                type="date"
-                                                                value={
-                                                                    job.issue_date ||
-                                                                    ''
-                                                                }
-                                                                onChange={e =>
-                                                                    handleDocumentChange(
-                                                                        'jobs',
-                                                                        index,
-                                                                        'issue_date',
-                                                                        e.target
-                                                                            .value,
-                                                                    )
-                                                                }
-                                                                required
-                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            />
-                                                        </div>
-
-                                                        <div>
-                                                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                                Fecha de
-                                                                finalización
-                                                            </label>
-                                                            <input
-                                                                type="date"
-                                                                value={
-                                                                    job.expiration_date ||
-                                                                    ''
-                                                                }
-                                                                onChange={e =>
-                                                                    handleDocumentChange(
-                                                                        'jobs',
-                                                                        index,
-                                                                        'expiration_date',
-                                                                        e.target
-                                                                            .value,
-                                                                    )
-                                                                }
-                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Metadata */}
-                                                    <div className="space-y-4">
-                                                        <div>
-                                                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                                Nombre de la
-                                                                empresa *
-                                                            </label>
-                                                            <input
-                                                                type="text"
-                                                                value={
-                                                                    job.metadata
-                                                                        ?.company_name ||
-                                                                    ''
-                                                                }
-                                                                onChange={e =>
-                                                                    handleDocumentChange(
-                                                                        'jobs',
-                                                                        index,
-                                                                        'metadata',
-                                                                        {
-                                                                            ...job.metadata,
-                                                                            company_name:
-                                                                                e
-                                                                                    .target
-                                                                                    .value,
-                                                                        },
-                                                                    )
-                                                                }
-                                                                required
-                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            />
-                                                        </div>
-
-                                                        <div>
-                                                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                                Posición/Cargo *
-                                                            </label>
-                                                            <input
-                                                                type="text"
-                                                                value={
-                                                                    job.metadata
-                                                                        ?.position ||
-                                                                    ''
-                                                                }
-                                                                onChange={e =>
-                                                                    handleDocumentChange(
-                                                                        'jobs',
-                                                                        index,
-                                                                        'metadata',
-                                                                        {
-                                                                            ...job.metadata,
-                                                                            position:
-                                                                                e
-                                                                                    .target
-                                                                                    .value,
-                                                                        },
-                                                                    )
-                                                                }
-                                                                required
-                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    {/* Nuevo campo de responsabilidades */}
-                                                    <div>
-                                                        <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                            Responsabilidades
-                                                            (Una por línea) *
-                                                        </label>
-                                                        <textarea
-                                                            value={
-                                                                job.metadata
-                                                                    ?.responsibilities ||
-                                                                ''
-                                                            }
-                                                            onChange={e =>
-                                                                handleDocumentChange(
-                                                                    'jobs',
-                                                                    index,
-                                                                    'metadata',
-                                                                    {
-                                                                        ...job.metadata,
-                                                                        responsibilities:
-                                                                            e
-                                                                                .target
-                                                                                .value,
-                                                                    },
-                                                                )
-                                                            }
-                                                            required
-                                                            className="w-full h-24 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            placeholder="Ej: - Desarrollo de componentes React
-                                                                            - Coordinación de equipo frontend
-                                                                            - Implementación de pruebas unitarias"
-                                                        />
-                                                        <p className="mt-1 text-xs text-gray-500">
-                                                            Escribe cada
-                                                            responsabilidad en
-                                                            una línea separada
-                                                        </p>
-                                                    </div>
-
-                                                    {/* Botón para eliminar empleo */}
-                                                    {formData.documents.jobs
-                                                        .length > 1 && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                removeDocument(
-                                                                    'jobs',
-                                                                    index,
-                                                                )
-                                                            }
-                                                            className="px-4 py-2 mt-2 text-sm text-red-600 bg-red-100 rounded-lg hover:bg-red-200">
-                                                            Eliminar Empleo
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ),
-                                        )}
-
-                                        {/* Botón para agregar empleo */}
-                                        {formData.documents.jobs.length < 2 && (
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    addDocument('jobs')
-                                                }
-                                                className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                                                Agregar Empleo
-                                            </button>
-                                        )}
-                                    </>
+                                    <JobExperienceStep
+                                        formData={formData}
+                                        handleDocumentChange={
+                                            handleDocumentChange
+                                        }
+                                        removeDocument={removeDocument}
+                                        addDocument={addDocument}
+                                    />
                                 )}
 
                                 {/* Paso 3: Estudios */}
                                 {currentStep === 3 && (
-                                    <>
-                                        <h3 className="mb-4 text-lg font-semibold text-gray-900">
-                                            Formación Académica (Máximo 2
-                                            estudios)
-                                        </h3>
-
-                                        {formData.documents.studies.map(
-                                            (study, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="p-4 mb-6 space-y-4 border rounded-lg">
-                                                    {/* Nombre del estudio */}
-                                                    <div>
-                                                        <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                            Título del estudio *
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={
-                                                                study.name || ''
-                                                            }
-                                                            onChange={e =>
-                                                                handleDocumentChange(
-                                                                    'studies',
-                                                                    index,
-                                                                    'name',
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            required
-                                                            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            placeholder="Ej: Ingeniería en Sistemas"
-                                                        />
-                                                    </div>
-
-                                                    {/* Fechas importantes */}
-                                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                                        <div>
-                                                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                                Fecha de inicio
-                                                                *
-                                                            </label>
-                                                            <input
-                                                                type="date"
-                                                                value={
-                                                                    study.issue_date ||
-                                                                    ''
-                                                                }
-                                                                onChange={e =>
-                                                                    handleDocumentChange(
-                                                                        'studies',
-                                                                        index,
-                                                                        'issue_date',
-                                                                        e.target
-                                                                            .value,
-                                                                    )
-                                                                }
-                                                                required
-                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            />
-                                                        </div>
-
-                                                        <div>
-                                                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                                Fecha de
-                                                                graduación
-                                                            </label>
-                                                            <input
-                                                                type="date"
-                                                                value={
-                                                                    study.expiration_date ||
-                                                                    ''
-                                                                }
-                                                                onChange={e =>
-                                                                    handleDocumentChange(
-                                                                        'studies',
-                                                                        index,
-                                                                        'expiration_date',
-                                                                        e.target
-                                                                            .value,
-                                                                    )
-                                                                }
-                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Metadata */}
-                                                    <div className="space-y-4">
-                                                        <div>
-                                                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                                Institución
-                                                                educativa *
-                                                            </label>
-                                                            <input
-                                                                type="text"
-                                                                value={
-                                                                    study
-                                                                        .metadata
-                                                                        ?.institution ||
-                                                                    ''
-                                                                }
-                                                                onChange={e =>
-                                                                    handleDocumentChange(
-                                                                        'studies',
-                                                                        index,
-                                                                        'metadata',
-                                                                        {
-                                                                            ...study.metadata,
-                                                                            institution:
-                                                                                e
-                                                                                    .target
-                                                                                    .value,
-                                                                        },
-                                                                    )
-                                                                }
-                                                                required
-                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Ej: Universidad Nacional"
-                                                            />
-                                                        </div>
-
-                                                        <div>
-                                                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                                Grado obtenido *
-                                                            </label>
-
-                                                            <input
-                                                                type="text"
-                                                                value={
-                                                                    study
-                                                                        .metadata
-                                                                        ?.degree ||
-                                                                    ''
-                                                                }
-                                                                onChange={e =>
-                                                                    handleDocumentChange(
-                                                                        'studies',
-                                                                        index,
-                                                                        'metadata',
-                                                                        {
-                                                                            ...study.metadata,
-                                                                            degree: e
-                                                                                .target
-                                                                                .value,
-                                                                        },
-                                                                    )
-                                                                }
-                                                                required
-                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Ej: Universidad Nacional"
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Botón para eliminar estudio */}
-                                                    {formData.documents.studies
-                                                        .length > 1 && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                removeDocument(
-                                                                    'studies',
-                                                                    index,
-                                                                )
-                                                            }
-                                                            className="px-4 py-2 mt-2 text-sm text-red-600 bg-red-100 rounded-lg hover:bg-red-200">
-                                                            Eliminar Estudio
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ),
-                                        )}
-
-                                        {/* Botón para agregar estudio */}
-                                        {formData.documents.studies.length <
-                                            2 && (
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    addDocument('studies')
-                                                }
-                                                className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                                                Agregar Estudio
-                                            </button>
-                                        )}
-                                    </>
+                                    <StudyData
+                                        formData={formData}
+                                        handleDocumentChange={
+                                            handleDocumentChange
+                                        }
+                                        removeDocument={removeDocument}
+                                        addDocument={addDocument}
+                                    />
                                 )}
 
                                 {/* Paso 4: Cursos */}
                                 {currentStep === 4 && (
-                                    <>
-                                        <h3 className="mb-4 text-lg font-semibold text-gray-900">
-                                            Cursos Realizados (Máximo 2 cursos)
-                                        </h3>
-
-                                        {formData.documents.courses.map(
-                                            (course, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="p-4 mb-6 space-y-4 border rounded-lg">
-                                                    {/* Nombre del curso */}
-                                                    <div>
-                                                        <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                            Nombre del curso *
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={
-                                                                course.name ||
-                                                                ''
-                                                            }
-                                                            onChange={e =>
-                                                                handleDocumentChange(
-                                                                    'courses',
-                                                                    index,
-                                                                    'name',
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            required
-                                                            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            placeholder="Ej: Curso de React Avanzado"
-                                                        />
-                                                    </div>
-
-                                                    {/* Fechas importantes */}
-                                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                                        <div>
-                                                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                                Fecha de inicio
-                                                                *
-                                                            </label>
-                                                            <input
-                                                                type="date"
-                                                                value={
-                                                                    course.issue_date ||
-                                                                    ''
-                                                                }
-                                                                onChange={e =>
-                                                                    handleDocumentChange(
-                                                                        'courses',
-                                                                        index,
-                                                                        'issue_date',
-                                                                        e.target
-                                                                            .value,
-                                                                    )
-                                                                }
-                                                                required
-                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            />
-                                                        </div>
-
-                                                        <div>
-                                                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                                Fecha de
-                                                                finalización
-                                                            </label>
-                                                            <input
-                                                                type="date"
-                                                                value={
-                                                                    course.expiration_date ||
-                                                                    ''
-                                                                }
-                                                                onChange={e =>
-                                                                    handleDocumentChange(
-                                                                        'courses',
-                                                                        index,
-                                                                        'expiration_date',
-                                                                        e.target
-                                                                            .value,
-                                                                    )
-                                                                }
-                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Metadata */}
-                                                    <div className="space-y-4">
-                                                        <div>
-                                                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                                Horas del curso
-                                                                *
-                                                            </label>
-                                                            <input
-                                                                type="number"
-                                                                value={
-                                                                    course
-                                                                        .metadata
-                                                                        ?.hours ||
-                                                                    ''
-                                                                }
-                                                                onChange={e =>
-                                                                    handleDocumentChange(
-                                                                        'courses',
-                                                                        index,
-                                                                        'metadata',
-                                                                        {
-                                                                            ...course.metadata,
-                                                                            hours: e
-                                                                                .target
-                                                                                .value,
-                                                                        },
-                                                                    )
-                                                                }
-                                                                required
-                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Ej: 40"
-                                                            />
-                                                        </div>
-
-                                                        <div>
-                                                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                                Instructor *
-                                                            </label>
-                                                            <input
-                                                                type="text"
-                                                                value={
-                                                                    course
-                                                                        .metadata
-                                                                        ?.instructor ||
-                                                                    ''
-                                                                }
-                                                                onChange={e =>
-                                                                    handleDocumentChange(
-                                                                        'courses',
-                                                                        index,
-                                                                        'metadata',
-                                                                        {
-                                                                            ...course.metadata,
-                                                                            instructor:
-                                                                                e
-                                                                                    .target
-                                                                                    .value,
-                                                                        },
-                                                                    )
-                                                                }
-                                                                required
-                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Ej: Juan Pérez"
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Botón para eliminar curso */}
-                                                    {formData.documents.courses
-                                                        .length > 1 && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                removeDocument(
-                                                                    'courses',
-                                                                    index,
-                                                                )
-                                                            }
-                                                            className="px-4 py-2 mt-2 text-sm text-red-600 bg-red-100 rounded-lg hover:bg-red-200">
-                                                            Eliminar Curso
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ),
-                                        )}
-
-                                        {/* Botón para agregar curso */}
-                                        {formData.documents.courses.length <
-                                            2 && (
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    addDocument('courses')
-                                                }
-                                                className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                                                Agregar Curso
-                                            </button>
-                                        )}
-                                    </>
+                                    <CourseData
+                                        formData={formData}
+                                        handleDocumentChange={
+                                            handleDocumentChange
+                                        }
+                                        removeDocument={removeDocument}
+                                        addDocument={addDocument}
+                                    />
                                 )}
 
                                 {/* Paso 5: Competencias */}
                                 {currentStep === 5 && (
-                                    <>
-                                        <h3 className="mb-4 text-lg font-semibold text-gray-900">
-                                            Competencias Técnicas
-                                        </h3>
-
-                                        {formData.documents.competencies.map(
-                                            (competency, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="p-4 mb-6 space-y-4 border rounded-lg">
-                                                    {/* Nombre del documento de competencias */}
-                                                    <div>
-                                                        <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                            Nombre la
-                                                            competencias *
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={
-                                                                competency.name ||
-                                                                ''
-                                                            }
-                                                            onChange={e =>
-                                                                handleDocumentChange(
-                                                                    'competencies',
-                                                                    index,
-                                                                    'name',
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            required
-                                                            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            placeholder="Ej: Competencias en Habilidades Blandas"
-                                                        />
-                                                    </div>
-
-                                                    {/* Lista de competencias */}
-                                                    <div>
-                                                        <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                            Competencias (Una
-                                                            por línea) *
-                                                        </label>
-                                                        <textarea
-                                                            value={
-                                                                competency.detail?.join(
-                                                                    '\n',
-                                                                ) || ''
-                                                            }
-                                                            onChange={e =>
-                                                                handleDocumentChange(
-                                                                    'competencies',
-                                                                    index,
-                                                                    'detail',
-                                                                    e.target.value.split(
-                                                                        '\n',
-                                                                    ),
-                                                                )
-                                                            }
-                                                            required
-                                                            className="w-full h-32 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            placeholder="Ej: Laravel
-                                    React
-                                    Gestión de proyectos
-                                    SQL"
-                                                        />
-                                                        <p className="mt-1 text-xs text-gray-500">
-                                                            Lista cada
-                                                            competencia en una
-                                                            línea separada
-                                                        </p>
-                                                    </div>
-
-                                                    {/* Botón para eliminar competencia */}
-                                                    {formData.documents
-                                                        .competencies.length >
-                                                        1 && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                removeDocument(
-                                                                    'competencies',
-                                                                    index,
-                                                                )
-                                                            }
-                                                            className="px-4 py-2 mt-2 text-sm text-red-600 bg-red-100 rounded-lg hover:bg-red-200">
-                                                            Eliminar Competencia
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ),
-                                        )}
-
-                                        {/* Botón para agregar competencia */}
-                                        {formData.documents.competencies
-                                            .length < 3 && (
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    addDocument('competencies')
-                                                }
-                                                className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                                                Agregar Competencia
-                                            </button>
-                                        )}
-                                    </>
+                                    <CompetencyData
+                                        formData={formData}
+                                        handleDocumentChange={
+                                            handleDocumentChange
+                                        }
+                                        removeDocument={removeDocument}
+                                        addDocument={addDocument}
+                                    />
                                 )}
 
                                 {/* Paso 6: Idiomas */}
                                 {currentStep === 6 && (
-                                    <>
-                                        <h3 className="mb-4 text-lg font-semibold text-gray-900">
-                                            Idiomas
-                                        </h3>
-
-                                        {formData.documents.languages.map(
-                                            (language, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="p-4 mb-6 space-y-4 border rounded-lg">
-                                                    {/* Campo para el idioma */}
-                                                    <div>
-                                                        <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                            Idioma *
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={
-                                                                language.name ||
-                                                                ''
-                                                            }
-                                                            onChange={e =>
-                                                                handleDocumentChange(
-                                                                    'languages',
-                                                                    index,
-                                                                    'name',
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            required
-                                                            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            placeholder="Ej: Inglés"
-                                                        />
-                                                    </div>
-
-                                                    {/* Campo para el nivel de dominio (texto) */}
-                                                    <div>
-                                                        <label className="block mb-1 text-sm font-medium text-gray-700">
-                                                            Nivel de dominio *
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={
-                                                                language.detail
-                                                                    ?.level ||
-                                                                ''
-                                                            }
-                                                            onChange={e =>
-                                                                handleDocumentChange(
-                                                                    'languages',
-                                                                    index,
-                                                                    'detail',
-                                                                    {
-                                                                        level: e
-                                                                            .target
-                                                                            .value,
-                                                                    },
-                                                                )
-                                                            }
-                                                            required
-                                                            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            placeholder="Ej: Avanzado, Intermedio, Nativo, etc."
-                                                        />
-                                                    </div>
-
-                                                    {/* Botón para eliminar idioma */}
-                                                    {formData.documents
-                                                        .languages.length >
-                                                        1 && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                removeDocument(
-                                                                    'languages',
-                                                                    index,
-                                                                )
-                                                            }
-                                                            className="px-4 py-2 mt-2 text-sm text-red-600 bg-red-100 rounded-lg hover:bg-red-200">
-                                                            Eliminar Idioma
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ),
-                                        )}
-
-                                        {/* Botón para agregar idioma */}
-                                        {formData.documents.languages.length <
-                                            3 && (
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    addDocument('languages')
-                                                }
-                                                className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                                                Agregar Idioma
-                                            </button>
-                                        )}
-                                    </>
+                                    <LanguageData
+                                        formData={formData}
+                                        handleDocumentChange={
+                                            handleDocumentChange
+                                        }
+                                        removeDocument={removeDocument}
+                                        addDocument={addDocument}
+                                    />
                                 )}
 
                                 {/* Botones fijos en la parte inferior */}

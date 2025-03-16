@@ -344,6 +344,7 @@ Route::prefix('public')->group(function () {
 
     // Postulación de Candidatos
     Route::post('/candidates/{vacancyId}', [CandidateController::class, 'store'])->name('api.public.candidates.store');
+    Route::post('/candidates/check/{vacancyId}', [CandidateController::class, 'checkCandidate'])->name('candidate.checkCandidate');
 
     // Tipos de identificaciones
     Route::get('/identifications', [IdentificationTypeController::class, 'index'])->name('api.public.identifications.index'); // Listar identifications

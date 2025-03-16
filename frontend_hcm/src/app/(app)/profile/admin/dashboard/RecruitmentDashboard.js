@@ -9,12 +9,13 @@ import StandardLoader from '@/components/StandardLoader'
 import StandardTable from '@/components/StandardTable'
 import ChartContainer from '@/components/Dashboard/ChartContainer'
 import MetricCard from '@/components/Dashboard/MetricCard'
+import Filters from '@/components/Dashboard/Filters'
+import ChartCard from '@/components/Dashboard/ChartCard'
+import DataTableCard from '@/components/Dashboard/DataTableCard'
 
 const RecruitmentDashboard = () => {
-    const { metrics, params, setParams, isLoading, errors, refresh } =
-        useRecruitmentDashboard()
-    const [localDepartments, setLocalDepartments] = useState([])
     const [departments, setDepartments] = useState([])
+    const { metrics, isLoading } = useRecruitmentDashboard()
 
     useEffect(() => {
         const fetchDepartments = async () => {
@@ -28,19 +29,6 @@ const RecruitmentDashboard = () => {
         fetchDepartments()
     }, [])
 
-    const handleDepartmentChange = selected => {
-        setLocalDepartments(selected)
-        setParams({
-            departments: selected.map(d => d.value),
-            page: 1, // Resetear a primera página
-        })
-    }
-
-    const handlePageChange = newPage => {
-        setParams(prev => ({ ...prev, page: newPage }))
-    }
-
-    // Configurar columnas de la tabla
     const columns = [
         {
             header: 'Departamento',
@@ -65,108 +53,65 @@ const RecruitmentDashboard = () => {
         },
     ]
 
-    // Configurar filtros
-    const filters = [
-        {
-            name: 'department',
-            placeholder: 'Filtrar por departamento',
-            options: [
-                { value: '', label: 'Todas' },
-                ...(departments?.map(v => ({
-                    value: String(v.id), // Convertir a string
-                    label: v.name,
-                })) || []),
-            ],
-        },
-    ]
-
     if (isLoading) return <StandardLoader />
 
-    if (errors.length > 0) {
-        return (
-            <Alert variant="destructive">
-                <div className="space-y-2">
-                    {errors.map((error, index) => (
-                        <AlertDescription key={index}>
-                            {error.message || error.toString()}
-                        </AlertDescription>
-                    ))}
-                </div>
-            </Alert>
-        )
-    }
     return (
-        <div className="space-y-6">
-            {/* Header y Filtros */}
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <h2 className="text-lg font-semibold text-[#004b9a]">
-                    Reclutamiento y Selección
-                </h2>
-                <select
-                    onChange={e => handleDepartmentChange(e.target.value)}
-                    className="w-full md:w-64 p-2 text-sm border rounded-md focus:ring-2 focus:ring-[#004b9a]">
-                    <option value="">Todos los departamentos</option>
-                    {departments.map(dept => (
-                        <option key={dept.id} value={dept.id}>
-                            {dept.name}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Grid de métricas principales */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="min-h-screen p-2 bg-gray-50">
+            <div className="mx-auto space-y-8 max-w-7xl">
+              {/* Header */}
+              <div className="space-y-2">
+                <h1 className="text-2xl font-bold text-[#004b9a]">Dashboard de Reclutamiento</h1>
+                <Filters departments={departments} />
+              </div>
+      
+              {/* Grid Principal */}
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <MetricCard
-                    title="Tasa de Conversión"
-                    value={`${metrics.conversionRate.conversion_rate}%`}
-                    description={`${metrics.conversionRate.hired}/${metrics.conversionRate.total_candidates} candidatos`}
+                  title="Tasa de Conversión"
+                  value={`${metrics.conversionRate.conversion_rate}%`}
+                  description={`${metrics.conversionRate.hired}/${metrics.conversionRate.total_candidates}`}
                 />
-
+      
                 <MetricCard
-                    title="Ratio Global Entrevistas"
-                    value={metrics.interviewRatio.total.global_ratio?.toFixed(
-                        2,
-                    )}
-                    description={`${metrics.interviewRatio.total.total_interviews}/${metrics.interviewRatio.total.total_vacancies} total`}
+                  title="Vacantes Activas"
+                  value={metrics.interviewRatio.total.total_vacancies}
+                  description="Total abiertas"
                 />
-
-                <ChartContainer title="Tiempo Promedio de Contratación">
-                    <AverageHiringTimeChart data={metrics.averageHiringTime} />
-                </ChartContainer>
-            </div>
-
-            {/* Tabla de Detalle */}
-            <div className="p-4 bg-white border border-gray-100 rounded-lg shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-gray-600">
-                        Detalle por Departamento
-                    </h3>
-                    <span className="text-xs text-gray-500">
-                        Página {metrics.meta.interview.current_page} de{' '}
-                        {metrics.meta.interview.pagination?.last_page || 1}
-                    </span>
-                </div>
+      
+                <MetricCard
+                  title="Entrevistas Totales"
+                  value={metrics.interviewRatio.total.total_interviews}
+                  description="Últimos 30 días"
+                />
+      
+                <MetricCard
+                  title="Ratio Global"
+                  value={metrics.interviewRatio.total.global_ratio?.toFixed(2)}
+                  description="Entrevistas por vacante"
+                />
+              </div>
+      
+              {/* Sección de Gráficos */}
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <ChartCard title="Tiempo Promedio de Contratación">
+                  <AverageHiringTimeChart data={metrics.averageHiringTime} />
+                </ChartCard>
+      
+                <ChartCard title="Distribución por Departamento">
+                  
+                </ChartCard>
+              </div>
+      
+              {/* Tablas y Detalles */}
+              <DataTableCard title="Detalle de Entrevistas por Vacante">
                 <StandardTable
-                    title="Ratio de Entrevistas por Vacante"
-                    columns={columns}
-                    data={metrics.interviewRatio.data || []}
-                    filters={filters}
-                    currentPage={metrics.meta.interview.current_page}
-                    totalPages={
-                        metrics.meta.interview.pagination?.last_page || 1
-                    }
-                    onPageChange={page => setParams({ ...params, page })}
-                    onFilterChange={e =>
-                        setParams({
-                            ...params,
-                            [e.target.name]: e.target.value,
-                        })
-                    }
-                    loading={!metrics.interviewRatio.data}
-                    className="text-xs"
+                  columns={columns}
+                  data={metrics.interviewRatio.data}
+                  className="text-xs"
                 />
+              </DataTableCard>
             </div>
-        </div>
+          </div>
     )
 }
 

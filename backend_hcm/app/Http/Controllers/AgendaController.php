@@ -183,6 +183,7 @@ class AgendaController extends Controller
             'candidate.persons.country', // País
             'candidate.persons.maritalstatus', // Estado civil
             'candidate.vacancy.mode', // Vacante y modalidad
+            'candidate.vacancy.position',
             'status', // Estado de la agenda
         ])->findOrFail($id);
 
@@ -210,14 +211,14 @@ class AgendaController extends Controller
                     'phone' => $agenda->candidate->persons->phone,
                     'identification_value' =>  $agenda->candidate->persons->identificationtype->code.' '. $agenda->candidate->persons->identification_value,
                     'ethnicity' => $agenda->candidate->persons->ethnicity->name, // Asumiendo que el modelo Ethnicity tiene un campo 'name'
-                    'gender' => $agenda->candidate->person->gender->name ?? 'NA', // Asumiendo que el modelo Gender tiene un campo 'name'
+                    'gender' => $agenda->candidate->persons->gender->name ?? 'NA', // Asumiendo que el modelo Gender tiene un campo 'name'
                     'country' => $agenda->candidate->persons->country->name, // Asumiendo que el modelo Country tiene un campo 'name'
                     'marital_status' => $agenda->candidate->persons->maritalstatus->name, // Asumiendo que el modelo MaritalStatus tiene un campo 'name'
                 ],
             ],
             'vacancy' => [
                 'id' => $agenda->candidate->vacancy->id,
-                'title' => $agenda->candidate->vacancy->title,
+                'title' => $agenda->candidate->vacancy->position->description,
                 'description' => $agenda->candidate->vacancy->description,
                 'requirements' => $agenda->candidate->vacancy->requirements,
                 'responsibility' => $agenda->candidate->vacancy->responsibility,

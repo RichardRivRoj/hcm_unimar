@@ -13,6 +13,7 @@ use App\Models\StatusApplication;
 use App\Models\Vacancy;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -31,8 +32,9 @@ class CandidateController extends Controller
 
         // Consulta base con relaciones y columnas explícitas
         $query = Candidate::with([
-            'persons',
+            'persons.identificationtype',
             'vacancy.position',
+            'vacancy.department',
             'status_application',
         ])->select('candidates.*'); // Seleccionar solo las columnas de candidates
 
@@ -74,27 +76,22 @@ class CandidateController extends Controller
         DB::beginTransaction();
 
         try {
-            // Validar datos principales
+            // Validación inicial común
             $validator = Validator::make($request->all(), [
-                'first_name' => 'required|max:200',
-                'last_name' => 'required|max:200',
-                'email' => 'required|email|unique:persons,email',
-                'phone' => 'required|max:200',
-                'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-                'resume' => 'required|mimes:pdf',
-                'identification_value' => 'required|unique:persons,identification_value',
+                'identification_value' => 'required',
                 'vacancy_id' => 'required|exists:vacancies,id',
-                'ethnicity_id' => 'required|exists:ethnicities,id',
-                'identification_type_id' => 'required|exists:identification_types,id',
-                'marital_status_id' => 'required|exists:marital_statuses,id',
-                'gender_id' => 'required|exists:genders,id',
-                'countries_id' => 'required|exists:countries,id',
-                'documents' => 'required|json',
-                'documents.studies' => 'array|max:2',
-                'documents.courses' => 'array|max:2',
-                'documents.jobs' => 'array|max:2',
-                'documents.competencies' => 'array|max:3',
-                'documents.languages' => 'array|max:3'
+                'birth_date' => [
+                    'required',
+                    'date',
+                    function ($attribute, $value, $fail) {
+                        $minBirthDate = now()->subYears(17);
+                        $birthDate = Carbon::parse($value);
+
+                        if ($birthDate->gt($minBirthDate)) {
+                            $fail('Debes tener al menos 17 años para postularte');
+                        }
+                    },
+                ],
             ]);
 
             if ($validator->fails()) {
@@ -104,23 +101,78 @@ class CandidateController extends Controller
                 ], 422);
             }
 
-            // Subir la foto
-            $photoPath = $request->file('photo')->store('public/photos');
-            $photoUrl = FacadesStorage::url($photoPath);
+            // Buscar persona existente
+            $person = Person::where('identification_value', $request->identification_value)->first();
 
-            // Subir la foto
-            $resumePath = $request->file('resume')->store('public/pdf');
-            $resumeUrl = FacadesStorage::url($resumePath);
+            // Validar empleado activo
+            if ($person && $person->employee()->exists()) {
+                $activeContract = $person->employee->contracts()->active()->exists();
 
-            // Crear Persona
-            $person = Person::create([
+                if ($activeContract) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Los empleados activos no pueden aplicar a vacantes'
+                    ], 403);
+                }
+            }
+
+            // Validar aplicación duplicada
+            if ($person && $person->candidate()->where('vacancy_id', $vacancyId)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ya has aplicado a esta vacante anteriormente'
+                ], 409);
+            }
+
+            // Validaciones para nuevos registros
+            if (!$person) {
+                $creationValidator = Validator::make($request->all(), [
+                    'first_name' => 'required|max:200',
+                    'last_name' => 'required|max:200',
+                    'email' => 'required|email|unique:persons,email',
+                    'phone' => 'required|max:200',
+                    'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+                    'resume' => 'required|mimes:pdf',
+                    'ethnicity_id' => 'required|exists:ethnicities,id',
+                    'identification_type_id' => 'required|exists:identification_types,id',
+                    'marital_status_id' => 'required|exists:marital_statuses,id',
+                    'gender_id' => 'required|exists:genders,id',
+                    'countries_id' => 'required|exists:countries,id',
+                    'documents' => 'required|json',
+                    'documents.studies' => 'array|max:2',
+                    'documents.courses' => 'array|max:2',
+                    'documents.jobs' => 'array|max:2',
+                    'documents.competencies' => 'array|max:3',
+                    'documents.languages' => 'array|max:3'
+                ]);
+
+                if ($creationValidator->fails()) {
+                    return response()->json([
+                        'success' => false,
+                        'errors' => $creationValidator->errors()
+                    ], 422);
+                }
+            }
+
+            // Procesar archivos solo para nuevos registros
+            $photoUrl = null;
+            $resumeUrl = null;
+
+            if (!$person) {
+                $photoPath = $request->file('photo')->store('public/photos');
+                $photoUrl = FacadesStorage::url($photoPath);
+
+                $resumePath = $request->file('resume')->store('public/pdf');
+                $resumeUrl = FacadesStorage::url($resumePath);
+            }
+
+            // Datos base para persona
+            $personData = [
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
                 'email' => $request->email,
                 'birth_date' => $request->birth_date,
                 'phone' => $request->phone,
-                'file_path' => $photoUrl,
-                'cv_path' => $resumeUrl,
                 'summary' => $request->summary,
                 'identification_value' => $request->identification_value,
                 'identification_type_id' => $request->identification_type_id,
@@ -129,13 +181,27 @@ class CandidateController extends Controller
                 'gender_id' => $request->gender_id,
                 'countries_id' => $request->countries_id,
                 'status_id' => $request->status_id ?? 1,
-            ]);
+            ];
 
-            // Crear Documentos (Estudios, Cursos, Empleos)
-            $documents = json_decode($request->documents, true);
-            $this->createDocuments($person->id, $documents);
+            if (!$person) {
+                // Lógica para nuevo registro
+                $personData['file_path'] = $photoUrl;
+                $personData['cv_path'] = $resumeUrl;
+                $person = Person::create($personData);
 
-            // Crear Candidato
+                // Crear documentos solo para nuevos registros
+                $documents = json_decode($request->documents, true);
+                $this->createDocuments($person->id, $documents);
+            } else {
+                // Lógica para registro existente
+                $person->update($personData);
+
+                // Actualizar o crear documentos existentes
+                $documents = json_decode($request->documents, true);
+                $this->updateOrCreateDocuments($person->id, $documents); // Nuevo método necesario
+            }
+
+            // Crear candidatura
             $candidate = Candidate::create([
                 'person_id' => $person->id,
                 'vacancy_id' => $vacancyId,
@@ -144,17 +210,16 @@ class CandidateController extends Controller
 
             DB::commit();
 
-            // Cargar documentos recién creados con la relación
+            // Cargar relaciones
             $person->load('documents');
 
             return response()->json([
                 'success' => true,
-                'photo_url' => asset($photoUrl),
-                'resume_url' => asset($resumeUrl),
                 'data' => [
                     'person' => $person,
                     'candidate' => $candidate,
-                    'documents' => $person->documents
+                    'documents' => $person->documents,
+                    'existing' => !!$person->wasRecentlyCreated
                 ]
             ], 201);
         } catch (\Exception $e) {
@@ -243,6 +308,80 @@ class CandidateController extends Controller
         }
     }
 
+    private function updateOrCreateDocuments($personId, $documents)
+    {
+        $documentTypes = [
+            'jobs' => 1,
+            'studies' => 2,
+            'courses' => 3,
+            'competencies' => 10,
+            'languages' => 9
+        ];
+
+        foreach ($documentTypes as $type => $documentTypeId) {
+            if (!empty($documents[$type])) {
+                foreach ($documents[$type] as $documentData) {
+                    Document::updateOrCreate(
+                        [
+                            'person_id' => $personId,
+                            'document_type_id' => $documentTypeId,
+                            'document_name' => $documentData['name']
+                        ],
+                        [
+                            'issue_date' => $this->sanitizeDateInput($documentData['issue_date'] ?? null),
+                            'expiration_date' => $this->sanitizeDateInput($documentData['expiration_date'] ?? null),
+                            'metadata' => $this->parseDocumentData($type, $documentData),
+                            'detail' => $this->parseDetail($type, $documentData)
+                        ]
+                    );
+                }
+            }
+        }
+    }
+
+    private function parseDocumentData($documentData, $type)
+    {
+        $commonData = [
+            'issue_date' => $this->sanitizeDateInput($documentData['issue_date'] ?? null),
+            'expiration_date' => $this->sanitizeDateInput($documentData['expiration_date'] ?? null),
+        ];
+
+        switch ($type) {
+            case 'jobs':
+                $commonData['metadata'] = json_encode([
+                    'company_name' => $documentData['metadata']['company_name'] ?? null,
+                    'position' => $documentData['metadata']['position'] ?? null,
+                    'responsibilities' => $documentData['metadata']['responsibilities'] ?? null,
+                ]);
+                break;
+            case 'studies':
+                $commonData['metadata'] = json_encode([
+                    'institution' => $documentData['metadata']['institution'] ?? null,
+                    'degree' => $documentData['metadata']['degree'] ?? null,
+                ]);
+                break;
+            case 'courses':
+                $commonData['metadata'] = json_encode([
+                    'hours' => $documentData['metadata']['hours'] ?? null,
+                    'instructor' => $documentData['metadata']['instructor'] ?? null,
+                ]);
+                break;
+        }
+
+        return $commonData;
+    }
+
+    private function parseDetail($type, $documentData)
+    {
+        if ($type === 'competencies') {
+            return json_encode($documentData['detail'] ?? []);
+        }
+        if ($type === 'languages') {
+            return json_encode(['level' => $documentData['detail']['level'] ?? '']);
+        }
+        return null;
+    }
+
     // Nuevo método helper para sanitización
     private function sanitizeDateInput($date)
     {
@@ -254,6 +393,100 @@ class CandidateController extends Controller
             return Carbon::parse($date)->format('Y-m-d');
         } catch (\Exception $e) {
             return null;
+        }
+    }
+
+    public function checkCandidate(Request $request, $vacancyId)
+    {
+        try {
+
+            // Limpiar caché previa
+            Cache::forget('candidate_validation_' . $request->ip());
+
+            $data = $request->validate([
+                'identification_type_id' => 'required|exists:identification_types,id', // Añadir validación
+                'identification_value' => 'required|string|max:255'
+            ]);
+
+            $person = Person::where([
+                'identification_type_id' => $data['identification_type_id'], // Validar ambos campos
+                'identification_value' => $data['identification_value']
+            ])->with(['documents' => function ($query) {
+                $query->select(
+                    'id',
+                    'person_id',
+                    'document_type_id',
+                    'document_name',
+                    'issue_date',
+                    'expiration_date',
+                    'detail',
+                    'metadata'
+                );
+            }])->first();
+
+            $response = [
+                'person_exists' => false,
+                'is_employee' => false,
+                'has_applied' => false,
+                'person_data' => null,
+                'documents' => null,
+                'is_valid' => true // Nuevo campo de validación general
+            ];
+
+            if ($person) {
+                // Primero validar restricciones críticas
+
+                Cache::put('candidate_validation_' . $request->ip(), [
+                    'identification' => $data['identification_value'],
+                    'person_id' => $person->id
+                ], now()->addMinutes(5));
+
+                $isEmployee = $person->employee()
+                    ->whereHas('contracts', fn($q) => $q->active())
+                    ->exists();
+
+                $hasApplied = $person->candidate()
+                    ->where('vacancy_id', $vacancyId)
+                    ->exists();
+
+                // Si falla alguna validación crítica
+                if ($isEmployee || $hasApplied) {
+                    $response['is_valid'] = false;
+                    $response['is_employee'] = $isEmployee;
+                    $response['has_applied'] = $hasApplied;
+                    return response()->json($response);
+                }
+
+                // Solo enviar datos si pasa validaciones
+                $response['person_exists'] = true;
+                $response['person_data'] = $person->only([
+                    'first_name',
+                    'last_name',
+                    'email',
+                    'phone',
+                    'birth_date',
+                    'ethnicity_id',
+                    'marital_status_id',
+                    'gender_id',
+                    'countries_id'
+                ]);
+
+                $response['documents'] = [
+                    'jobs' => $person->documents->where('document_type_id', 1)->values(),
+                    'studies' => $person->documents->where('document_type_id', 2)->values(),
+                    'courses' => $person->documents->where('document_type_id', 3)->values(),
+                    'competencies' => $person->documents->where('document_type_id', 10)->values(),
+                    'languages' => $person->documents->where('document_type_id', 9)->values()
+                ];
+            }
+
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Cache::forget('candidate_validation_' . $request->ip());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error en validación: ' . $e->getMessage()
+            ], 500);
         }
     }
 

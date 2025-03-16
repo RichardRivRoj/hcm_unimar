@@ -1,113 +1,71 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { ChartPieIcon, UserGroupIcon, AcademicCapIcon, BriefcaseIcon } from '@heroicons/react/24/outline'
+import DashboardTab from '@/components/Dashboard/DashboardTab'
 import RecruitmentDashboard from './RecruitmentDashboard'
-import useRecruitmentDashboard from '@/hooks/admin/useRecruitmentDashboard'
-import Filters from '@/components/Dashboard/Filters'
-import MetricCard from '@/components/Dashboard/MetricCard'
-import ChartCard from '@/components/Dashboard/ChartCard'
-import AverageHiringTimeChart from '@/components/Charts/AverageHiringTimeChart'
-import DataTableCard from '@/components/Dashboard/DataTableCard'
-import StandardTable from '@/components/StandardTable'
+import PerformanceDashboard from './PerformanceDashboard'
+import TrainingDashboard from './TrainingDashboard'
+import PersonnelDashboard from './PersonnelDashboard'
 
-const DashboardPage = () => {
-    const [departments, setDepartments] = useState([])
-    const { metrics } = useRecruitmentDashboard()
+const MainDashboard = () => {
+  const [activeTab, setActiveTab] = useState('recruitment')
 
-    useEffect(() => {
-        const fetchDepartments = async () => {
-            try {
-                const response = await axios.get('/api/departments')
-                setDepartments(response.data)
-            } catch (err) {
-                console.error('Error fetching departments:', err)
-            }
-        }
-        fetchDepartments()
-    }, [])
+  const tabs = [
+    {
+      id: 'recruitment',
+      label: 'Reclutamiento y Selección',
+      icon: <UserGroupIcon className="w-5 h-5" />
+    },
+    {
+      id: 'performance',
+      label: 'Evaluación de Desempeño',
+      icon: <ChartPieIcon className="w-5 h-5" />
+    },
+    {
+      id: 'training',
+      label: 'Capacitación y Desarrollo',
+      icon: <AcademicCapIcon className="w-5 h-5" />
+    },
+    {
+      id: 'personnel',
+      label: 'Gestión del Personal',
+      icon: <BriefcaseIcon className="w-5 h-5" />
+    }
+  ]
 
-    const columns = [
-        {
-            header: 'Departamento',
-            accessor: 'department',
-            render: item => item.department || 'Sin departamento',
-        },
-        {
-            header: 'Entrevistas',
-            accessor: 'total_interviews',
-            render: item => item.total_interviews,
-        },
-        {
-            header: 'Vacantes',
-            accessor: 'total_vacancies',
-            render: item => item.total_vacancies,
-        },
+  return (
+    <div className="min-h-screen p-6 ml-10 bg-gray-50">
+      <div className="mx-auto space-y-8 max-w-7xl">
+        {/* Header y Navegación */}
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold text-[#004b9a]">Dashboard de Gestión HR</h1>
+          
+          {/* Navegación por pestañas */}
+          <nav className="flex space-x-4 border-b border-gray-200">
+            {tabs.map((tab) => (
+              <DashboardTab
+                key={tab.id}
+                isActive={activeTab === tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                icon={tab.icon}
+              >
+                {tab.label}
+              </DashboardTab>
+            ))}
+          </nav>
+        </div>
 
-        {
-            header: 'Ratio',
-            accessor: 'ratio',
-            render: item => item.ratio.toFixed(2),
-        },
-    ]
-
-    return (
-          <div className="min-h-screen p-6 bg-gray-50">
-            <div className="mx-auto space-y-8 max-w-7xl">
-              {/* Header */}
-              <div className="space-y-2">
-                <h1 className="text-2xl font-bold text-[#004b9a]">Dashboard de Reclutamiento</h1>
-                <Filters departments={departments} />
-              </div>
-      
-              {/* Grid Principal */}
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <MetricCard
-                  title="Tasa de Conversión"
-                  value={`${metrics.conversionRate.conversion_rate}%`}
-                  description={`${metrics.conversionRate.hired}/${metrics.conversionRate.total_candidates}`}
-                />
-      
-                <MetricCard
-                  title="Vacantes Activas"
-                  value={metrics.interviewRatio.total.total_vacancies}
-                  description="Total abiertas"
-                />
-      
-                <MetricCard
-                  title="Entrevistas Totales"
-                  value={metrics.interviewRatio.total.total_interviews}
-                  description="Últimos 30 días"
-                />
-      
-                <MetricCard
-                  title="Ratio Global"
-                  value={metrics.interviewRatio.total.global_ratio?.toFixed(2)}
-                  description="Entrevistas por vacante"
-                />
-              </div>
-      
-              {/* Sección de Gráficos */}
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <ChartCard title="Tiempo Promedio de Contratación">
-                  <AverageHiringTimeChart data={metrics.averageHiringTime} />
-                </ChartCard>
-      
-                <ChartCard title="Distribución por Departamento">
-                  
-                </ChartCard>
-              </div>
-      
-              {/* Tablas y Detalles */}
-              <DataTableCard title="Detalle de Entrevistas por Vacante">
-                <StandardTable
-                  columns={columns}
-                  data={metrics.interviewRatio.data}
-                  className="text-xs"
-                />
-              </DataTableCard>
-            </div>
-          </div>
-    )
+        {/* Contenido dinámico */}
+        <div className="dashboard-content">
+          {activeTab === 'recruitment' && <RecruitmentDashboard />}
+          {activeTab === 'performance' && <PerformanceDashboard />}
+          {activeTab === 'training' && <TrainingDashboard />}
+          {activeTab === 'personnel' && <PersonnelDashboard />}
+        </div>
+      </div>
+    </div>
+  )
 }
 
-export default DashboardPage
+export default MainDashboard
