@@ -10,6 +10,9 @@ import useCreateVacancies from '@/hooks/useCreateVacancies'
 import useVacancies from '@/hooks/useVacancies'
 import useStatuses from '@/hooks/useStatuses'
 import StandardLoader from '@/components/StandardLoader'
+import StandardTable from '@/components/StandardTable'
+import { toast } from 'sonner'
+import { mutate } from 'swr'
 
 const JobListPage = () => {
     const router = useRouter()
@@ -71,16 +74,6 @@ const JobListPage = () => {
         }))
     }
 
-    // Función para manejar cambios en los filtros
-    const handleFilterChange = e => {
-        const { name, value } = e.target
-        setFilters(prev => ({
-            ...prev,
-            [name]: value,
-        }))
-        setCurrentPage(1) // Resetear a la primera página al cambiar filtros
-    }
-
     const handleRequirementsChange = e => {
         const requirementsArray = e.target.value.split('\n')
         setFormState(prev => ({
@@ -88,7 +81,7 @@ const JobListPage = () => {
             requirements: requirementsArray,
         }))
     }
-    
+
     const handleResponsabilityChange = e => {
         const responsabilityArray = e.target.value.split('\n')
         setFormState(prev => ({
@@ -100,13 +93,12 @@ const JobListPage = () => {
     const handleSubmit = async e => {
         e.preventDefault()
 
-        // Validación de campos obligatorios
         if (
             !formState.position_id ||
             !formState.department_id ||
-            !formState.mode_id 
+            !formState.mode_id
         ) {
-            alert('Complete todos los campos obligatorios (*)')
+            toast.error('Complete todos los campos obligatorios (*)')
             return
         }
 
@@ -119,7 +111,10 @@ const JobListPage = () => {
 
             await createVacancies(payload)
 
-            // Resetear el formulario y cerrar el modal
+            // Notificación de éxito
+            toast.success('Vacante creada exitosamente')
+
+            // Resetear el formulario
             setFormState({
                 position_id: '',
                 department_id: '',
@@ -129,186 +124,127 @@ const JobListPage = () => {
                 num_vacancy: 1,
                 mode_id: '',
             })
+
             setIsCreating(false)
 
-            // Recargar la página para actualizar la lista de vacantes
-            router.refresh()
-        } catch (error) {
-            setIsCreating(false)
-            alert('Error al crear vacante: ' + error.message)
+            // Reiniciar la tabla
+            mutate()
+        } catch (errorCreate) {
+            // Notificación de error
+            toast.error(`Error al crear la vacante: ${errorCreate.message}`)
         }
     }
 
     const isFormValid =
-        formState.position_id &&
-        formState.department_id &&
-        formState.mode_id
+        formState.position_id && formState.department_id && formState.mode_id
 
-    if (loading)
-        return <StandardLoader />
+    // Configuración de la tabla
+    const tableColumns = [
+        {
+            header: 'Título',
+            accessor: 'position',
+            render: item =>
+                `${item.position?.description} - ${item.department?.name}`,
+        },
+        {
+            header: 'Departamento',
+            accessor: 'name',
+            render: item => ` ${item.department?.name}`,
+        },
+        {
+            header: 'Cargo',
+            accessor: 'position.description',
+            render: item => ` ${item.position?.description}`,
+        },
+        {
+            header: 'Modalidad',
+            accessor: 'mode.name',
+            render: item => ` ${item.mode?.name}`,
+        },
+        {
+            header: 'Estatus',
+            accessor: 'status.name',
+            render: item => ` ${item.status?.name}`,
+        },
+    ]
+
+    const tableFilters = [
+        {
+            name: 'department_id',
+            placeholder: 'Seleccione departamento',
+            options: [
+                { value: '', label: 'Todos los departamentos' },
+                ...departments.map(dept => ({
+                    value: dept.id,
+                    label: dept.name,
+                })),
+            ],
+        },
+        {
+            name: 'position_id',
+            placeholder: 'Seleccione posición',
+            options: [
+                { value: '', label: 'Todos los cargos' },
+                ...positions.map(pos => ({
+                    value: pos.id,
+                    label: pos.description,
+                })),
+            ],
+        },
+        {
+            name: 'status_id',
+            placeholder: 'Seleccione estado',
+            options: [
+                { value: '', label: 'Todos los estados' },
+                ...statuses.map(status => ({
+                    value: status.id,
+                    label: status.name,
+                })),
+            ],
+        },
+    ]
+
+    const tableActions = [
+        {
+            icon: <Eye size={20} />,
+            color: 'text-blue-600',
+            handler: item =>
+                router.push(
+                    `/profile/admin/recruitment/job-postings/vacancy/${item.id}`,
+                ),
+        },
+    ]
+
+    if (loading) return <StandardLoader />
     if (error) return <div className="p-6 text-red-600">Error: {error}</div>
 
     return (
         <div className="static min-h-screen">
             {/* Tabla de vacantes */}
-            <div className="max-w-full p-6 mx-auto mt-6 ml-6 overflow-hidden bg-white rounded-lg shadow-lg">
-                <h2 className="mb-4 text-2xl font-semibold text-gray-700">
-                    Resumen de Vacantes
-                </h2>
+            <StandardTable
+                title="Resumen de Vacantes"
+                columns={tableColumns}
+                data={vacancies}
+                filters={tableFilters}
+                currentPage={currentPage}
+                totalPages={paginationMeta?.last_page || 1}
+                onPageChange={setCurrentPage}
+                onFilterChange={e => {
+                    setFilters(prev => ({
+                        ...prev,
+                        [e.target.name]: e.target.value,
+                    }))
+                    setCurrentPage(1)
+                }}
+                actions={tableActions}
+            />
 
-                {/* Filtros */}
-                <div className="grid grid-cols-1 gap-8 mb-8 md:grid-cols-3">
-                    <select
-                        name="department_id"
-                        value={filters.department_id}
-                        onChange={handleFilterChange}
-                        required
-                        className="w-full p-3 text-sm text-gray-700 transition duration-200 ease-in-out bg-transparent border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-0">
-                        <option value="" className="text-gray-500">
-                            Seleccione departamento
-                        </option>
-                        {departments.map(dept => (
-                            <option
-                                key={dept.id}
-                                value={dept.id}
-                                className="text-gray-600">
-                                {dept.name}
-                            </option>
-                        ))}
-                    </select>
-
-                    <select
-                        name="position_id"
-                        value={filters.position_id}
-                        onChange={handleFilterChange}
-                        className="w-full p-3 text-sm text-gray-700 transition duration-200 ease-in-out bg-transparent border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-0">
-                        <option value="" className="text-gray-500">
-                            Seleccione posición
-                        </option>
-                        {positions.map(pos => (
-                            <option
-                                key={pos.id}
-                                value={pos.id}
-                                className="text-gray-600">
-                                {pos.description}
-                            </option>
-                        ))}
-                    </select>
-
-                    <select
-                        name="status_id"
-                        value={filters.status_id}
-                        onChange={handleFilterChange}
-                        className="w-full p-3 text-sm text-gray-700 transition duration-200 ease-in-out bg-transparent border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-0">
-                        <option value="" className="text-gray-500">
-                            Seleccione estado
-                        </option>
-                        {statuses.map(status => (
-                            <option
-                                key={status.id}
-                                value={status.id}
-                                className="text-gray-600">
-                                {status.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <table className="min-w-full border-separate table-auto border-spacing-2">
-                    <thead>
-                        <tr className="text-left bg-blue-200">
-                            <th className="px-6 py-3 text-sm font-medium text-gray-800">
-                                Título
-                            </th>
-                            <th className="px-6 py-3 text-sm font-medium text-gray-800">
-                                Departamento
-                            </th>
-                            <th className="px-6 py-3 text-sm font-medium text-gray-800">
-                                Cargo
-                            </th>
-                            <th className="px-6 py-3 text-sm font-medium text-gray-800">
-                                Modalidad
-                            </th>
-                            <th className="px-6 py-3 text-sm font-medium text-gray-800">
-                                Estatus
-                            </th>
-                            <th className="px-6 py-3 text-sm font-medium text-gray-800">
-                                Acciones
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {vacancies.map(vacancy => (
-                            <tr
-                                key={vacancy.id}
-                                className="border-b hover:bg-blue-50">
-                                <td className="px-6 py-2 text-sm">
-                                    {vacancy.position?.description}{' - '}
-                                    {vacancy.department?.name}
-                                </td>
-                                <td className="px-6 py-2 text-sm">
-                                    {vacancy.department?.name}
-                                </td>
-                                <td className="px-6 py-2 text-sm">
-                                    {vacancy.position?.description}
-                                </td>
-                                <td className="px-6 py-2 text-sm">
-                                    {vacancy.mode?.name}
-                                </td>
-                                <td className="px-6 py-2 text-sm">
-                                    {vacancy.status?.name}
-                                </td>
-                                <td className="justify-center px-8 py-2 text-sm">
-                                    {/* Botón Ver Detalles */}
-                                    <button
-                                        onClick={() =>
-                                            router.push(
-                                                `/profile/admin/recruitment/job-postings/vacancy/${vacancy.id}`,
-                                            )
-                                        }
-                                        className="p-1 text-blue-600 transition rounded-md hover:bg-gray-100">
-                                        <Eye size={26} />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-
-                {/* Controles de paginación */}
-                <div className="flex items-center justify-center mt-6 space-x-2">
-                    <button
-                        onClick={() => setCurrentPage(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className={`px-2 py-1 text-xs text-white rounded ${
-                            currentPage === 1
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-[#004b9a] hover:bg-blue-700'
-                        }`}>
-                        ← Anterior
-                    </button>
-                    <span className="text-xs text-gray-700">
-                        Página {currentPage} de {paginationMeta.last_page}
-                    </span>
-                    <button
-                        onClick={() => setCurrentPage(currentPage + 1)}
-                        disabled={currentPage === paginationMeta.last_page}
-                        className={`px-2 py-1 text-xs text-white rounded ${
-                            currentPage === paginationMeta.last_page
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-[#004b9a] hover:bg-blue-700'
-                        }`}>
-                        Siguiente →
-                    </button>
-                </div>
-
-                <div className="flex justify-end mt-6">
-                    <button
-                        onClick={() => setIsCreating(true)}
-                        className="px-6 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none">
-                        Crear Nueva Vacante
-                    </button>
-                </div>
+            <div className="flex justify-end mt-6">
+                <button
+                    onClick={() => setIsCreating(true)}
+                    className="px-6 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none">
+                    Crear Nueva Vacante
+                </button>
             </div>
 
             {/* Formulario para crear vacante */}
@@ -319,41 +255,7 @@ const JobListPage = () => {
                             Crear Vacante
                         </h1>
 
-                        {loadingDepartments && (
-                            <p className="text-sm text-gray-500">
-                                Cargando departamentos...
-                            </p>
-                        )}
-                        {errorDepartments && (
-                            <p className="text-sm text-red-500">
-                                Error al cargar departamentos:{' '}
-                                {errorDepartments.message}
-                            </p>
-                        )}
-                        {loadingModalities && (
-                            <p className="text-sm text-gray-500">
-                                Cargando Modalidad...
-                            </p>
-                        )}
-                        {errorModalities && (
-                            <p className="text-sm text-red-500">
-                                Error al cargar Modalidad:{' '}
-                                {errorModalities.message}
-                            </p>
-                        )}
-                        {loadingPositions && (
-                            <p className="text-sm text-gray-500">
-                                Cargando Cargos...
-                            </p>
-                        )}
-                        {errorPositions && (
-                            <p className="text-sm text-red-500">
-                                Error al cargar Cargos: {errorPositions.message}
-                            </p>
-                        )}
-
                         <form onSubmit={handleSubmit} className="space-y-6">
-
                             {/* Departamento */}
                             <div className="flex flex-col">
                                 <label className="text-sm font-medium text-gray-600">
@@ -492,12 +394,6 @@ const JobListPage = () => {
                                 </button>
                             </div>
                         </form>
-
-                        {errorCreate && (
-                            <p className="mt-4 text-sm text-red-500">
-                                Error al crear la vacante: {errorCreate}
-                            </p>
-                        )}
                     </div>
                 </div>
             )}

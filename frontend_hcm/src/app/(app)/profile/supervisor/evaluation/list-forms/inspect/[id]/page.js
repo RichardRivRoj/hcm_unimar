@@ -1,10 +1,11 @@
 'use client';
 import React, { useEffect } from 'react';
 import useFormEvaluations from '@/hooks/supervisor/useFormEvaluation';
-import Loader from '@/components/Loader';
 import Image from 'next/image';
 import DownloadEvaluationPDF from '@/components/EvaluationPDF';
 import { DownloadCloud } from 'lucide-react';
+import StandardLoader from '@/components/StandardLoader';
+import { formatDateToUTC } from '@/utils/formatDateToUTC';
 
 const EvaluationDetailPage = ({ params }) => {
     const { id } = params;
@@ -16,7 +17,7 @@ const EvaluationDetailPage = ({ params }) => {
         }
     }, [id]);
 
-    if (detailLoading) return <Loader />;
+    if (detailLoading) return <StandardLoader />;
     if (detailError) return <div className="p-4 text-red-500">Error: {detailError}</div>;
 
     return (
@@ -67,7 +68,7 @@ const EvaluationDetailPage = ({ params }) => {
                     <table className="w-full mb-8 overflow-hidden border-collapse rounded-lg shadow">
                         <tbody>
                             {[
-                                ['Cédula de Identidad', `${evaluationDetail.evaluated_employee.identification.type}-${evaluationDetail.evaluated_employee.identification.value}`, 'Fecha de Ingreso', evaluationDetail.evaluated_employee.start_date],
+                                ['Cédula de Identidad', `${evaluationDetail.evaluated_employee.identification.type}-${evaluationDetail.evaluated_employee.identification.value}`, 'Fecha de Ingreso', formatDateToUTC(evaluationDetail.evaluated_employee.start_date)],
                                 ['Periodo de Evaluación', evaluationDetail.evaluation_details.period, 'Cargo', evaluationDetail.evaluated_employee.position],
                                 ['Condición Laboral', evaluationDetail.evaluated_employee.employment_type, 'Nombre del Evaluador', evaluationDetail.evaluation_details.evaluator]
                             ].map((row, rowIndex) => (

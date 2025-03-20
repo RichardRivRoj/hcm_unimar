@@ -19,7 +19,13 @@ const styles = StyleSheet.create({
     },
     header: {
         marginBottom: 20,
-        textAlign: 'center'
+        textAlign: 'right',
+        fontFamily: 'Times-Bold'
+    },
+    titlec: {
+        marginBottom: 20,
+        textAlign: 'center',
+        fontFamily: 'Times-Bold'
     },
     refNumber: {
         fontSize: 10,
@@ -64,7 +70,7 @@ const ConstanciaLaborPDF = ({ data }) => {
         year: 'numeric'
     })
 
-    const directorRH = process.env.NEXT_PUBLIC_DIRECTOR_RH || 'Esp. [Nombre del Director]'
+    const directorRH = process.env.NEXT_PUBLIC_DIRECTOR_RH || 'Esp. Sujey Avane'
     const cedulaDirector = process.env.NEXT_PUBLIC_CEDULA_DIRECTOR || 'V-XXXXXXXX'
     const lugarEmision = process.env.NEXT_PUBLIC_LUGAR_EMISION || 'El Valle del Espíritu Santo'
 
@@ -72,16 +78,16 @@ const ConstanciaLaborPDF = ({ data }) => {
         <Document>
             <Page size="A4" style={styles.page}>
                 <Image 
-                    src="/logo-unimar.png" 
+                    src="/logo-1.png" 
                     style={styles.watermark} 
                 />
 
                 <View style={styles.header}>
                     <Text style={styles.refNumber}>DRH. -{new Date().getFullYear()}-{Math.floor(Math.random() * 1000).toString().padStart(3, '0')}</Text>
-                    <Text style={styles.title}>CONSTANCIA DE TRABAJO</Text>
                 </View>
 
                 <View style={styles.bodyText}>
+                    <Text style={styles.titlec}>CONSTANCIA DE TRABAJO</Text>
                     <Text>
                         Quien suscribe, {directorRH}, titular de la cédula de identidad Nro. {cedulaDirector}, 
                         Director(a) de la Dirección de Talento Humano de la {' '}
@@ -89,11 +95,11 @@ const ConstanciaLaborPDF = ({ data }) => {
                     </Text>
 
                     <Text style={{ marginTop: 15 }}>
-                        El(La) ciudadano(a) {' '}
+                        El (la) ciudadano(a) {' '}
                         <Text style={styles.bold}>
                             {data.personal_info?.nombre_completo?.toUpperCase() || '[NOMBRE COMPLETO]'}, {' '}
                         </Text>
-                        titular de la cédula de identidad Nro. {' '}
+                        titular de la cédula de identidad Nro.{' '}
                         <Text style={styles.bold}>
                             {data.personal_info?.identificacion?.tipo || 'V'}-{data.personal_info?.identificacion?.numero || 'XXXXXXXX'}
                         </Text>, presta sus servicios para esta Institución, desempeñándose actualmente como {' '}
@@ -125,9 +131,9 @@ const ConstanciaLaborPDF = ({ data }) => {
                 <View style={styles.signature}>
                     <Text style={{ marginTop: 30 }}>Atentamente,</Text>
                     <Text style={{ marginTop: 40 }}>_________________________</Text>
-                    <Text>{directorRH}</Text>
-                    <Text>Director de Talento Humano</Text>
-                    <Text>{process.env.NEXT_PUBLIC_NOMBRE_EMPRESA || '[NOMBRE DE LA INSTITUCIÓN]'}</Text>
+                    <Text style={{fontSize: 12}}>{directorRH}</Text>
+                    <Text style={{fontSize: 12}}>Director de Talento Humano</Text>
+                    <Text style={{fontSize: 12}}>{process.env.NEXT_PUBLIC_NOMBRE_EMPRESA || '[NOMBRE DE LA INSTITUCIÓN]'}</Text>
                 </View>
 
                 <View style={styles.footer}>

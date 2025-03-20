@@ -569,33 +569,38 @@ class CandidateController extends Controller
     {
         $request->validate(['status' => 'required|in:aceptado,rechazado']);
 
-        // Buscar el candidato por su ID
-        $candidate = Candidate::with(['persons', 'vacancy'])
-            ->findOrFail($candidateId);
-
-        // Obtener el estado de la aplicación
-        $status = StatusApplication::where('name', ucfirst($request->status))->firstOrFail();
-
-        // Actualizar el estado del candidato
-        $candidate->update(['status_application_id' => $status->id]);
-
-        // Verificar persona asociada
-        if (!$candidate->persons) {
-            Log::error("Candidato con ID {$candidateId} no tiene persona asociada");
-            return response()->json(['error' => 'Candidato no válido'], 400);
-        }
-
-        // Verificar email
-        if (empty($candidate->persons->email)) {
-            Log::error("Candidato con ID {$candidateId} no tiene email registrado");
-            return response()->json(['error' => 'No hay email asociado'], 400);
-        }
+        DB::beginTransaction();
 
         try {
+            // Buscar el candidato por su ID
+            $candidate = Candidate::with(['persons', 'vacancy'])
+                ->findOrFail($candidateId);
+
+            // Obtener el estado de la aplicación
+            $status = StatusApplication::where('name', ucfirst($request->status))->firstOrFail();
+
+            // Actualizar el estado del candidato
+            $candidate->update(['status_application_id' => $status->id]);
+
+            // Verificar persona asociada
+            if (!$candidate->persons) {
+                DB::rollBack();
+                Log::error("Candidato con ID {$candidateId} no tiene persona asociada");
+                return response()->json(['error' => 'Candidato no válido'], 400);
+            }
+
+            // Verificar email
+            if (empty($candidate->persons->email)) {
+                DB::rollBack();
+                Log::error("Candidato con ID {$candidateId} no tiene email registrado");
+                return response()->json(['error' => 'No hay email asociado'], 400);
+            }
+
             // Crear mailable con datos específicos
             $mailData = [
                 'name' => $candidate->persons->first_name,
-                'puesto' => $candidate->vacancy->title,
+                'puesto' => $candidate->vacancy->position->description,
+                'departamento' => $candidate->vacancy->department->name
             ];
 
             $mailable = $request->status === 'aceptado'
@@ -604,11 +609,15 @@ class CandidateController extends Controller
 
             // Enviar correo electrónico
             Mail::to($candidate->persons->email)->send($mailable);
-        } catch (\Exception $e) {
-            Log::error("Error enviando email: " . $e->getMessage());
-            return response()->json(['error' => 'Error al enviar notificación'], 500);
-        }
 
-        return response()->json(['success' => true]);
+            // Commit de la transacción
+            DB::commit();
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error actualizando estado: " . $e->getMessage());
+            return response()->json(['error' => 'Error al actualizar el estado'], 500);
+        }
     }
 }

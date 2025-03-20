@@ -18,7 +18,7 @@ const QuestionStep = React.memo(({
 
   const debouncedCommentUpdate = useDebouncedCallback((value) => {
     onCommentChange(value);
-  }, 500); // 500ms de retraso
+  }, 1200); // 500ms de retraso
 
   const updateScore = useCallback((value) => {
     stateRef.current.score = value;

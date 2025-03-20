@@ -22,22 +22,20 @@ class BankEmployeeController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        $person = $user->person->with([
-            'bankAccounts.accountType',
-            'bankAccounts.currency',
-            'bankAccounts.status',
-            'bankAccounts.bank',
-            'identificationType',
-            'country'
-        ])->first();
+        // Obtener la persona asociada al usuario autenticado
+        $person = $user->person;
 
         if (!$person) {
             return response()->json(['error' => 'No se encontró información de la persona'], 404);
         }
 
+        // Cargar relaciones necesarias para las cuentas bancarias
         $bankAccounts = $person->bankAccounts()
             ->with(['accountType', 'currency', 'status', 'bank'])
             ->paginate(10);
+
+        // Cargar relaciones necesarias para la persona
+        $person->load(['identificationType', 'country']);
 
         return response()->json([
             'personal_info' => [
@@ -82,7 +80,7 @@ class BankEmployeeController extends Controller
             $user = Auth::user();
             if (!$user) throw new \Exception('Usuario no autenticado', 401);
 
-            $person = $user->persons; // Relación singular
+            $person = $user->person; // Relación singular
             if (!$person) throw new \Exception('Perfil no encontrado', 404);
 
             $validator = Validator::make($request->all(), [

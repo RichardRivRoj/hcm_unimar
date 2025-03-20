@@ -86,6 +86,9 @@ const DigitalFile = () => {
                         {selectedCategory === 'Empleos' && (
                             <EmploymentDocuments />
                         )}
+                        {selectedCategory === 'Cuentas de Banco' && (
+                            <BankAccountDocuments />
+                        )}
                         {selectedCategory === 'Estudios' && <StudyDocuments />}
                         {selectedCategory === 'Cursos' && <CourseDocuments />}
                         {selectedCategory === 'Certificados' && (
@@ -96,9 +99,6 @@ const DigitalFile = () => {
                         )}
                         {selectedCategory === 'Identificaciones' && (
                             <IdentificationDocuments />
-                        )}
-                        {selectedCategory === 'Cuentas de Banco' && (
-                            <BankAccountDocuments />
                         )}
                         {selectedCategory === 'Reposos' && <ReposeDocuments />}
                         {selectedCategory === 'Referencias' && (
@@ -116,4 +116,4 @@ const DigitalFile = () => {
     )
 }
 
-export default DigitalFile;
+export default DigitalFile

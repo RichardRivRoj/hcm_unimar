@@ -7,6 +7,7 @@ use App\Models\Status;
 use App\Models\Vacancy;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class VacantyController extends Controller
 {
@@ -37,7 +38,7 @@ class VacantyController extends Controller
             $query->where('status_id', $request->status_id);
         }
 
-        $vacancies = $query->paginate(20);
+        $vacancies = $query->paginate(5);
         // Estructura de respuesta
         return response()->json([
             'success' => true,
@@ -61,6 +62,7 @@ class VacantyController extends Controller
      */
     public function store(Request $request)
     {
+        DB::beginTransaction();
 
         try {
             $validated = $request->validate([
@@ -69,27 +71,50 @@ class VacantyController extends Controller
                 'description' => 'required|string',
                 'requirements' => 'required|json',
                 'responsability' => 'required|json',
-                'num_vacancy' => 'required|integer',
+                'num_vacancy' => 'required|integer|min:1',
                 'mode_id' => 'required|exists:modalities,id',
                 'status_id' => 'sometimes|exists:statuses,id'
             ]);
 
-            $vacancies = Vacancy::create([
+            // Verificar vacante activa existente
+            $existingVacancy = Vacancy::where('position_id', $validated['position_id'])
+                ->where('department_id', $validated['department_id'])
+                ->where('status_id', $validated['status_id'] ?? 1) // Status activo por defecto
+                ->exists();
+
+            if ($existingVacancy) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Ya existe una vacante activa para este puesto y departamento'
+                ], 409);
+            }
+
+            // Crear la nueva vacante
+            $vacancy = Vacancy::create([
                 'position_id' => $validated['position_id'],
                 'department_id' => $validated['department_id'],
                 'description' => $validated['description'],
                 'requirements' => $validated['requirements'],
                 'responsability' => $validated['responsability'],
-                'num_vacanty' => $validated['num_vacanty'] ?? 1,
+                'num_vacancy' => $validated['num_vacancy'],
                 'mode_id' => $validated['mode_id'],
-                'status_id' => $validated['status_id'] ?? 1 // Valor por defecto
+                'status_id' => $validated['status_id'] ?? 1
             ]);
+
+            DB::commit();
 
             return response()->json([
                 'message' => 'Oferta laboral creada correctamente',
-                'vacancy' => $vacancies
+                'vacancy' => $vacancy
             ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' => 'Error al crear la vacante: ' . $e->getMessage()
             ], 500);
@@ -182,17 +207,16 @@ class VacantyController extends Controller
         try {
             // Buscar la vacante
             $vacancy = Vacancy::findOrFail($id);
-    
+
             // Cambiar el estado a "inactivo"
             $vacancy->update([
                 'status_id' => Status::where('name', 'Inactivo')->first()->id,
             ]);
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Vacante desactivada exitosamente',
             ], 200);
-    
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -201,5 +225,4 @@ class VacantyController extends Controller
             ], 500);
         }
     }
-
 }

@@ -3,62 +3,90 @@
 <head>
     <title>Aplicación Aceptada - UNIMAR</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f7fa;">
+<body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f8f9fa;">
+    <!-- Preheader -->
+    <div style="display: none; max-height: 0; overflow: hidden;">
+        Confirmación de aplicación exitosa - Universidad de Margarita
+    </div>
+
     <!-- Contenedor principal -->
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <!-- Encabezado -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,75,154,0.1);">
+        <!-- Encabezado corporativo -->
         <tr>
-            <td style="background-color: #0052a5; padding: 30px 20px; border-radius: 8px 8px 0 0;">
-                <table width="100%">
+            <td style="background-color: #004b9a; padding: 30px 20px; border-radius: 8px 8px 0 0;">
+                <table width="100%" align="center">
                     <tr>
                         <td style="text-align: center;">
-                            <img src="https://th.bing.com/th/id/OIP.1K-VdFvj6lgInH3jenVVswAAAA?w=119&h=128&c=7&r=0&o=5&dpr=1.5&pid=1.7" alt="Unimar" style="max-width: 70px; height: auto;">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: center; padding-top: 20px;">
-                            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">¡Felicidades {{ $name }}!</h1>
+                            <img src="{{ Storage::disk('email_assets')->url('header2.png') }}" alt="Universidad de Margarita" style="max-width: 180px; height: auto; display: block; margin: 0 auto;">
                         </td>
                     </tr>
                 </table>
             </td>
         </tr>
 
-        <!-- Contenido principal -->
+        <!-- Cuerpo del mensaje -->
         <tr>
-            <td style="padding: 30px 20px;">
-                <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                    Nos complace informarte que tu aplicación para el puesto de <br>
-                    <strong style="color: #0052a5; font-size: 18px;">{{ $puesto }}</strong> <br>
-                    ha sido <strong style="color: #28a745;">aceptada</strong>.
-                </p>
+            <td style="padding: 40px 30px;">
+                <!-- Saludo -->
+                <h1 style="color: #004b9a; font-size: 26px; margin: 0 0 25px 0; font-weight: 600;">
+                    ¡Felicitaciones {{ $name }}!
+                </h1>
 
-                <div style="background-color: #f0f6ff; padding: 20px; border-radius: 8px; margin: 25px 0;">
-                    <h2 style="color: #0052a5; font-size: 20px; margin: 0 0 15px 0;">Próximos pasos:</h2>
-                    <ul style="color: #333333; padding-left: 20px; margin: 0;">
-                        <li style="margin-bottom: 10px;">Contactaremos contigo en los próximos 3 días hábiles</li>
-                        <li style="margin-bottom: 10px;">Prepara tu documentación para la contratación</li>
-                        <li>Revisa tu correo electrónico frecuentemente</li>
-                    </ul>
-                </div>
+                <!-- Contenido principal -->
+                <div style="color: #444444; font-size: 16px; line-height: 1.6;">
+                    <p style="margin: 0 0 20px 0;">
+                        Nos complace informarte que tu postulación para el cargo de:<br>
+                        <strong style="color: #004b9a; font-size: 18px;">{{ $puesto }}</strong><br>
+                        en el departamento de <strong>{{ $departamento }}</strong> ha sido <strong style="color: #28a745;">aprobada</strong>.
+                    </p>
 
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="{{ config('app.url') }}" style="background-color: #0052a5; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-                        Acceder a la Plataforma
-                    </a>
+                    <!-- Destacado -->
+                    <div style="background-color: #f8f9ff; border-left: 4px solid #004b9a; padding: 20px; margin: 25px 0; border-radius: 4px;">
+                        <h2 style="color: #004b9a; font-size: 18px; margin: 0 0 15px 0; font-weight: 600;">
+                            Próximos pasos del proceso:
+                        </h2>
+                        <ul style="padding-left: 20px; margin: 0;">
+                            <li style="margin-bottom: 12px; padding-left: 8px;">📅 Contacto del equipo de RRHH en 72 horas hábiles</li>
+                            <li style="margin-bottom: 12px; padding-left: 8px;">📑 Preparar documentos requeridos</li>
+                            <li style="padding-left: 8px;">📬 Monitorear bandeja de entrada y spam</li>
+                        </ul>
+                    </div>
                 </div>
             </td>
         </tr>
 
-        <!-- Pie de página -->
+        <!-- Pie de página corporativo -->
         <tr>
-            <td style="background-color: #f5f7fa; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
-                <p style="color: #666666; font-size: 12px; margin: 0;">
-                    Este mensaje fue enviado por la Universidad de Margarita<br>
-                    Av. Principal, Margarita - Venezuela<br>
-                    <a href="[URL_WEB_OFICIAL]" style="color: #0052a5; text-decoration: none;">www.portalunimar.com</a>
-                </p>
+            <td style="background-color: #f8f9fa; padding: 30px 20px; border-radius: 0 0 8px 8px;">
+                <table width="100%">
+                    <tr>
+                        <td style="text-align: center; padding: 10px 0;">
+                            <img src="{{ Storage::disk('email_assets')->url('footer2.png') }}" alt="UNIMAR" style="max-width: 280px; height: auto;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; padding: 10px 0;">
+                            <p style="color: #666666; font-size: 12px; line-height: 1.5; margin: 0;">
+                                Universidad de Margarita<br>
+                                Av. Bolívar, Valle del Espíritu Santo, Isla de Margarita - Venezuela<br>
+                                Teléfono: +58 295-0000000 | Email: rrhh@unimar.edu.ve
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; padding: 15px 0 0 0;">
+                            <p style="color: #999999; font-size: 11px; margin: 5px 0;">
+                                Este es un mensaje automático. Por favor no responder directamente a este correo.
+                            </p>
+                            <p style="color: #999999; font-size: 11px; margin: 5px 0;">
+                                <a href="[URL_POLITICAS]" style="color: #004b9a; text-decoration: none;">Políticas de Privacidad</a> | 
+                                <a href="[URL_LEGAL]" style="color: #004b9a; text-decoration: none;">Aviso Legal</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
             </td>
         </tr>
     </table>

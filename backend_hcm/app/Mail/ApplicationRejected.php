@@ -29,7 +29,8 @@ class ApplicationRejected extends Mailable
             ->view('emails.application-rejected')
             ->with([
                 'name' => $this->mailData['name'],
-                'puesto' => $this->mailData['puesto']
+                'puesto' => $this->mailData['puesto'],
+                'departamento' => $this->mailData['departamento']
             ]);
     }
 }

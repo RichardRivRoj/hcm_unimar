@@ -7,6 +7,7 @@ use App\Mail\EmployeeHiredNotification;
 use App\Models\Agenda;
 use App\Models\Candidate;
 use App\Models\Contract;
+use App\Models\ContractTypes;
 use App\Models\Employee;
 use App\Models\StatusApplication;
 use App\Models\User;
@@ -82,6 +83,11 @@ class EmployeeController extends Controller
                 ],
             ]);
 
+            $validator->sometimes('end_date', 'nullable', function ($input) {
+                $indefinido = ContractTypes::where('name', 'like', '%Indefinido%')->first();
+                return $input->contract_type_id == $indefinido?->id;
+            });
+
             // Si la validación falla, retornar errores
             if ($validator->fails()) {
                 return response()->json([
@@ -93,6 +99,18 @@ class EmployeeController extends Controller
 
             // Obtener el candidato seleccionado
             $candidate = Candidate::with(['persons', 'vacancy'])->findOrFail($candidateId);
+            $vacancy = $candidate->vacancy;
+
+            // Verificar si hay vacantes disponibles
+            if ($vacancy->num_vacancy <= 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No hay vacantes disponibles para esta posición',
+                ], 400);
+            }
+
+            // Decrementar el número de vacantes
+            $vacancy->decrement('num_vacancy');
 
             // Generar el número de contrato
             $lastContract = Contract::latest()->first(); // Obtener el último contrato creado
@@ -140,20 +158,20 @@ class EmployeeController extends Controller
             // Cambiar el estado de las agendas del candidato a "inactivo"
             Agenda::where('candidate_id', $candidate->id)->update(['status_id' => 2]); // 2 = Inactivo (ajustar según tu sistema)
 
-            // Cambiar el estado de la vacante a "inactivo"
-            $candidate->vacancy->update(['status_id' => 2]); // 2 = Inactivo (ajustar según tu sistema)
+            // Cambiar estado de la vacante solo si se completaron todas las plazas
+            if ($vacancy->num_vacancy === 0) {
+                $vacancy->update(['status_id' => 2]); // 2 = Inactivo
 
-            // Cambiar el estado de la aplicación del candidato a "Contratado"
+                // Rechazar otros candidatos solo cuando se cierra la vacante
+                $statusRechazado = StatusApplication::where('name', 'Rechazado')->first();
+                Candidate::where('vacancy_id', $vacancy->id)
+                    ->where('id', '!=', $candidate->id)
+                    ->update(['status_application_id' => $statusRechazado->id]);
+            }
+
+            // Cambiar estado del candidato actual a Contratado
             $statusContratado = StatusApplication::where('name', 'Contratado')->first();
             $candidate->update(['status_application_id' => $statusContratado->id]);
-
-            // Obtener el estado "Rechazado"
-            $statusRechazado = StatusApplication::where('name', 'Rechazado')->first();
-
-            // Actualizar el estado de todos los candidatos asociados a la vacante inactiva
-            Candidate::where('vacancy_id', $candidate->vacancy->id)
-                ->where('id', '!=', $candidate->id) // Excluir al candidato contratado
-                ->update(['status_application_id' => $statusRechazado->id]);
 
             // Enviar un correo electrónico al candidato con sus credenciales
             Mail::to($candidate->persons->email)->send(new EmployeeHiredNotification([

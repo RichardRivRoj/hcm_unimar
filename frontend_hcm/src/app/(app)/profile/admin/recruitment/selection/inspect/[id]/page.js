@@ -8,8 +8,11 @@ import DetailCard from '@/components/DetailCard'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import { Modal } from '@/components/Modal'
-import HireEmployeeForm from '@/components/HireEmployeeForm' // Importar el formulario de contratación
+import HireEmployeeForm from './HireEmployeeForm'
 import StandardLoader from '@/components/StandardLoader'
+import { PDFDownloadLink } from '@react-pdf/renderer'
+import SelectionResultPDF from '@/components/SelectionResultPDF'
+import { format } from 'date-fns'
 
 const ResultDetails = ({ params }) => {
     const router = useRouter()
@@ -79,6 +82,16 @@ const ResultDetails = ({ params }) => {
         }
     }
 
+    // Reemplaza la función handleDownloadPDF por:
+    const getFileName = () => {
+        const candidateName = result.candidate.personal_info.full_name.replace(
+            /\s+/g,
+            '_',
+        )
+        const currentDate = format(new Date(), 'ddMMyyyy')
+        return `Resultado_selección_${candidateName}_${currentDate}.pdf`
+    }
+
     if (loading) {
         return <StandardLoader />
     }
@@ -100,11 +113,14 @@ const ResultDetails = ({ params }) => {
                     <span className="font-medium">Volver</span>
                 </button>
 
-                <button
-                    onClick={handleDownloadPDF}
+                <PDFDownloadLink
+                    document={<SelectionResultPDF result={result} />}
+                    fileName={getFileName()}
                     className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                    Descargar PDF
-                </button>
+                    {({ loading }) =>
+                        loading ? 'Generando PDF...' : 'Descargar Reporte'
+                    }
+                </PDFDownloadLink>
             </div>
 
             {/* Contenido principal */}

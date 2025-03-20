@@ -1,78 +1,113 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
+    <title>Entrevista Agendada - UNIMAR</title>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entrevista Agendada</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        }
-        .header {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-        }
-        .content {
-            margin-top: 20px;
-            font-size: 16px;
-            color: #555;
-        }
-        .content p {
-            margin: 10px 0;
-        }
-        .button {
-            display: block;
-            width: 200px;
-            margin: 20px auto;
-            padding: 10px;
-            text-align: center;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #777;
-        }
-    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">¡Evento Agendado!</div>
-        <div class="content">
-            <p>Hola <strong>{{ $candidate['name'] }}</strong>,</p>
-            <p>Tu entrevista ha sido agendada con los siguientes detalles:</p>
-            <p><strong>Tipo de Entrevista:</strong> {{ $typeAgenda }}</p>
-            <p><strong>Fecha:</strong> {{ $scheduledDate }}</p>
-            <p><strong>Hora:</strong> {{ $time }}</p>
-            <p><strong>Ubicación:</strong> {{ $location }}</p>
-            <p><strong>Próximos pasos:</strong></p>
-            <ul>
-                <li>Llega 10 minutos antes de la hora programada.</li>
-                <li>Trae tu documento de identificación.</li>
-                <li>Prepárate para la entrevista.</li>
-            </ul>
-            <a href="#" class="button">Acceder a la Plataforma</a>
-        </div>
-        <div class="footer">
-            Saludos,<br>
-            Equipo de Reclutamiento - Unimar
-        </div>
+<body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f8f9fa;">
+    <!-- Preheader -->
+    <div style="display: none; max-height: 0; overflow: hidden;">
+        Confirmación de entrevista programada - Universidad de Margarita
     </div>
+
+    <!-- Contenedor principal -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,75,154,0.1);">
+        <!-- Encabezado corporativo -->
+        <tr>
+            <td style="background-color: #004b9a; padding: 30px 20px; border-radius: 8px 8px 0 0;">
+                <table width="100%" align="center">
+                    <tr>
+                        <td style="text-align: center;">
+                            <img src="{{ Storage::disk('email_assets')->url('header2.png') }}" alt="Universidad de Margarita" style="max-width: 180px; height: auto; display: block; margin: 0 auto;">
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <!-- Cuerpo del mensaje -->
+        <tr>
+            <td style="padding: 40px 30px;">
+                <!-- Saludo -->
+                <h1 style="color: #004b9a; font-size: 26px; margin: 0 0 25px 0; font-weight: 600;">
+                    Hola {{ $candidate }},
+                </h1>
+
+                <!-- Contenido principal -->
+                <div style="color: #444444; font-size: 16px; line-height: 1.6;">
+                    <p style="margin: 0 0 20px 0;">
+                        Tu entrevista ha sido agendada con los siguientes detalles:
+                    </p>
+
+                    <!-- Detalles de la entrevista -->
+                    <div style="background-color: #f8f9fa; padding: 20px; margin: 25px 0; border-radius: 4px;">
+                        <p style="margin: 0 0 10px 0; color: #004b9a; font-weight: 600;">
+                            📅 Detalles del evento
+                        </p>
+                        <ul style="padding-left: 20px; margin: 0;">
+                            <li style="margin-bottom: 8px;"><strong>Tipo:</strong> {{ $typeAgenda }}</li>
+                            <li style="margin-bottom: 8px;"><strong>Fecha:</strong> {{ $scheduledDate }}</li>
+                            <li style="margin-bottom: 8px;"><strong>Hora:</strong> {{ $time }}</li>
+                            <li style="margin-bottom: 0;"><strong>Ubicación:</strong> {{ $location }}</li>
+                        </ul>
+                    </div>
+
+                    <!-- Instrucciones -->
+                    <div style="border-left: 4px solid #004b9a; padding: 20px; margin: 25px 0; background-color: #f8f9fa; border-radius: 4px;">
+                        <h2 style="color: #004b9a; font-size: 18px; margin: 0 0 15px 0; font-weight: 600;">
+                            Preparación para la entrevista
+                        </h2>
+                        <ul style="padding-left: 20px; margin: 0;">
+                            <li style="margin-bottom: 12px;">⏰ Llega 10 minutos antes</li>
+                            <li style="margin-bottom: 12px;">📄 Documento de identificación</li>
+                            <li>💼 Prepárate para la entrevista</li>
+                        </ul>
+                    </div>
+
+                    <!-- Botón CTA -->
+                    <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 30px auto;">
+                        <tr>
+                            <td style="background-color: #004b9a; border-radius: 5px; text-align: center;">
+                                <a href="#" style="color: #ffffff; text-decoration: none; padding: 14px 35px; display: inline-block; font-weight: 500; font-size: 16px;">
+                                    Acceder a la Plataforma
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+
+        <!-- Pie de página corporativo -->
+        <tr>
+            <td style="background-color: #f8f9fa; padding: 30px 20px; border-radius: 0 0 8px 8px;">
+                <table width="100%">
+                    <tr>
+                        <td style="text-align: center; padding: 10px 0;">
+                            <img src="{{ Storage::disk('email_assets')->url('logo-5.png') }}" alt="UNIMAR" style="max-width: 280px; height: auto;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; padding: 10px 0;">
+                            <p style="color: #666666; font-size: 12px; line-height: 1.5; margin: 0;">
+                                Universidad de Margarita<br>
+                                Av. Bolívar, Valle del Espíritu Santo, Isla de Margarita - Venezuela<br>
+                                Teléfono: +58 295-0000000 | Email: rrhh@unimar.edu.ve
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; padding: 15px 0 0 0;">
+                            <p style="color: #999999; font-size: 11px; margin: 5px 0;">
+                                <a href="#" style="color: #004b9a; text-decoration: none;">Políticas de Privacidad</a> | 
+                                <a href="#" style="color: #004b9a; text-decoration: none;">Aviso Legal</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>

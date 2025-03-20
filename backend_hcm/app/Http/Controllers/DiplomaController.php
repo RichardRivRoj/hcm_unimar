@@ -97,7 +97,7 @@ class DiplomaController extends BaseDocumentController
         ]);
 
         // Crear el documento de empleo
-        $document = $user->persons->documents()->create([
+        $document = $user->person->documents()->create([
             'document_name' => $validatedData['document_name'],
             'document_type_id' => $this->documentType,
             'metadata' => json_encode([

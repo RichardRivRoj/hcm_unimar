@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/skeleton'
 import { Alert, AlertDescription } from '@/components/alert'
 import { Modal } from '@/components/Modal'
 import axios from '@/lib/axios'
+import StandardLoader from '@/components/StandardLoader'
 
 const IdentificationDocuments = () => {
     const {
@@ -92,6 +93,8 @@ const IdentificationDocuments = () => {
             }
         }
     }
+
+    if (loading) return <StandardLoader />
 
     if (error) {
         return (

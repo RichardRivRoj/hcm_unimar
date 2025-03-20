@@ -9,6 +9,7 @@ use App\Models\AgendaResult;
 use App\Models\Candidate;
 use App\Models\Status;
 use App\Models\StatusApplication;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +32,7 @@ class AgendaResultController extends Controller
 
             // Consulta base con relaciones necesarias
             $query = AgendaResult::with([
-                'agenda.candidate.persons',
+                'agenda.candidate.persons.identificationtype',
                 'agenda.typeAgenda',
                 'agenda.candidate.vacancy.position' // Relación con vacancy y position
             ]);
@@ -83,7 +84,7 @@ class AgendaResultController extends Controller
                 return [
                     'candidate_id' => $candidate->id,
                     'full_name' => $candidate->persons->first_name . ' ' . $candidate->persons->last_name,
-                    'identification' => $candidate->persons->identification_value,
+                    'identification' => $candidate->persons->identificationtype->code . ' - ' . $candidate->persons->identification_value,
                     'total_evaluations' => $group->count(),
                     'average_score' => $group->avg('score'),
                     'evaluations' => $evaluations,
@@ -148,12 +149,15 @@ class AgendaResultController extends Controller
             ], 422);
         }
 
+        DB::beginTransaction();
+
         try {
             // Obtener la agenda relacionada
             $agenda = Agenda::findOrFail($request->agenda_id);
 
             // Verificar si ya existe un resultado para esta agenda
             if ($agenda->agendaresult) {
+                DB::rollBack();
                 return response()->json([
                     'success' => false,
                     'message' => 'Esta agenda ya tiene un resultado registrado'
@@ -167,6 +171,9 @@ class AgendaResultController extends Controller
                 'agenda_id' => $agenda->id
             ]);
 
+            // Commit de la transacción
+            DB::commit();
+
             // Cargar relaciones para la respuesta
             $agendaResult->load('agenda');
 
@@ -176,11 +183,13 @@ class AgendaResultController extends Controller
                 'data' => $agendaResult
             ], 201);
         } catch (ModelNotFoundException $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Agenda no encontrada'
             ], 404);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Error al registrar el resultado',
@@ -197,7 +206,7 @@ class AgendaResultController extends Controller
         try {
             // Obtener el candidato con todas las relaciones necesarias
             $candidate = Candidate::with([
-                'persons',
+                'persons.identificationtype',
                 'vacancy.position',
                 'vacancy.department',
                 'vacancy.mode',
@@ -220,7 +229,7 @@ class AgendaResultController extends Controller
                 'candidate' => [
                     'personal_info' => [
                         'full_name' => $candidate->persons->first_name . ' ' . $candidate->persons->last_name,
-                        'identification' => $candidate->persons->identification_value,
+                        'identification' => $candidate->persons->identificationtype->code . ' - ' . $candidate->persons->identification_value,
                         'email' => $candidate->persons->email,
                         'phone' => $candidate->persons->phone,
                         'birth_date' => $candidate->persons->birth_date,
@@ -243,10 +252,23 @@ class AgendaResultController extends Controller
                     'total_agendas' => $candidate->agenda->count(),
                     'average_score' => round($averageScore, 2),
                     'agendas' => $candidate->agenda->map(function ($agenda) {
+                        // Formatear fecha y hora para Venezuela
+                        $scheduledDate = Carbon::parse($agenda->scheduled_date)
+                            ->locale('es_VE')
+                            ->isoFormat('D [de] MMMM [de] YYYY');
+
+                        $time = Carbon::createFromFormat('H:i:s', $agenda->time)
+                            ->setTimezone('America/Caracas')
+                            ->locale('es_VE')
+                            ->isoFormat('h:mm A');
+
+                        // Forzar formato español si persiste el problema
+                        $ampm = Carbon::parse($agenda->time)->format('A') === 'AM' ? 'a. m.' : 'p. m.';
+                        $formattedTime = Carbon::parse($agenda->time)->format('g:i') . ' ' . $ampm;
                         return [
                             'type' => $agenda->typeagenda->name,
-                            'scheduled_date' => $agenda->scheduled_date,
-                            'time' => $agenda->time,
+                            'scheduled_date' => $scheduledDate,
+                            'time' => $formattedTime,
                             'status' => $agenda->status->name,
                             'score' => $agenda->agendaresult->score ?? 'N/A',
                             'comments' => $agenda->agendaresult->comments ?? 'Sin comentarios',
@@ -254,8 +276,11 @@ class AgendaResultController extends Controller
                         ];
                     }),
                     'timeline' => $candidate->agenda->sortBy('scheduled_date')->values()->map(function ($agenda) {
+                        $formattedDate = Carbon::parse($agenda->scheduled_date)
+                            ->locale('es_VE')
+                            ->isoFormat('D [de] MMMM [de] YYYY');
                         return [
-                            'date' => $agenda->scheduled_date,
+                            'date' => $formattedDate,
                             'event' => $agenda->typeagenda->name,
                             'status' => $agenda->status->name
                         ];

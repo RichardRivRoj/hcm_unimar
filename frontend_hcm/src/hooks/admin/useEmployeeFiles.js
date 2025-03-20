@@ -1,176 +1,181 @@
-import { useState, useEffect } from 'react';
-import axios from '@/lib/axios';
+'use client'
+
+import { useState, useEffect } from 'react'
+import axios from '@/lib/axios'
 
 const useEmployeeFiles = (initialFilters = {}) => {
-  const [data, setData] = useState({
-    employees: [],
-    meta: {
-      total: 0,
-      currentPage: 1,
-      lastPage: 1,
-      perPage: 10,
-      filters: {
-        available_departments: [],
-        status_options: []
-      }
-    }
-  });
-
-  // Estados para el detalle del empleado
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [detailError, setDetailError] = useState(null);
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 10
-  });
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [filters, setFilters] = useState({
-    search: '',
-    department: '',
-    status: '',
-    sort: 'asc',
-    identification: '',
-    ...initialFilters
-  });
-
-  // Función para obtener detalles del empleado con paginación
-  const fetchEmployeeDetails = async (id, category = 'Contratos', page = 1) => {
-    try {
-      setDetailLoading(true);
-      setDetailError(null);
-      
-      const response = await axios.get(
-        `/api/admin/departments/employees/${id}?category=${encodeURIComponent(category)}&page=${page}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        }
-      );
-
-      setSelectedEmployee({
-        employee: response.data.employee,
-        documents: {
-          data: response.data.documents,
-          meta: response.data.meta
-        }
-      });
-      setPagination(
-        response.data.meta
-      );
-      
-    } catch (err) {
-      setDetailError(err.response?.data?.message || 'Error al cargar detalles del empleado');
-      setSelectedEmployee(null);
-    } finally {
-      setDetailLoading(false);
-    }
-  };
-
-  const fetchEmployees = async (page = 1) => {
-    try {
-      setLoading(true);
-      
-      const params = {
-        page,
-        ...filters
-      };
-  
-      Object.keys(params).forEach(key => {
-        if (params[key] === '') delete params[key];
-      });
-  
-      const response = await axios.get('/api/admin/departments/employees', {
-        params,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-  
-      setData(prev => ({
-        ...prev,
-        employees: response.data.data,
+    const [data, setData] = useState({
+        employees: [], // Inicializado como array vacío
         meta: {
-          total: response.data.meta.total,
-          currentPage: response.data.meta.current_page,
-          lastPage: response.data.meta.last_page,
-          perPage: response.data.meta.per_page,
-          filters: {
-            available_departments: 
-              response.data.meta.filters?.available_departments || [],
-            status_options: 
-              response.data.meta.filters?.status_options || []
-          }
+            total: 0,
+            currentPage: 1,
+            lastPage: 1,
+            perPage: 10,
+            filters: {
+                available_departments: [],
+                status_options: [],
+            },
+        },
+    })
+
+    // Estados para el detalle del empleado
+    const [selectedEmployee, setSelectedEmployee] = useState(null)
+    const [detailLoading, setDetailLoading] = useState(false)
+    const [detailError, setDetailError] = useState(null)
+    const [pagination, setPagination] = useState({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        itemsPerPage: 10,
+    })
+
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+    const [filters, setFilters] = useState({
+        search: '',
+        department_id: '', // Nombre consistente con backend
+        status: '',
+        sort: 'asc',
+        identification: '',
+        page: 1,
+    })
+
+    // Función para obtener detalles del empleado con paginación
+    const fetchEmployeeDetails = async (
+        id,
+        category = 'Contratos',
+        page = 1,
+    ) => {
+        try {
+            setDetailLoading(true)
+            setDetailError(null)
+
+            const response = await axios.get(
+                `/api/admin/departments/employees/${id}?category=${encodeURIComponent(category)}&page=${page}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                },
+            )
+
+            setSelectedEmployee({
+                employee: response.data.employee,
+                documents: {
+                    data: response.data.documents,
+                    meta: response.data.meta,
+                },
+            })
+            setPagination(response.data.meta)
+        } catch (err) {
+            setDetailError(
+                err.response?.data?.message ||
+                    'Error al cargar detalles del empleado',
+            )
+            setSelectedEmployee(null)
+        } finally {
+            setDetailLoading(false)
         }
-      }));
-  
-    } catch (err) {
-      setError(err.response?.data?.message || 'Error al cargar empleados');
-      setData(prev => prev);
-    } finally {
-      setLoading(false);
     }
-  };
 
-  // Manejar cambio de página para documentos
-  const handlePageChange = (newPage, category) => {
-    if (selectedEmployee) {
-      fetchEmployeeDetails(
-        selectedEmployee.employee.id, 
-        category || 'Contratos', 
-        newPage
-      );
+    const fetchEmployees = async (page = 1) => {
+        try {
+            setLoading(true)
+
+            const params = {
+                page,
+                ...filters,
+            }
+
+            Object.keys(params).forEach(key => {
+                if (params[key] === '') delete params[key]
+            })
+
+            const response = await axios.get(
+                '/api/admin/departments/employees',
+                {
+                    params,
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                },
+            )
+
+            setData(prev => ({
+                ...prev,
+                employees: response.data.data,
+                meta: {
+                    total: response.data.meta.total,
+                    currentPage: response.data.meta.current_page,
+                    lastPage: response.data.meta.last_page,
+                    perPage: response.data.meta.per_page,
+                    filters: {
+                        available_departments:
+                            response.data.meta.filters?.available_departments ||
+                            [],
+                        status_options:
+                            response.data.meta.filters?.status_options || [],
+                    },
+                },
+            }))
+        } catch (err) {
+            setError(err.response?.data?.message || 'Error al cargar empleados')
+            setData(prev => prev)
+        } finally {
+            setLoading(false)
+        }
     }
-  };
 
-  const goToPage = (page) => {
-    if (page >= 1 && page <= data.meta.lastPage) {
-      setFilters(prev => ({
-        ...prev,
-        page
-      }));
+    // Manejar cambio de página para documentos
+    const handlePageChange = (newPage, category) => {
+        if (selectedEmployee) {
+            fetchEmployeeDetails(
+                selectedEmployee.employee.id,
+                category || 'Contratos',
+                newPage,
+            )
+        }
     }
-  };
 
-  useEffect(() => {
-    fetchEmployees();
-  }, [filters]);
+    const goToPage = page => {
+        setFilters(prev => ({
+            ...prev,
+            page: Math.max(1, Math.min(page, data.meta.lastPage)), // Forzar límites
+        }))
+        fetchEmployees(page) // Llamar directamente a la función de fetch
+    }
 
-  const updateFilter = (name, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+    const updateFilter = (name, value) => {
+        setFilters(prev => ({
+            ...prev,
+            [name]: value,
+            page: 1, // Resetear a primera página al cambiar filtros
+        }))
+    }
 
-  useEffect(() => {
-    fetchEmployees();
-  }, [filters]);
+    useEffect(() => {
+        fetchEmployees()
+    }, [filters])
 
-  return {
-    employees: data.employees,
-    meta: data.meta,
-    loading,
-    error,
-    filters,
-    updateFilter,
-    goToPage,
-    refetch: fetchEmployees,
-    
-    selectedEmployee,
-    detailLoading,
-    detailError,
-    fetchEmployeeDetails,
-    clearSelectedEmployee: () => setSelectedEmployee(null),
+    return {
+        employees: data.employees,
+        meta: data.meta,
+        loading,
+        error,
+        filters,
+        updateFilter,
+        goToPage,
+        refetch: fetchEmployees,
 
-    pagination,
-    handlePageChange
-  };
-};
+        selectedEmployee,
+        detailLoading,
+        detailError,
+        fetchEmployeeDetails,
+        clearSelectedEmployee: () => setSelectedEmployee(null),
 
-export default useEmployeeFiles;
+        pagination,
+        handlePageChange,
+    }
+}
+
+export default useEmployeeFiles

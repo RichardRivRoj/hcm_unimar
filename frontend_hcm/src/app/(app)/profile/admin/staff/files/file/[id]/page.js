@@ -93,7 +93,7 @@ export default function DigitalFiles() {
         )
 
     return (
-        <div className="flex h-screen bg-gray-50">
+        <div className="flex h-screen ml-10 bg-gray-50">
             {/* Sidebar */}
             <div className="w-64 p-4 bg-white border-r border-gray-200">
                 <h2 className="mb-4 text-xl font-bold text-[#004b9a]">

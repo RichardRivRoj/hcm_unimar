@@ -24,7 +24,7 @@ const Login = () => {
     const [errors, setErrors] = useState([])
     const [status, setStatus] = useState(null)
 
-    const validateEmailFormat = (email) => {
+    const validateEmailFormat = email => {
         const regex = /^[a-zA-Z0-9._%+-]+@unimar\.edu\.ve$/i
         return regex.test(email)
     }
@@ -41,7 +41,9 @@ const Login = () => {
         event.preventDefault()
 
         if (!validateEmailFormat(email)) {
-            setErrors({ email: ['El correo debe tener dominio @unimar.edu.ve'] })
+            setErrors({
+                email: ['El correo debe tener dominio @unimar.edu.ve'],
+            })
             return
         }
 
@@ -69,16 +71,21 @@ const Login = () => {
                         className="block w-full mt-1"
                         onChange={event => {
                             setEmail(event.target.value)
-                            setErrors(prev => ({ ...prev, email: undefined }))
+                            setErrors(prev => ({
+                                ...prev,
+                                email: undefined,
+                            }))
                         }}
                         onBlur={() => {
                             if (email && !validateEmailFormat(email)) {
                                 setErrors(prev => ({
                                     ...prev,
-                                    email: ['El correo debe tener dominio @unimar.edu.ve']
+                                    email: [
+                                        'El correo debe tener dominio @unimar.edu.ve',
+                                    ],
                                 }))
                             }
-                        }} 
+                        }}
                         required
                         autoFocus
                     />
@@ -100,10 +107,7 @@ const Login = () => {
                         autoComplete="current-password"
                     />
 
-                    <InputError
-                        messages={errors.password}
-                        className="mt-2"
-                    />
+                    <InputError messages={errors.password} className="mt-2" />
                 </div>
 
                 {/* Remember Me */}

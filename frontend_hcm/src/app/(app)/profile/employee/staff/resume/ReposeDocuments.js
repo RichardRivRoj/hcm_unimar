@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/alert'
 import { Modal } from '@/components/Modal'
 import axios from '@/lib/axios'
 import useRests from '@/hooks/useRests'
+import StandardLoader from '@/components/StandardLoader'
 
 const ReposeDocuments = () => {
     const {
@@ -89,6 +90,8 @@ const ReposeDocuments = () => {
             }
         }
     }
+
+    if (loading) return <StandardLoader />
 
     if (error) {
         return (

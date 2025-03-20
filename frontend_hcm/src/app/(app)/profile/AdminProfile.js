@@ -44,25 +44,7 @@ const AdminProfile = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Permisos */}
-                <div className="p-4 rounded-lg bg-gray-50">
-                    <h3 className="flex items-center gap-2 mb-3 text-lg font-semibold text-gray-700">
-                        <Shield className="w-5 h-5 text-[#004b9a]" />{' '}
-                        {/* Icono de Lucide */}
-                        Permisos de Acceso
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                        {user.permissions.map((permission, index) => (
-                            <span
-                                key={index}
-                                className="px-3 py-1 bg-[#004b9a]/10 text-[#004b9a] rounded-full text-sm font-medium flex items-center gap-1">
-                                <Check className="w-4 h-4" />{' '}
-                                {/* Icono de Lucide */}
-                                {permission}
-                            </span>
-                        ))}
-                    </div>
-                </div>
+              
 
                 {/* Acciones rápidas (opcional) */}
                 <div className="p-4 rounded-lg bg-gray-50">

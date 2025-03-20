@@ -136,8 +136,8 @@ const CandidateAgendas = ({ params }) => {
                             <td className="px-6 py-2 text-sm">
                                 {new Date(agenda.scheduled_date).toLocaleDateString()}
                             </td>
-                            <td className="px-6 py-2 text-sm">
-                                {agenda.time}
+                            <td className="px-6 py-2 text-sm">                 
+                                {agenda.formatted_time}
                             </td>
                             <td className="px-6 py-2 text-sm">
                                 {agenda.typeagenda.name}

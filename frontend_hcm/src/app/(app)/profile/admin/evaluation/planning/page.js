@@ -12,6 +12,7 @@ import PeriodForm from './PeriodForm'
 import EditPeriodForm from './EditPeriodForm'
 import ConfirmationModal from '@/components/ConfirmationModal'
 import StandardLoader from '@/components/StandardLoader'
+import Badge from '@/components/Badge'
 
 const PlanningPage = () => {
     const {
@@ -32,6 +33,15 @@ const PlanningPage = () => {
     const [selectedPeriod, setSelectedPeriod] = useState(null)
     const [selectedPeriodId, setSelectedPeriodId] = useState(null)
 
+    // Efecto para actualización periódica
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchEvaluationPeriods(currentFilters)
+        }, 300000) // Actualiza cada 5 minutos
+
+        return () => clearInterval(interval)
+    }, [currentFilters, fetchEvaluationPeriods])
+
     const handleDelete = useCallback(period => {
         setSelectedPeriod(period)
         setIsDeleteModalOpen(true)
@@ -39,14 +49,14 @@ const PlanningPage = () => {
 
     const handleConfirmDelete = async () => {
         try {
-            await deleteEvaluationPeriod(selectedPeriod.id);
-            setIsDeleteModalOpen(false);
-            setSelectedPeriod(null);
-            fetchEvaluationPeriods(); // Recargar la lista
+            await deleteEvaluationPeriod(selectedPeriod.id)
+            setIsDeleteModalOpen(false)
+            setSelectedPeriod(null)
+            fetchEvaluationPeriods() // Recargar la lista
         } catch (error) {
-            console.error('Error eliminando:', error.message);
+            console.error('Error eliminando:', error.message)
         }
-    };
+    }
 
     const handleEdit = useCallback(period => {
         if (period && period.id) {
@@ -70,19 +80,33 @@ const PlanningPage = () => {
         {
             header: 'Fecha Inicio',
             accessor: 'start_date',
+            render: item => new Date(item.start_date).toLocaleDateString(),
         },
         {
             header: 'Fecha Fin',
             accessor: 'end_date',
+            render: item =>
+                item.end_date
+                    ? new Date(item.end_date).toLocaleDateString()
+                    : 'Indefinido',
         },
         {
             header: 'Estatus',
             accessor: 'status',
-            render: item => item.status.name,
+            render: item => (
+                <Badge
+                    variant={
+                        item.status.name === 'Activo' ? 'success' : 'secondary'
+                    }
+                    className="text-sm">
+                    {item.status.name}
+                </Badge>
+            ),
         },
     ]
 
     // Filtros disponibles
+    // Actualizar opciones de filtro
     const filters = [
         {
             name: 'status_id',
@@ -90,7 +114,6 @@ const PlanningPage = () => {
             options: [
                 { value: 1, label: 'Activo' },
                 { value: 2, label: 'Inactivo' },
-                { value: 3, label: 'Programado' },
             ],
         },
         {
@@ -105,25 +128,22 @@ const PlanningPage = () => {
     ]
 
     // Acciones de la tabla
+    // Modificar acciones para reflejar nuevo comportamiento
     const actions = [
         {
             icon: <PencilSquareIcon className="w-5 h-5 text-blue-600" />,
             color: 'text-blue-600 hover:text-blue-800',
             handler: item => {
-                    setSelectedPeriod(item)
-                    setIsEditModalOpen(true)
+                setSelectedPeriod(item)
+                setIsEditModalOpen(true)
             },
         },
         {
             icon: <TrashIcon className="w-5 h-5 text-red-600" />,
             color: 'text-red-600 hover:text-red-800',
-            handler: item => {
-                if (item.status.name === 'Inactivo') {
-                    handleDelete(item)
-                }
-            },
-            disabled: item => item.status.name !== 'Inactivo'
-        }
+            handler: item => handleDelete(item),
+            disabled: item => item.status.name === 'Activo', // No permitir eliminar activos
+        },
     ]
 
     // Manejar cambio de página
@@ -205,6 +225,9 @@ const PlanningPage = () => {
                     onFilterChange={handleFilterChange}
                     actions={actions}
                     loading={loading}
+                    rowClassName={item => 
+                        item.status.name === 'Activo' ? 'bg-green-50' : ''
+                    }
                 />
 
                 {error && (

@@ -10,16 +10,14 @@ use App\Mail\InterviewUpdated;
 
 Route::get('/', function () {
     $mailData = [
-        'name' => 'María González',
-        'email' => 'example@unimar.edu.ve',
-        'password' => 'password123',
-        'position' => '10:00',
-        'department' => 'Sala 2',
-        'start_date' => '20-02-2025',
-        'end_date' => '20-05-2025'
+        'candidate' => 'Maria',
+        'typeAgenda' => 'Entrevista',
+        'scheduledDate' => '17/02/2025',
+        'time' => '2:20 am',
+        'location' =>'UNIMAR'
     ];
-    
-    return new EmployeeHiredNotification($mailData);
+
+    return new InterviewScheduled($mailData);
 });
 
 Route::get('/photos/{filename}', function ($filename) {
@@ -44,7 +42,7 @@ Route::get('/pdf/{filename}', function ($filename) {
 
     return response()->file($path, [
         'Content-Type' => 'application/pdf',
-        'Content-Disposition' => 'attachment; filename="'.$filename.'"'
+        'Content-Disposition' => 'attachment; filename="' . $filename . '"'
     ]);
 
     return Response::make($file, 200)->header('Content-Type', $type);
@@ -60,4 +58,4 @@ Route::post('password/reset', [App\Http\Controllers\Auth\ResetPasswordController
 
 
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

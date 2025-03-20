@@ -87,20 +87,7 @@ class EvaluationPeriodController extends Controller
                 ], 422);
             }
 
-            // Obtener estados
-            $activeStatus = Status::firstOrCreate(
-                ['name' => 'Activo'],
-            );
-
-            $inactiveStatus = Status::firstOrCreate(
-                ['name' => 'Inactivo'],
-            );
-
-            // Asignar estado automáticamente
-            $data['status_id'] = EvaluationPeriod::where('status_id', $activeStatus->id)->exists()
-                ? $inactiveStatus->id
-                : $activeStatus->id;
-
+            // Crear período (el observer manejará el estado)
             $period = EvaluationPeriod::create($data);
 
             DB::commit();

@@ -58,6 +58,15 @@ class AgendaController extends Controller
         $perPage = $request->has('per_page') ? $request->per_page : 10;
         $agendas = $query->paginate($perPage);
 
+        // Formatea la hora para cada agenda
+        $formattedAgendas = $agendas->getCollection()->map(function ($agenda) {
+            $time = Carbon::createFromFormat('H:i:s', $agenda->time);
+            $agenda->formatted_time = $time->locale('es_VE')->isoFormat('h:mm A'); // Formato 12h con "a. m." o "p. m."
+            return $agenda;
+        });
+
+        $agendas->setCollection($formattedAgendas);
+
         // Estructura de respuesta
         return response()->json([
             'success' => true,
@@ -192,15 +201,25 @@ class AgendaController extends Controller
             return response()->json(['message' => 'Agenda no encontrada'], 404);
         }
 
+        $formattedTime = Carbon::parse($agenda->time)
+            ->locale('es_VE')
+            ->settings(['formatFunction' => 'translatedFormat'])
+            ->format('g:i A');
+
+        // Forzar formato español si persiste el problema
+        $ampm = Carbon::parse($agenda->time)->format('A') === 'AM' ? 'a. m.' : 'p. m.';
+        $formattedTime = Carbon::parse($agenda->time)->format('g:i') . ' ' . $ampm;
+
         // Formatear la respuesta con los datos necesarios
         $response = [
             'agenda' => [
                 'id' => $agenda->id,
                 'scheduled_date' => $agenda->scheduled_date,
-                'time' => $agenda->time,
+                'time' => $formattedTime,
                 'location' => $agenda->location,
                 'status' => $agenda->status->name, // Asumiendo que el modelo Status tiene un campo 'name'
                 'type_agenda' => $agenda->typeagenda->name, // Asumiendo que el modelo TypeAgenda tiene un campo 'name'
+                'has_rating' => $agenda->agendaresult()->exists(), // Verificar si tiene resultados
             ],
             'candidate' => [
                 'id' => $agenda->candidate->id,
@@ -209,7 +228,7 @@ class AgendaController extends Controller
                     'last_name' => $agenda->candidate->persons->last_name,
                     'email' => $agenda->candidate->persons->email,
                     'phone' => $agenda->candidate->persons->phone,
-                    'identification_value' =>  $agenda->candidate->persons->identificationtype->code.' '. $agenda->candidate->persons->identification_value,
+                    'identification_value' =>  $agenda->candidate->persons->identificationtype->code . ' ' . $agenda->candidate->persons->identification_value,
                     'ethnicity' => $agenda->candidate->persons->ethnicity->name, // Asumiendo que el modelo Ethnicity tiene un campo 'name'
                     'gender' => $agenda->candidate->persons->gender->name ?? 'NA', // Asumiendo que el modelo Gender tiene un campo 'name'
                     'country' => $agenda->candidate->persons->country->name, // Asumiendo que el modelo Country tiene un campo 'name'
@@ -253,6 +272,8 @@ class AgendaController extends Controller
             'status_id' => 'required|exists:statuses,id'
         ]);
 
+        DB::beginTransaction();
+
         try {
             // Buscar la agenda con sus relaciones
             $agenda = Agenda::with(['candidate.persons', 'typeagenda'])->findOrFail($id);
@@ -261,7 +282,7 @@ class AgendaController extends Controller
             $agenda->update($validated);
 
             // Obtener datos actualizados
-            $agenda->refresh(); // Recargar las relaciones actualizadas
+            $agenda->refresh();
 
             // Preparar datos para el correo
             $emailData = [
@@ -270,12 +291,15 @@ class AgendaController extends Controller
                 'scheduled_date' => Carbon::parse($agenda->scheduled_date)->format('d/m/Y'),
                 'time' => Carbon::parse($agenda->time)->format('h:i A'),
                 'location' => $agenda->location,
-                'changes' => $request->input('changes_notification') // Mensaje opcional de cambios
+                'changes' => $request->input('changes_notification')
             ];
 
             // Enviar correo al candidato
             Mail::to($agenda->candidate->persons->email)
                 ->send(new InterviewUpdated($emailData));
+
+            // Commit de la transacción
+            DB::commit();
 
             return response()->json([
                 'success' => true,
@@ -283,11 +307,13 @@ class AgendaController extends Controller
                 'data' => $agenda
             ], 200);
         } catch (ModelNotFoundException $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Agenda no encontrada'
             ], 404);
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error("Error actualizando agenda: " . $e->getMessage());
             return response()->json([
                 'success' => false,

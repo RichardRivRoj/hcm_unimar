@@ -9,7 +9,7 @@ import { Bell } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
-import { es } from 'date-fns'
+import { es } from 'date-fns/locale'
 import axios from '@/lib/axios'
 import Loader from '@/components/Loader'
 

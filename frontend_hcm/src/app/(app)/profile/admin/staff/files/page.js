@@ -13,21 +13,35 @@ import StandardLoader from '@/components/StandardLoader'
 
 const AdminEmployeesList = () => {
     const router = useRouter()
-    const [filters, setFilters] = useState({
-        search: '',
-        department: '',
-        status: '',
-        sort: 'asc',
-        identification: '',
-    })
 
-    const { employees, meta, loading, error, updateFilter, goToPage, refetch } = useEmployeeFiles(filters)
+    const {
+        employees,
+        meta,
+        filters,
+        loading,
+        error,
+        updateFilter,
+        goToPage,
+        handlePageChange,
+        refetch,
+    } = useEmployeeFiles()
 
     const [searchTerm, setSearchTerm] = useState('')
     const [identificationTerm, setIdentificationTerm] = useState('')
     const debouncedSearch = useDebounce(searchTerm, 1000)
     const debouncedIdentification = useDebounce(identificationTerm, 1000)
-    
+
+    useEffect(() => {
+        updateFilter('search', debouncedSearch)
+    }, [debouncedSearch])
+
+    useEffect(() => {
+        updateFilter('identification', debouncedIdentification)
+    }, [debouncedIdentification])
+
+    const availableDepartments = meta.filters?.available_departments || []
+    const statusOptions = meta.filters?.status_options || []
+
     const tableConfig = {
         title: 'Listado General de Empleados',
         columns: [
@@ -37,29 +51,29 @@ const AdminEmployeesList = () => {
                 render: item =>
                     `${item.identification.type}-${item.identification.value}`,
             },
-            { header: 'Email', accessor: 'email' },
-            { header: 'Cargo Actual', accessor: 'current_position' },
-            { header: 'Departamento', accessor: 'current_department' },
+            { header: 'Email', accessor: 'email', render: item => item.email  },
+            { header: 'Cargo Actual', accessor: 'current_position', render: item => item.current_position },
+            { header: 'Departamento', accessor: 'current_department', render: item => item.current_department },
             { header: 'Estado', accessor: 'status' },
         ],
         filters: [
             {
                 name: 'department',
                 placeholder: 'Filtrar por departamento',
-                options: meta.filters.available_departments.map(d => ({
+                value: filters.department,
+                options: availableDepartments.map(d => ({
                     value: d.id,
                     label: d.name,
                 })),
-                value: filters.department,
             },
             {
                 name: 'status',
                 placeholder: 'Filtrar por estado',
-                options: meta.filters.status_options.map(s => ({
-                    value: s,
+                value: filters.status,
+                options: statusOptions.map(s => ({
+                    value: s.toLowerCase(),
                     label: s.charAt(0).toUpperCase() + s.slice(1),
                 })),
-                value: filters.status,
             },
             {
                 name: 'sort',
@@ -76,25 +90,27 @@ const AdminEmployeesList = () => {
                 icon: <Eye size={26} />,
                 color: 'text-blue-600',
                 handler: item =>
-                    router.push(`/profile/admin/staff/files/file/${item.employee_id}`),
+                    router.push(
+                        `/profile/admin/staff/files/file/${item.employee_id}`,
+                    ),
             },
         ],
         currentPage: meta.currentPage,
         totalPages: meta.lastPage,
         onPageChange: page => goToPage(page),
-        onFilterChange: (name, value) => updateFilter(name, value), // Corregir manejo de eventos
-    }
+        onFilterChange: (name, value) => {
+            // Normalizar nombres de filtros para el backend
+            const filterMap = {
+                department: 'department_id',
+                status: 'status',
+                sort: 'sort',
+            }
+            updateFilter(filterMap[name] || name, value)
+        },
+       
+    };
 
-    useEffect(() => {
-        updateFilter('search', debouncedSearch)
-    }, [debouncedSearch])
-
-    useEffect(() => {
-        updateFilter('identification', debouncedIdentification)
-    }, [debouncedIdentification])
-
-    if (loading)
-        return <StandardLoader />
+    if (loading) return <StandardLoader />
     if (error) {
         return (
             <Alert variant="destructive">
@@ -117,8 +133,7 @@ const AdminEmployeesList = () => {
                     type="text"
                     placeholder="Buscar por cédula..."
                     value={identificationTerm}
-                    onChange={e => setIdentificationTerm(e.target.value)
-                    }
+                    onChange={e => setIdentificationTerm(e.target.value)}
                     className="w-full border-b-2 focus:border-blue-500"
                 />
             </div>
@@ -126,8 +141,8 @@ const AdminEmployeesList = () => {
             <StandardTable
                 {...tableConfig}
                 data={employees}
-                loading={loading}
-                error={error}
+                onPageChange={goToPage} // Usar la función corregida
+                totalPages={meta.lastPage} // Usar lastPage en lugar de total
                 className="mt-6"
             />
         </div>

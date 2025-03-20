@@ -223,8 +223,8 @@ const RegistrationProgram = ({ params }) => {
                                     <UserGroupIcon className="w-5 h-5 text-[#004b9a]" />
                                     <span>
                                         Disponible:{' '}
-                                        {program?.metadata?.capacity
-                                            ?.available || 0}
+                                        {Math.abs(program?.metadata?.capacity
+                                            ?.available || 0)}
                                     </span>
                                 </div>
                             </div>

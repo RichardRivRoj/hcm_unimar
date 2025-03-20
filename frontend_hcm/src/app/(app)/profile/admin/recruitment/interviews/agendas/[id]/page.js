@@ -11,6 +11,7 @@ import { GeneralModal, Modal } from '@/components/Modal'
 import axios from '@/lib/axios'
 import StandardLoader from '@/components/StandardLoader'
 import { XMarkIcon } from '@heroicons/react/24/outline'
+import { Alert, AlertDescription } from '@/components/alert'
 
 const AgendaDetail = ({ params }) => {
     const router = useRouter()
@@ -52,10 +53,12 @@ const AgendaDetail = ({ params }) => {
         score: 0,
         comments: '',
     })
+    const [ratingError, setRatingError] = useState(null)
 
     // Cargar datos iniciales
     useEffect(() => {
         if (agenda) {
+            setIsRated(agenda.agenda.has_rating); // Usar el campo del backend
             setFormState({
                 scheduled_date: agenda.agenda.scheduled_date,
                 time: agenda.agenda.time,
@@ -138,18 +141,22 @@ const AgendaDetail = ({ params }) => {
                 ...ratingForm,
                 agenda_id: id,
             })
-            setIsRated(true) // Actualizar estado
-            setIsRatingModalOpen(false)
+
             // Opcional: recargar datos o mostrar feedback
 
             if (response.data.success) {
-                setSuccessMessage('Calificación guardada exitosamente')
+                setIsRated(true) // Actualizar estado
                 setIsRatingModalOpen(false)
+                setSuccessMessage('Calificación guardada exitosamente')
                 setRatingForm({ score: 0, comments: '' })
                 setTimeout(() => setSuccessMessage(null), 3000)
             }
         } catch (err) {
             setUpdateError(
+                err.response?.data?.message ||
+                    'Error al guardar la calificación',
+            )
+            setRatingError(
                 err.response?.data?.message ||
                     'Error al guardar la calificación',
             )
@@ -272,11 +279,14 @@ const AgendaDetail = ({ params }) => {
             {/* Modal de calificación */}
             {isRatingModalOpen && (
                 <GeneralModal
-                    size='lg'
+                    size="lg"
                     isOpen={isRatingModalOpen}
-                    onClose={() => setIsRatingModalOpen(false)}
-                    overlayClassName="bg-[#004b9a]/20 backdrop-blur-sm">
-                    <div className="max-w-md max-h-screen p-6 overflow-auto bg-white rounded-xl">
+                    onClose={() => {
+                        setIsRatingModalOpen(false)
+                        setRatingError(null) // Limpiar error al cerrar
+                    }}
+                    className="bg-[#004b9a]/20 backdrop-blur-sm flex items-center justify-center">
+                    <div className="max-w-md max-h-[calc(100vh-4rem)] w-full mx-4 p-6 overflow-y-auto bg-white rounded-xl shadow-2xl transition-all">
                         {/* Encabezado */}
                         <div className="flex items-center gap-3 mb-6 border-b border-[#004b9a]/20 pb-4">
                             <div className="p-2 bg-[#004b9a]/10 rounded-lg">
@@ -291,6 +301,7 @@ const AgendaDetail = ({ params }) => {
                             onSubmit={handleRatingSubmit}
                             className="space-y-6">
                             {/* Campo de puntuación */}
+
                             <div>
                                 <label className="block mb-2 text-sm font-medium text-[#004b9a]">
                                     Calificación del 1 al 10
@@ -377,6 +388,11 @@ const AgendaDetail = ({ params }) => {
                                 </p>
                             </div>
 
+                            {ratingError && (
+                                <div className="p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800">
+                                    {ratingError}
+                                </div>
+                            )}
                             {/* Botones */}
                             <div className="flex justify-end gap-3 pt-4">
                                 <button

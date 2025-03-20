@@ -18,9 +18,6 @@ const EvaluationDetailPage = ({ params }) => {
         fetchEvaluationDepartmentsDetail,
     } = useFormEvaluationDepartments()
 
-    
-    
-
     useEffect(() => {
         if (id) {
             fetchEvaluationDepartmentsDetail(id)
@@ -57,7 +54,7 @@ const EvaluationDetailPage = ({ params }) => {
                 </div>
 
                 {/* Botón de descarga destacado */}
-                <div className="w-full py-4 bg-[#004b9a]/10 rounded-lg mx-auto flex items-center gap-2 px-6  text-white bg-[#004b9a] hover:bg-[#003a7d] transition-colors">
+                <div className="w-full py-4 bg-[#004b9a]/10 rounded-lg mx-auto flex items-center gap-2 px-6 text-white bg-[#004b9a] hover:bg-[#003a7d] transition-colors">
                     <DownloadCloud className="w-5 h-5" />
                     <DownloadEvaluationPDF
                         evaluationDetail={evaluationDetail}

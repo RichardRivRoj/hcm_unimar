@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CertificateController extends BaseDocumentController
 {
@@ -82,6 +83,11 @@ class CertificateController extends BaseDocumentController
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
+        // Verificar que el usuario tiene una persona asociada
+        if (!$user->person) {
+            return response()->json(['error' => 'No se encontró información personal asociada al usuario'], 404);
+        }
+
         $validatedData = $request->validate([
             'document_name' => 'required|string|max:255',
             'issuer' => 'required|string|max:255',
@@ -91,42 +97,54 @@ class CertificateController extends BaseDocumentController
             'file_path' => 'nullable|string|max:255',
         ]);
 
-        // Crear el documento de empleo
-        $document = $user->persons->documents()->create([
-            'document_name' => $validatedData['document_name'],
-            'document_type_id' => $this->documentType,
-            'metadata' => json_encode([
-                'issuer' => $validatedData['issuer'],
-                'certificate_type' => $validatedData['certificate_type'],
-            ]),
-            'issue_date' => Carbon::parse($validatedData['issue_date']),
-            'expiration_date' => isset($validatedData['expiration_date']) ? Carbon::parse($validatedData['expiration_date']) : null,
-            'file_path' => $validatedData['file_path'] ?? null,
-            'status' => 1, // Estado inicial del documento
-        ]);
+        DB::beginTransaction();
 
-        return response()->json([
-            'message' => 'Empleo registrado con éxito',
-            'data' => [
-                'id' => $document->id,
-                'document_name' => $document->document_name,
-                'issuer' => $validatedData['issuer'],
-                'certificate_type' => $validatedData['certificate_type'],
-                'issue_date' => $document->issue_date->format('d-m-Y'),
-                'expiration_date' => $document->expiration_date ? $document->expiration_date->format('d-m-Y') : 'Presente',
-                'file_path' => $document->file_path,
-                'status' => $document->status,
-            ]
-        ], 201);
+        try {
+            // Crear el documento asociado a la persona del usuario
+            $document = $user->person->documents()->create([
+                'document_name' => $validatedData['document_name'],
+                'document_type_id' => $this->documentType,
+                'metadata' => json_encode([
+                    'issuer' => $validatedData['issuer'],
+                    'certificate_type' => $validatedData['certificate_type'],
+                ]),
+                'issue_date' => Carbon::parse($validatedData['issue_date']),
+                'expiration_date' => $validatedData['expiration_date']
+                    ? Carbon::parse($validatedData['expiration_date'])
+                    : null,
+                'file_path' => $validatedData['file_path'] ?? null,
+                'status' => 1,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Empleo registrado con éxito',
+                'data' => [
+                    'id' => $document->id,
+                    'document_name' => $document->document_name,
+                    'issuer' => $validatedData['issuer'],
+                    'certificate_type' => $validatedData['certificate_type'],
+                    'issue_date' => $document->issue_date->format('d-m-Y'),
+                    'expiration_date' => $document->expiration_date
+                        ? $document->expiration_date->format('d-m-Y')
+                        : 'Presente',
+                    'file_path' => $document->file_path,
+                    'status' => $document->status,
+                ]
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'error' => 'Error al registrar el empleo: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        
-    }
+    public function show(string $id) {}
 
     /**
      * Show the form for editing the specified resource.

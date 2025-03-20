@@ -23,7 +23,8 @@ class ApplicationAccepted extends Mailable
             ->view('emails.application-accepted')
             ->with([
                 'name' => $this->mailData['name'],
-                'puesto' => $this->mailData['puesto']
+                'puesto' => $this->mailData['puesto'],
+                'departamento' =>$this->mailData['departamento']
             ]);
     }
 }

@@ -12,7 +12,7 @@ const Layout = ({ children }) => {
         <div>
             <Header />
             <div className="antialiased text-gray-900">
-                <AuthCard>
+                <AuthCard title='Inicio de Sección'>
                     {children}
                 </AuthCard>
             </div>

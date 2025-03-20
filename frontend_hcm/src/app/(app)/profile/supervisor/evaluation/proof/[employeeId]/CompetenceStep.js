@@ -4,13 +4,14 @@ import React, { useState, memo, useCallback, useEffect, useRef } from 'react'
 import SectionStep from './SectionStep'
 import { useNavigation } from '@/providers/NavigationProvider'
 import RatingScale from '@/components/RatingScale'
+import { CheckCircleIcon } from 'lucide-react'
+import { LockClosedIcon } from '@heroicons/react/24/outline'
 
 const CompetenceStep = memo(
     ({ sections, scores, setScores, onAllSectionsComplete }) => {
         const { navigation, updateNavigation } = useNavigation()
         const navigationRef = useRef(navigation)
         navigationRef.current = navigation
-
 
         if (!sections || sections.length === 0)
             return <div>Cargando secciones...</div>
@@ -80,6 +81,8 @@ const CompetenceStep = memo(
             [scores],
         )
 
+        {
+            /*
         // 5. Detectar cuando se completa la última sección
         useEffect(() => {
             const isAllSectionsComplete = sections.every(isSectionComplete)
@@ -90,6 +93,8 @@ const CompetenceStep = memo(
                 }
             }
         }, [navigation.currentSection, sections.length, isSectionComplete])
+        */
+        }
 
         // 6. Modificar el manejador de siguiente sección
         const handleNextSection = useCallback(() => {
@@ -99,11 +104,59 @@ const CompetenceStep = memo(
             } else {
                 onAllSectionsComplete()
             }
-        }, [navigation.currentSection, sections.length, updateNavigation, onAllSectionsComplete])
+        }, [
+            navigation.currentSection,
+            sections.length,
+            updateNavigation,
+            onAllSectionsComplete,
+        ])
 
         return (
             <div className="space-y-8">
-                
+                <div className="mb-6">
+                    <div className="grid grid-flow-col gap-2 auto-cols-fr">
+                        {sections.map((section, index) => {
+                            const isCompleted = isSectionComplete(section)
+                            const isLocked =
+                                index > 0 &&
+                                !sections
+                                    .slice(0, index)
+                                    .every(s => isSectionComplete(s))
+
+                            return (
+                                <button
+                                    key={`nav-${section.id}`}
+                                    onClick={() =>
+                                        !isLocked && handleSectionChange(index)
+                                    }
+                                    disabled={isLocked}
+                                    className={`px-4 py-2 rounded-lg flex items-center justify-center transition-all ${
+                                        index === navigation.currentSection
+                                            ? 'bg-[#004b9a] text-white'
+                                            : isLocked
+                                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                              : 'bg-gray-100 hover:bg-gray-200'
+                                    }`}
+                                    title={
+                                        isLocked
+                                            ? 'Completa las secciones anteriores primero'
+                                            : ''
+                                    }>
+                                    <span className="flex items-center">
+                                        Sección {index + 1}
+                                        {isCompleted && (
+                                            <CheckCircleIcon className="w-4 h-4 ml-2" />
+                                        )}
+                                        {isLocked && (
+                                            <LockClosedIcon className="w-4 h-4 ml-2" />
+                                        )}
+                                    </span>
+                                </button>
+                            )
+                        })}
+                    </div>
+                </div>
+
                 {sections.map((section, index) => {
                     const sectionQuestions = section.questions || []
                     return (
@@ -174,4 +227,3 @@ const CompetenceStep = memo(
 )
 
 export default CompetenceStep
-

@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/skeleton'
 import { Alert, AlertDescription } from '@/components/alert'
 import { Modal } from '@/components/Modal'
 import axios from '@/lib/axios'
+import StandardLoader from '@/components/StandardLoader'
 
 const CertificateDocuments = () => {
     const {
@@ -58,7 +59,7 @@ const CertificateDocuments = () => {
             }
 
             const response = await axios.post(
-                '/api/documents/banks',
+                '/api/documents/certificates',
                 formPayload,
                 {
                     headers: {
@@ -89,6 +90,8 @@ const CertificateDocuments = () => {
             }
         }
     }
+
+    if (loading) return <StandardLoader />
 
     if (error) {
         return (
@@ -340,7 +343,7 @@ const CertificateDocuments = () => {
 
             {/* Encabezado */}
             <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Cuentas Bancarias</h2>
+                <h2 className="text-xl font-semibold">Certificaciones</h2>
                 <div className="flex gap-4">
                     <button
                         onClick={() => setIsModalOpen(true)}

@@ -22,7 +22,7 @@ const useContractTypes = () => {
         fetchContract();
     }, []);
 
-    return { contract, loading, error };
+    return { contract: contract || [], loading, error };
 };
 
 export default useContractTypes;

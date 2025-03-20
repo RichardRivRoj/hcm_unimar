@@ -6,6 +6,7 @@ import EnrolledProgramDetail from "./EnrolledProgramDetail"
 import Loader from "@/components/Loader"
 import { Alert, AlertDescription } from "@/components/alert"
 import ProgramResultsDetail from "./CompleteProgramDetail"
+import StandardLoader from "@/components/StandardLoader"
 
 const { useEmployeeTrainings } = require("@/hooks/employee/useEmployeeTrainings")
 
@@ -27,7 +28,7 @@ const TrainingProgramDetail = ({ params }) => {
         }
     }
 
-    if(programDetails.isLoading) return <Loader />
+    if(programDetails.isLoading) return <StandardLoader />
     if(programDetails.error) return <Alert>
         <AlertDescription>
             {programDetails.error}
@@ -39,7 +40,7 @@ const TrainingProgramDetail = ({ params }) => {
             {programDetails.data?.classification === 'PUBLICO' && (
                 <PublicProgramDetail program={programDetails.data} onEnroll={handleEnroll} />
             )}
-            {programDetails.data?.classification === 'INSCRITOS' && (
+            {(programDetails.data?.classification === 'INSCRITOS' || programDetails.data?.classification === 'EN_PROGRESO') && (
                 <EnrolledProgramDetail program={programDetails.data} />
             )}
             {programDetails.data?.classification === 'COMPLETADO' && (

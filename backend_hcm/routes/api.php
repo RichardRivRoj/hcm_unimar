@@ -29,6 +29,7 @@ use App\Http\Controllers\EmploymentController;
 use App\Http\Controllers\EmploymentTypeController;
 use App\Http\Controllers\EthnicityController;
 use App\Http\Controllers\GenderController;
+use App\Http\Controllers\General\DolarController;
 use App\Http\Controllers\General\ListDepartmentController;
 use App\Http\Controllers\General\ListEmployeeController;
 use App\Http\Controllers\General\ListTrainingModalityController;
@@ -362,3 +363,5 @@ Route::prefix('public')->group(function () {
     Route::get('/countries', [CountryController::class, 'index'])->name('api.public.countries.index'); // Listar paises
     
 });
+
+Route::get('/dolar', [DolarController::class, 'getDolarPrice']);

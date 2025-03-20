@@ -5,6 +5,7 @@ import useContracts from '@/hooks/useContracts'
 import { Skeleton } from '@/components/skeleton'
 import { Alert, AlertDescription } from '@/components/alert'
 import { Modal } from '@/components/Modal'
+import StandardLoader from '@/components/StandardLoader'
 
 const ContractDocuments = () => {
     const {
@@ -91,6 +92,8 @@ const ContractDocuments = () => {
         Fecha: [FECHA DE FIRMA]
         Lugar: [LUGAR DE FIRMA]
     `}
+
+    if (loading) return <StandardLoader />
 
     if (error) {
         return (

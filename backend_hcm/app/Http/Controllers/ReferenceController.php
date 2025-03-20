@@ -30,20 +30,17 @@ class ReferenceController extends BaseDocumentController
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        // Obtener la persona con relaciones necesarias
-        $person = $user->person
-            ->with([
-                'identificationtype',
-                'employee.contracts.department' // Carga el departamento actual
-            ])->first();
+        // Obtener la persona asociada al usuario autenticado
+        $person = $user->person;
 
         if (!$person) {
             return response()->json(['error' => 'Persona no encontrada'], 404);
         }
 
-        // Obtener documentos con eager loading para evitar N+1
+        // Obtener documentos asociados a la persona y filtrar por tipo de documento
         $documents = $person->documents()
             ->where('document_type_id', $this->documentType)
+            ->with(['documentType', 'persons.identificationtype', 'persons.employee.contracts.department'])
             ->orderByDesc('issue_date')
             ->paginate(4);
 
@@ -77,7 +74,7 @@ class ReferenceController extends BaseDocumentController
                     'full_name' => $person->first_name . ' ' . $person->last_name,
                 ],
 
-                // Departamento actual (¡ver nota importante!)
+                // Departamento actual
                 'current_department' => $person->employee->department->name ?? 'Sin departamento',
             ];
         });
@@ -111,6 +108,7 @@ class ReferenceController extends BaseDocumentController
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
+        // Validar los datos de entrada
         $validatedData = $request->validate([
             'document_name' => 'required|string|max:255',
             'referrer_name' => 'required|string|max:255',
@@ -120,12 +118,8 @@ class ReferenceController extends BaseDocumentController
             'file_path' => 'nullable|string|max:255',
         ]);
 
-        // Cargar relaciones correctamente
-        $person = $user->person()->with([
-            'employee.contracts' => function ($query) {
-                $query->latest()->with('department');
-            }
-        ])->first();
+        // Obtener la persona asociada al usuario autenticado
+        $person = $user->person;
 
         if (!$person) {
             return response()->json(['error' => 'Persona no encontrada'], 404);
@@ -136,16 +130,20 @@ class ReferenceController extends BaseDocumentController
         try {
             $departmentName = 'Sin departamento';
 
-            // Acceder al departamento del último contrato
-            if ($person->employee && $person->employee->contracts->isNotEmpty()) {
-                $latestContract = $person->employee->contracts->first();
-                $departmentName = $latestContract->department->description ?? 'Sin departamento';
+            // Verificar si la persona tiene un empleado asociado
+            if ($person->employee) {
+                // Obtener el último contrato del empleado
+                $latestContract = $person->employee->contracts()
+                    ->latest()
+                    ->with('department')
+                    ->first();
+
+                if ($latestContract && $latestContract->department) {
+                    $departmentName = $latestContract->department->description;
+                }
             }
 
-            $expirationDate = $validatedData['expiration_date']
-                ? Carbon::parse($validatedData['expiration_date'])
-                : Carbon::now();
-
+            // Crear la referencia para la persona
             $document = $person->documents()->create([
                 'document_name' => $validatedData['document_name'],
                 'document_type_id' => $this->documentType,
@@ -155,7 +153,9 @@ class ReferenceController extends BaseDocumentController
                     'department_name' => $departmentName,
                 ]),
                 'issue_date' => Carbon::parse($validatedData['issue_date']),
-                'expiration_date' => $expirationDate,
+                'expiration_date' => $validatedData['expiration_date']
+                    ? Carbon::parse($validatedData['expiration_date'])
+                    : null,
                 'file_path' => $validatedData['file_path'] ?? null,
                 'status' => 1,
             ]);
@@ -170,7 +170,9 @@ class ReferenceController extends BaseDocumentController
                     'referrer_name' => $validatedData['referrer_name'],
                     'referrer_identification' => $validatedData['referrer_identification'],
                     'issue_date' => $document->issue_date->format('d-m-Y'),
-                    'expiration_date' => $document->expiration_date->format('d-m-Y'),
+                    'expiration_date' => $document->expiration_date
+                        ? $document->expiration_date->format('d-m-Y')
+                        : 'Presente',
                     'department_at_creation' => $departmentName,
                     'file_path' => $document->file_path,
                 ]

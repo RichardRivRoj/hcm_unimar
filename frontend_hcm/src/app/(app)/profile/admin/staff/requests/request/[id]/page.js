@@ -19,7 +19,7 @@ import axios from '@/lib/axios'
 import ConstanciaLaborPDF from '@/components/ConstanciaLabor'
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import StandardLoader from '@/components/StandardLoader'
-
+import { format } from 'date-fns'
 
 const AdminRequestDetails = ({ params }) => {
     const router = useRouter()
@@ -58,13 +58,21 @@ const AdminRequestDetails = ({ params }) => {
         }
     }
 
+    const getFileName = () => {
+        const Name = singleData.personal_info.nombre_completo.replace(
+            /\s+/g,
+            '_',
+        )
+        const currentDate = format(new Date(), 'ddMMyyyy')
+        return `Constancia_Laboral_${Name}_${currentDate}.pdf`
+    }
+
     useEffect(() => {
         if (id) fetchSingleRequest(id)
     }, [id])
 
     // Manejar estados de carga y error
-    if (singleLoading)
-        return <StandardLoader />
+    if (singleLoading) return <StandardLoader />
 
     if (singleError)
         return (
@@ -298,7 +306,7 @@ const AdminRequestDetails = ({ params }) => {
                 {singleData.solicitud.estado === 'Aprobado' && (
                     <PDFDownloadLink
                         document={<ConstanciaLaborPDF data={singleData} />}
-                        fileName="constancia_laboral.pdf"
+                        fileName={getFileName()}
                         className="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
                         {({ loading }) => (
                             <>

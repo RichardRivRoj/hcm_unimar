@@ -11,6 +11,7 @@ import {
     Font,
 } from '@react-pdf/renderer'
 import writtenNumber from 'written-number'
+import { format } from 'date-fns'
 
 // Configurar written-number en español
 writtenNumber.defaults.lang = 'es'

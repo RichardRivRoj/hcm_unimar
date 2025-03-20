@@ -58,7 +58,7 @@ class FileEmployeeController extends Controller
                 $q->where('department_id', $filters['department']);
             });
         }
-
+        
         if ($filters['status']) {
             $query->whereHas('contracts', function ($q) use ($filters) {
                 $filters['status'] === 'Activo'
@@ -108,7 +108,9 @@ class FileEmployeeController extends Controller
                 'last_page' => $employees->lastPage(),
                 'per_page' => $employees->perPage(),
                 'filters' => [
-                    'available_departments' => $departments,
+                    'available_departments' => $departments->map(function ($dept) {
+                        return ['id' => $dept->id, 'name' => $dept->name];
+                    })->toArray(), // Convertir a array
                     'status_options' => ['Activo', 'Inactivo']
                 ]
             ],
@@ -273,7 +275,7 @@ class FileEmployeeController extends Controller
             default => [
                 'detalle' => $document->detail,
                 'metadatos' => $document->metadata,
-                
+
             ]
         };
 

@@ -1,4 +1,4 @@
-const AuthCard = ({ children }) => (
+const AuthCard = ({ children, title }) => (
     <div className="flex flex-col items-center pt-6 bg-white min-h-[100vh] sm:justify-center sm:pt-0">
         {/* Contenedor Azul y el Icono */}
         <div className=" w-full sm:max-w-md h-28 rounded-t-lg bg-[#30669a]">
@@ -13,7 +13,7 @@ const AuthCard = ({ children }) => (
             {/* Título debajo de la imagen */}
             <div className="items-baseline pt-20 pb-10 text-center">
                 <h2 className="text-xl font-extrabold text-white">
-                    Inicio de sesión
+                    {title}
                 </h2>
             </div>
         </div>

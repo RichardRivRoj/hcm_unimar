@@ -8,6 +8,7 @@ import { Modal } from '@/components/Modal'
 import writtenNumber from 'written-number'
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import PDFReferenceDocument from '@/components/PDFReferenceDocument'
+import StandardLoader from '@/components/StandardLoader'
 
 const ReferenceDocuments = () => {
     const {
@@ -128,6 +129,8 @@ const ReferenceDocuments = () => {
             setFormError(error.message || 'Error al crear la referencia')
         }
     }
+
+    if (isLoading) return <StandardLoader />
 
     if (error) {
         return (

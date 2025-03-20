@@ -19,6 +19,7 @@ export const Modal = ({ isOpen, onClose, children }) => {
     )
 }
 
+
 export const GeneralModal = ({
     isOpen,
     onClose,
@@ -37,8 +38,8 @@ export const GeneralModal = ({
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className={`w-full ${sizes[size]} p-6 bg-white rounded-lg`}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 ">
+            <div className={`w-full ${sizes[size]} p-6 bg-white rounded-lg `}>
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-semibold">{title}</h2>
                     <button

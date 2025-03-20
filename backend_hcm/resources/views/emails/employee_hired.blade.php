@@ -1,54 +1,117 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Contratación Exitosa</title>
+    <title>Bienvenido a UNIMAR</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f7fa;">
+<body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f8f9fa;">
+    <!-- Preheader -->
+    <div style="display: none; max-height: 0; overflow: hidden;">
+        ¡Bienvenido a la Universidad de Margarita! Detalles de tu incorporación
+    </div>
+
     <!-- Contenedor principal -->
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <!-- Encabezado -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,75,154,0.1);">
+        <!-- Encabezado corporativo -->
         <tr>
-            <td style="background-color: #0052a5; padding: 30px 20px; border-radius: 8px 8px 0 0; text-align: center;">
-                <img src="https://th.bing.com/th/id/OIP.1K-VdFvj6lgInH3jenVVswAAAA?w=119&h=128&c=7&r=0&o=5&dpr=1.5&pid=1.7" alt="Unimar" style="max-width: 200px; height: auto;">
-                <h1 style="color: #ffffff; margin-top: 20px; font-size: 24px;">¡Bienvenido a Unimar!</h1>
+            <td style="background-color: #004b9a; padding: 30px 20px; border-radius: 8px 8px 0 0;">
+                <table width="100%" align="center">
+                    <tr>
+                        <td style="text-align: center;">
+                            <img src="{{ Storage::disk('email_assets')->url('header2.png') }}" alt="Universidad de Margarita" style="max-width: 180px; height: auto; display: block; margin: 0 auto;">
+                        </td>
+                    </tr>
+                </table>
             </td>
         </tr>
 
-        <!-- Contenido principal -->
+        <!-- Cuerpo del mensaje -->
         <tr>
-            <td style="padding: 30px 20px;">
-                <h2 style="color: #333333; font-size: 20px;">Hola {{ $data['name'] }},</h2>
-                <p style="color: #333333; font-size: 16px; line-height: 1.6;">
-                    Nos complace informarte que has sido contratado en nuestra empresa. A continuación, encontrarás los detalles de tu contratación:
-                </p>
-                <ul style="color: #333333; padding-left: 20px;">
-                    <li><strong>Puesto:</strong> {{ $data['position'] }}</li>
-                    <li><strong>Departamento:</strong> {{ $data['department'] }}</li>
-                    <li><strong>Fecha de inicio:</strong> {{ $data['start_date'] }}</li>
-                    <li><strong>Fecha de finalización:</strong> {{ $data['end_date'] }}</li>
-                    <li><strong>Correo electrónico:</strong> {{ $data['email'] }}</li>
-                    <li><strong>Contraseña temporal:</strong> {{ $data['password'] }}</li>
-                </ul>
-                
-                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
-                    <p><strong>Instrucciones importantes:</strong></p>
-                    <p>
-                        Por favor, cambia tu contraseña después de iniciar sesión por primera vez. 
-                        Puedes acceder al sistema utilizando el correo electrónico y la contraseña proporcionados.
+            <td style="padding: 40px 30px;">
+                <!-- Saludo -->
+                <h1 style="color: #004b9a; font-size: 26px; margin: 0 0 25px 0; font-weight: 600;">
+                    ¡Bienvenido/a {{ $data['name'] }}!
+                </h1>
+
+                <!-- Mensaje de bienvenida -->
+                <div style="color: #444444; font-size: 16px; line-height: 1.6;">
+                    <p style="margin: 0 0 20px 0;">
+                        Estamos emocionados de darte la bienvenida oficialmente a la Universidad de Margarita. 
+                        A continuación encontrarás los detalles clave de tu incorporación:
                     </p>
+
+                    <!-- Detalles de contratación -->
+                    <div style="background-color: #f8f9fa; padding: 20px; margin: 25px 0; border-radius: 4px;">
+                        <p style="color: #004b9a; font-weight: 600; margin: 0 0 15px 0;">📄 Detalles de tu contratación:</p>
+                        <ul style="padding-left: 20px; margin: 0;">
+                            <li style="margin-bottom: 8px;"><strong>Puesto:</strong> {{ $data['position'] }}</li>
+                            <li style="margin-bottom: 8px;"><strong>Departamento:</strong> {{ $data['department'] }}</li>
+                            <li style="margin-bottom: 8px;"><strong>Fecha de inicio:</strong> {{ $data['start_date'] }}</li>
+                            <li style="margin-bottom: 8px;"><strong>Correo electrónico:</strong> {{ $data['email'] }}</li>
+                            <li style="margin-bottom: 0;"><strong>Contraseña temporal:</strong> {{ $data['password'] }}</li>
+                        </ul>
+                    </div>
+
+                    <!-- Bloque de seguridad -->
+                    <div style="background-color: #fff5f5; padding: 20px; margin: 25px 0; border-radius: 4px; border-left: 4px solid #dc3545;">
+                        <p style="color: #dc3545; font-weight: 600; margin: 0 0 10px 0;">🔒 Instrucciones de seguridad:</p>
+                        <ul style="padding-left: 20px; margin: 0;">
+                            <li style="margin-bottom: 8px;">Cambia tu contraseña en el primer acceso</li>
+                            <li style="margin-bottom: 8px;">No compartas tus credenciales</li>
+                            <li>Reporta cualquier actividad sospechosa</li>
+                        </ul>
+                    </div>
+
+                    <!-- Acceso a plataforma -->
+                    <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 30px auto;">
+                        <tr>
+                            <td style="background-color: #004b9a; border-radius: 5px; text-align: center;">
+                                <a href="#" style="color: #ffffff; text-decoration: none; padding: 14px 35px; display: inline-block; font-weight: 500; font-size: 16px;">
+                                    Acceder al Portal del Colaborador
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Mensaje motivacional -->
+                    <div style="text-align: center; margin: 30px 0; padding: 20px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee;">
+                        <p style="color: #666; font-style: italic; margin: 0;">
+                            "El talento gana partidos, pero el trabajo en equipo y la inteligencia ganan campeonatos"<br>
+                            <span style="color: #004b9a;">- Michael Jordan</span>
+                        </p>
+                    </div>
                 </div>
             </td>
         </tr>
 
-        <!-- Pie de página -->
+        <!-- Pie de página corporativo -->
         <tr>
-            <td style="background-color: #f5f7fa; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
-                <p style="color: #666666; font-size: 12px; margin: 0;">
-                    Equipo de Recursos Humanos - Unimar<br>
-                    <a href="[URL_VACANTES]" style="color: #0052a5; text-decoration: none;">Ver otras vacantes disponibles</a><br>
-                    <a href="[URL_WEB_OFICIAL]" style="color: #0052a5; text-decoration: none;">www.portalunimar.com</a>
-                </p>
+            <td style="background-color: #f8f9fa; padding: 30px 20px; border-radius: 0 0 8px 8px;">
+                <table width="100%">
+                    <tr>
+                        <td style="text-align: center; padding: 10px 0;">
+                            <img src="{{ Storage::disk('email_assets')->url('footer2.png') }}" alt="UNIMAR" style="max-width: 280px; height: auto;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; padding: 10px 0;">
+                            <p style="color: #666666; font-size: 12px; line-height: 1.5; margin: 0;">
+                                Universidad de Margarita<br>
+                                Av. Bolívar, Valle del Espíritu Santo, Isla de Margarita - Venezuela<br>
+                                Teléfono: +58 295-0000000 | Email: rrhh@unimar.edu.ve
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; padding: 15px 0 0 0;">
+                            <p style="color: #999999; font-size: 11px; margin: 5px 0;">
+                                <a href="#" style="color: #004b9a; text-decoration: none;">Políticas de Privacidad</a> | 
+                                <a href="#" style="color: #004b9a; text-decoration: none;">Aviso Legal</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
             </td>
         </tr>
     </table>

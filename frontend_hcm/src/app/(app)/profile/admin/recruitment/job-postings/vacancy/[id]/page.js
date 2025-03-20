@@ -517,7 +517,7 @@ const VacancyDetails = ({ params }) => {
                         />
                         <DetailCard
                             title="Vacantes"
-                            value={vacancy.num_vacancy}
+                            value={vacancy.num_vacancy || 'Vacantes Cubiertas'}
                         />
                     </div>
 

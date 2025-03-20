@@ -13,7 +13,7 @@ const useProfilePhoto = () => {
 
         try {
             const response = await axios.post(
-                `/api/employees/profile/photo/${personId}`,
+                `/api/employee/profile/photo/${personId}`,
                 formData,
                 {
                     headers: {
@@ -40,7 +40,7 @@ const useProfilePhoto = () => {
 
         try {
             const response = await axios.delete(
-                `/api/employees/profile/photo/${personId}`,
+                `/api/employee/profile/photo/${personId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`,

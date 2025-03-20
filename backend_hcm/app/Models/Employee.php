@@ -53,8 +53,10 @@ class Employee extends Model
             'id',
             'id',
             'department_id'
-        )->whereNull('contracts.end_date')
-            ->latest('contracts.start_date');
+        )->where(function ($query) {
+            $query->whereNull('contracts.end_date') // Contratos indefinidos
+                ->orWhere('contracts.end_date', '>=', now()); // Contratos con fecha futura
+        })->latest('contracts.start_date');
     }
 
     public function scopeActive($query)

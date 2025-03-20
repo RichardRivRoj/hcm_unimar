@@ -9,6 +9,7 @@ import useListBanks from '@/hooks/useListBanks'
 import useListAccountTypes from '@/hooks/useListAccountTypes'
 import useListCurrencies from '@/hooks/useListCurrencies'
 import axios from '@/lib/axios'
+import StandardLoader from '@/components/StandardLoader'
 
 const BankAccountDocuments = () => {
     const {
@@ -81,6 +82,8 @@ const BankAccountDocuments = () => {
             }
         }
     };
+
+    if (loading) return <StandardLoader />
 
     if (error) {
         return (

@@ -76,8 +76,11 @@ const EvaluationWizard = ({ employeeId, departmentId, periodId }) => {
     }, [scores, sections])
 
     const handleStepChange = () => {
+        if (currentStep === 1 && !isAllSectionsComplete()) {
+            toast.error('¡Debes completar todas las secciones primero!')
+            return
+        }
         if (currentStep < 3) {
-            if (currentStep === 1 && !isAllSectionsComplete()) return
             setCurrentStep(prev => prev + 1)
         } else {
             handleSubmit()
@@ -194,7 +197,7 @@ const EvaluationWizard = ({ employeeId, departmentId, periodId }) => {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <dt className="text-sm font-medium text-gray-600">
-                                    ID
+                                    Documento
                                 </dt>
                                 <dd className="mt-1 text-gray-900">
                                     {data?.employee.identification}
@@ -248,6 +251,9 @@ const EvaluationWizard = ({ employeeId, departmentId, periodId }) => {
                     { label: 'Confirmación' },
                 ]}
                 activeStep={currentStep}
+                onStepClick={(step) => {
+                    if (step < currentStep) setCurrentStep(step) // Permitir retroceder
+                }}
                 styleConfig={{
                     activeBgColor: '#004b9a',
                     completedBgColor: '#004b9a',
