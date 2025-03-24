@@ -59,6 +59,12 @@ const EvaluationPage = () => {
 
     const filtersConfig = [
         {
+            type: 'search',
+            name: 'search',
+            placeholder: 'Buscar por nombre o identificación',
+            value: filters.search
+        },
+        {
             name: 'period',
             value: filters.period,
             placeholder: 'Todos los periodos',
@@ -81,19 +87,8 @@ const EvaluationPage = () => {
     if (loading) return <StandardLoader />
 
     return (
-        <div className="container p-4 mx-auto">
-            <div className="ml-6 space-y-4">
-                
-                <div className="flex flex-col gap-4 md:flex-row">
-                    <input
-                        type="text"
-                        placeholder="Buscar por nombre o identificación"
-                        className="w-full p-2 rounded md:max-w-lg"
-                        value={searchInput}
-                        onChange={(e) => setSearchInput(e.target.value)}
-                    />
-                </div>
-            </div>
+        <div className="container mx-auto ml-5">
+           
 
             <StandardTable
                 title="Listado de Evaluaciones"

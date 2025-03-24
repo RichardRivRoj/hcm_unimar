@@ -7,6 +7,7 @@ import PageTitle from './PageTitle'
 import { Inter } from 'next/font/google'
 import Header from './Header'
 import { Toaster } from 'sonner'
+import StandardLoader from '@/components/StandardLoader'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -14,7 +15,7 @@ const AppLayout = ({ children }) => {
     const { user } = useAuth({ })
 
     if (!user) {
-        return <Loading />
+        return <StandardLoader />
     }
 
     return (

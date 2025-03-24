@@ -15,18 +15,29 @@ class Contract extends Model
     ];
 
     protected $fillable = [
-        'contract_number', 'description',
-        'start_date', 'end_date',
-        'payment_terms', 'notes',
-        'file_path', 'contract_type_id',
-        'department_id', 'position_id',
-        'employment_type_id', 'status_id',
+        'contract_number',
+        'description',
+        'start_date',
+        'end_date',
+        'notes',
+        'file_path',
+        'payment_term_id',
+        'contract_type_id',
+        'department_id',
+        'position_id',
+        'employment_type_id',
+        'status_id',
         'employee_id'
     ];
 
     public function contractType()
     {
         return $this->belongsTo(ContractTypes::class, 'contract_type_id');
+    }
+
+    public function payment_term()
+    {
+        return $this->belongsTo(PaymentTerm::class, 'payment_term_id');
     }
 
     public function employmentType()
@@ -41,7 +52,7 @@ class Contract extends Model
 
     public function position()
     {
-        return $this->belongsTo(Position::class, 'position_id'); 
+        return $this->belongsTo(Position::class, 'position_id')->with('level');
     }
 
     public function department()
@@ -54,9 +65,11 @@ class Contract extends Model
         return $this->belongsTo(Employee::class, 'employee_id');
     }
 
-
     public function scopeActive($query)
     {
-        return $query->where('status_id', 1); // Ajusta el ID según tu DB
+        return $query->where(function ($q) {
+            $q->whereNull('end_date')
+                ->orWhere('end_date', '>=', now());
+        });
     }
 }

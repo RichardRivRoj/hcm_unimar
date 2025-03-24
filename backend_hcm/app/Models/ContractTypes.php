@@ -17,6 +17,6 @@ class ContractTypes extends Model
 
     public function contract()
     {
-        return $this->hasMany(Contract::class, 'contract_type_id');
+        return $this->hasOne(Contract::class, 'contract_type_id');
     }
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import axios from '@/lib/axios'
 import useCandidate from '@/hooks/useCandidateShow'
 import DetailCard from '@/components/DetailCard'
@@ -13,6 +13,8 @@ import { Alert, AlertDescription } from '@/components/alert'
 import StandardLoader from '@/components/StandardLoader'
 import { DocumentIcon } from '@heroicons/react/24/outline'
 import { GlobeIcon, Sun } from 'lucide-react'
+import { toast } from 'sonner'
+import { isValidUrl } from '@/utils/isValidUrl'
 
 const CandidateDetails = ({ params }) => {
     const router = useRouter()
@@ -33,6 +35,7 @@ const CandidateDetails = ({ params }) => {
         error: errorInterview,
         success: successInterview,
     } = useScheduleInterview()
+    const [validTimes, setValidTimes] = useState([]) // Añadir este estado
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
     const [success, setSuccess] = useState(false)
@@ -90,14 +93,6 @@ const CandidateDetails = ({ params }) => {
         )
     }
 
-    const handleChange = e => {
-        const { name, value } = e.target
-        setFormData(prev => ({
-            ...prev,
-            [name]: value,
-        }))
-    }
-
     const handleStatusChange = async status => {
         setLoading(true)
         setError(null)
@@ -116,31 +111,48 @@ const CandidateDetails = ({ params }) => {
         }
     }
 
+    useEffect(() => {
+        const fetchValidTimes = async () => {
+            try {
+                const response = await axios.get(
+                    '/api/admin/agendas/valid-times',
+                )
+                setValidTimes(response.data)
+            } catch (error) {
+                toast.error('Error al cargar horarios disponibles')
+            }
+        }
+
+        if (isModalOpen) fetchValidTimes()
+    }, [isModalOpen])
+
+    const handleChange = e => {
+        const { name, value } = e.target
+        setFormData(prev => ({
+            ...prev,
+            [name]: value,
+        }))
+    }
+
     const handleSubmit = async e => {
         e.preventDefault()
 
-        try {
-            // Realizar la solicitud para agendar la entrevista
-            await scheduleInterview({
-                ...formData,
-                candidate_id: id,
-                status_id: 1,
-            })
+        // Validación de hora mínima
+        const selectedDateTime = new Date(
+            `${formData.scheduled_date}T${formData.time}`,
+        )
+        if (selectedDateTime < new Date(Date.now() + 3600000)) {
+            toast.error('La hora debe tener al menos 1 hora de anticipación')
+            return
+        }
 
-            // Si es exitoso, cerrar el modal y refrescar la página
-            if (successInterview) {
-                setTimeout(() => {
-                    closeModal() // Cerrar el modal
-                    window.location.reload() // Refrescar la página
-                }, 500)
-            }
+        try {
+            await scheduleInterview(formData)
+            toast.success('Entrevista agendada exitosamente')
+            closeModal()
         } catch (error) {
-            // Mostrar mensajes de error si la solicitud falla
-            console.error('Error al agendar la entrevista:', error)
-            alert(
-                errorInterview ||
-                    'Hubo un error al agendar la entrevista. Inténtalo de nuevo.',
-            )
+            // Mostrar todos los errores del backend
+            toast.error(error.message || 'Error al agendar la entrevista')
         }
     }
 
@@ -175,23 +187,29 @@ const CandidateDetails = ({ params }) => {
 
                 {candidate.status_application.name !== 'Contratado' && (
                     <div className="flex gap-4">
-                        <button
-                            onClick={() => setShowConfirm('aceptado')}
-                            disabled={loading}
-                            className="px-6 py-2 text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700">
-                            {loading && showConfirm === 'aceptado'
-                                ? 'Procesando...'
-                                : 'Aceptar'}
-                        </button>
+                        {candidate.status_application.name !== 'Aceptado' &&
+                            candidate.status_application.name !==
+                                'En Progreso' && (
+                                <button
+                                    onClick={() => setShowConfirm('aceptado')}
+                                    disabled={loading}
+                                    className="px-6 py-2 text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700">
+                                    {loading && showConfirm === 'aceptado'
+                                        ? 'Procesando...'
+                                        : 'Aceptar'}
+                                </button>
+                            )}
 
-                        <button
-                            onClick={() => setShowConfirm('rechazado')}
-                            disabled={loading}
-                            className="px-6 py-2 text-white transition-colors duration-200 bg-red-600 rounded-lg shadow-sm hover:bg-red-700">
-                            {loading && showConfirm === 'rechazado'
-                                ? 'Procesando...'
-                                : 'Rechazar'}
-                        </button>
+                        {candidate.status_application.name !== 'Rechazado' && (
+                            <button
+                                onClick={() => setShowConfirm('rechazado')}
+                                disabled={loading}
+                                className="px-6 py-2 text-white transition-colors duration-200 bg-red-600 rounded-lg shadow-sm hover:bg-red-700">
+                                {loading && showConfirm === 'rechazado'
+                                    ? 'Procesando...'
+                                    : 'Rechazar'}
+                            </button>
+                        )}
                     </div>
                 )}
             </div>
@@ -601,19 +619,6 @@ const CandidateDetails = ({ params }) => {
                         Programar nuevo evento
                     </h2>
 
-                    {errorInterview && (
-                        <Alert>
-                            <AlertDescription>
-                                {errorInterview}
-                            </AlertDescription>
-                        </Alert>
-                    )}
-                    {successInterview && (
-                        <p className="mb-4 space-y-2 text-green-500">
-                            ¡Entrevista agendada con éxito!
-                        </p>
-                    )}
-
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid gap-6 md:grid-cols-2">
                             <div className="space-y-2">
@@ -625,6 +630,7 @@ const CandidateDetails = ({ params }) => {
                                     name="scheduled_date"
                                     value={formData.scheduled_date}
                                     onChange={handleChange}
+                                    min={new Date().toISOString().split('T')[0]}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a]"
                                     required
                                 />
@@ -634,14 +640,27 @@ const CandidateDetails = ({ params }) => {
                                 <label className="block text-sm font-medium text-gray-700">
                                     Hora del evento
                                 </label>
-                                <input
-                                    type="time"
+                                <select
                                     name="time"
                                     value={formData.time}
                                     onChange={handleChange}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a]"
                                     required
-                                />
+                                    disabled={!formData.scheduled_date}>
+                                    <option value="">
+                                        Seleccione un horario
+                                    </option>
+                                    {validTimes.map(time => (
+                                        <option key={time} value={time}>
+                                            {new Date(
+                                                `2000-01-01T${time}`,
+                                            ).toLocaleTimeString([], {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 
@@ -673,15 +692,51 @@ const CandidateDetails = ({ params }) => {
                             <label className="block text-sm font-medium text-gray-700">
                                 Ubicación o enlace
                             </label>
-                            <input
-                                type="text"
-                                name="location"
-                                value={formData.location}
-                                onChange={handleChange}
-                                placeholder="Ej: Sala de conferencias A o enlace Zoom"
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a]"
-                                required
-                            />
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleChange}
+                                    placeholder="Ej: Sala de conferencias A o https://meet.google.com/abc-xyz"
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a] pr-10"
+                                    required
+                                />
+                                {/* Ícono de enlace cuando se detecta URL */}
+                                {isValidUrl(formData.location) && (
+                                    <div className="absolute inset-y-0 flex items-center right-3">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-5 w-5 text-[#004b9a]"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                                            />
+                                        </svg>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Preview del enlace */}
+                            {isValidUrl(formData.location) && (
+                                <div className="mt-2 text-sm">
+                                    <span className="text-gray-500">
+                                        Enlace detectado:{' '}
+                                    </span>
+                                    <a
+                                        href={formData.location}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[#004b9a] hover:underline break-all">
+                                        {formData.location}
+                                    </a>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex justify-end gap-4 mt-8">

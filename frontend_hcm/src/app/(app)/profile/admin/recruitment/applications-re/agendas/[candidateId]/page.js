@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useAgendas from '@/hooks/useAgendas';
@@ -7,200 +6,132 @@ import useTypeAgendas from '@/hooks/typeAgendasView';
 import useStatuses from '@/hooks/useStatuses';
 import { Eye } from 'lucide-react';
 import StandardLoader from '@/components/StandardLoader';
+import StandardTable from '@/components/StandardTable';
 
 const CandidateAgendas = ({ params }) => {
     const { candidateId } = params;
-
-    const [filters, setFilters] = useState({
-        type_agenda: '', // Filtro por tipo de evento
-        status: '', // Filtro por estado
-        page: 1, // Página actual
-    });
-
     const router = useRouter();
 
+    const [filters, setFilters] = useState({
+        type_agenda: '',
+        status: '',
+        page: 1,
+    });
+
     const { agendas, loading, meta, error } = useAgendas(candidateId, filters);
-    const { typeAgendas, loading: loadingAgendas, error: errorAgendas } = useTypeAgendas();
-    const { statuses, loading: loadingStatus, error: errorStatus } = useStatuses();
+    const { typeAgendas } = useTypeAgendas();
+    const { statuses } = useStatuses();
+
+    // Configuración de columnas para StandardTable
+    const columns = [
+        {
+            header: 'Fecha',
+            accessor: 'scheduled_date',
+            render: (item) => new Date(item.scheduled_date).toLocaleDateString('es-ES', { timeZone: 'UTC' })
+        },
+        {
+            header: 'Hora',
+            accessor: 'formatted_time'
+        },
+        {
+            header: 'Tipo de evento',
+            accessor: 'typeagenda.name',
+            render: (item) => `${item.typeagenda.name}`
+        },
+        {
+            header: 'Ubicación',
+            accessor: 'location'
+        },
+        {
+            header: 'Estado',
+            accessor: 'status.name',
+            render: (item) => `${item.status.name}`
+        }
+    ];
+
+    // Configuración de filtros para StandardTable
+    const tableFilters = [
+        {
+            type: 'select',
+            name: 'type_agenda',
+            placeholder: 'Seleccione Tipo de Evento',
+            options: (typeAgendas || []).map(type => ({
+                value: type.id,
+                label: type.name
+            }))
+        },
+        {
+            type: 'select',
+            name: 'status',
+            placeholder: 'Seleccione estatus',
+            options: (statuses || []).map(status => ({
+                value: status.id,
+                label: status.name
+            }))
+        }
+    ];
+
+    // Acciones para la tabla
+    const actions = [
+        {
+            icon: <Eye size={20} className="text-[#004b9a]" />,
+            color: 'text-[#004b9a] hover:bg-[#004b9a]/10',
+            handler: (item) => router.push(
+                `/profile/admin/recruitment/interviews/agendas/${item.id}`
+            )
+        }
+    ];
+
+    const handlePageChange = (newPage) => {
+        setFilters(prev => ({ ...prev, page: newPage }));
+    };
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
-        setFilters((prevFilters) => ({
-            ...prevFilters,
-            [name]: value,
-            page: 1, // Resetear a la primera página al cambiar filtros
-        }));
+        setFilters(prev => ({ ...prev, [name]: value, page: 1 }));
     };
 
-    if (loading) {
-        return <StandardLoader />
-    }
+    if (loading) return <StandardLoader />
 
     if (error) {
         return <div className="p-6 text-red-600">Error: {error}</div>;
     }
 
     return (
-        
-        <div className="max-w-full p-6 mx-auto mt-6 ml-6 space-y-2 overflow-hidden bg-white rounded-lg shadow-lg">
+        <div className="max-w-full p-6 mx-auto mt-6 ml-6 overflow-hidden">
             <button
-                    onClick={() => router.back()}
-                    className="flex items-center text-[#004b9a] hover:text-[#003a7d] transition-colors duration-200 w-fit">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-6 h-6 mr-2"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                        />
-                    </svg>
-                    <span className="font-semibold">Volver a aplicaciones</span>
-                </button>
-            <h2 className="mb-4 text-2xl font-semibold text-gray-700">
-                Eventos Agendados
-            </h2>
+                onClick={() => router.back()}
+                className="flex items-center text-[#004b9a] hover:text-[#003a7d] transition-colors duration-200 w-fit mb-6"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-6 h-6 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                    />
+                </svg>
+                <span className="font-semibold">Volver</span>
+            </button>
 
-            {/* Filtros */}
-            <div className="flex flex-row justify-end gap-6 mb-8">
-                <select
-                    name="type_agenda"
-                    value={filters.type_agenda}
-                    onChange={handleFilterChange}
-                    className="w-1/4 p-3 text-sm text-gray-700 transition duration-200 ease-in-out bg-transparent border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-0">
-                    <option value="" className="text-gray-600">
-                        Seleccione Tipo de Evento
-                    </option>
-                    {(typeAgendas || []).map(type => (
-                        <option
-                            key={type.id}
-                            value={type.id}
-                            className="text-gray-600">
-                            {type.name}
-                        </option>
-                    ))}
-                </select>
-
-                <select
-                    name="status"
-                    value={filters.status}
-                    onChange={handleFilterChange}
-                    className="w-1/4 p-3 text-sm text-gray-700 transition duration-200 ease-in-out bg-transparent border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-0">
-                    <option value="" className="text-gray-500">
-                        Seleccione estatus
-                    </option>
-                    {(statuses || []).map(status => (
-                        <option
-                            key={status.id}
-                            value={status.id}
-                            className="text-gray-600">
-                            {status.name}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Tabla de agendas */}
-            <table className="min-w-full border-separate table-auto border-spacing-2">
-                <thead>
-                    <tr className="text-left bg-blue-200">
-                        <th className="px-6 py-3 text-sm font-medium text-gray-800">
-                            Fecha
-                        </th>
-                        <th className="px-6 py-3 text-sm font-medium text-gray-800">
-                            Hora
-                        </th>
-                        <th className="px-6 py-3 text-sm font-medium text-gray-800">
-                            Tipo de evento
-                        </th>
-                        <th className="px-6 py-3 text-sm font-medium text-gray-800">
-                            Ubicación
-                        </th>
-                        <th className="px-6 py-3 text-sm font-medium text-gray-800">
-                            Estado
-                        </th>
-                        <th className="px-6 py-3 text-sm font-medium text-gray-800">
-                            Acciones
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {agendas.map(agenda => (
-                        <tr
-                            key={agenda.id}
-                            className="border-b hover:bg-blue-50">
-                            <td className="px-6 py-2 text-sm">
-                                {new Date(agenda.scheduled_date).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-2 text-sm">                 
-                                {agenda.formatted_time}
-                            </td>
-                            <td className="px-6 py-2 text-sm">
-                                {agenda.typeagenda.name}
-                            </td>
-                            <td className="px-6 py-2 text-sm">
-                                {agenda.location}
-                            </td>
-                            <td className="px-6 py-2 text-sm">
-                                {agenda.status.name}
-                            </td>
-                            <td className="justify-center px-8 py-2 text-sm">
-                                {/* Botón Ver Detalles */}
-                                <button
-                                    onClick={() =>
-                                        router.push(
-                                            `/profile/admin/recruitment/interviews/agendas/${agenda.id}`,
-                                        )
-                                    }
-                                    className="p-1 text-blue-600 transition rounded-md hover:bg-gray-100">
-                                    <Eye size={26} />
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
-            {/* Controles de paginación */}
-            <div className="flex items-center justify-center mt-6 space-x-2">
-                <button
-                    onClick={() =>
-                        setFilters(prev => ({
-                            ...prev,
-                            page: meta.current_page - 1,
-                        }))
-                    }
-                    disabled={meta.current_page === 1}
-                    className={`px-2 py-1 text-xs text-white rounded ${
-                        meta.current_page === 1
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-[#004b9a] hover:bg-blue-700'
-                    }`}>
-                    ← Anterior
-                </button>
-                <span className="text-xs text-gray-700">
-                    Página {meta.current_page} de {meta.last_page}
-                </span>
-                <button
-                    onClick={() =>
-                        setFilters(prev => ({
-                            ...prev,
-                            page: meta.current_page + 1,
-                        }))
-                    }
-                    disabled={meta.current_page === meta.last_page}
-                    className={`px-2 py-1 text-xs text-white rounded ${
-                        meta.current_page === meta.last_page
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-[#004b9a] hover:bg-blue-700'
-                    }`}>
-                    Siguiente →
-                </button>
-            </div>
+            <StandardTable
+                title="Eventos Agendados"
+                columns={columns}
+                data={agendas}
+                filters={tableFilters}
+                currentPage={meta?.current_page || 1}
+                totalPages={meta?.last_page || 1}
+                totalItems={meta?.total}
+                onPageChange={handlePageChange}
+                onFilterChange={handleFilterChange}
+                actions={actions}
+                loading={loading}
+            />
         </div>
     );
 };

@@ -5,14 +5,14 @@ import { useState } from 'react'
 import axios from '@/lib/axios'
 import useAgendaResultShow from '@/hooks/useResultDetailsShow'
 import DetailCard from '@/components/DetailCard'
-import html2canvas from 'html2canvas'
-import jsPDF from 'jspdf'
 import { Modal } from '@/components/Modal'
 import HireEmployeeForm from './HireEmployeeForm'
 import StandardLoader from '@/components/StandardLoader'
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import SelectionResultPDF from '@/components/SelectionResultPDF'
 import { format } from 'date-fns'
+import { CheckCircle2, XCircle, Clock, Download, ArrowLeft } from 'lucide-react'
+import Card from '@/components/Card'
 
 const ResultDetails = ({ params }) => {
     const router = useRouter()
@@ -22,20 +22,9 @@ const ResultDetails = ({ params }) => {
     const [errorStatus, setErrorStatus] = useState(null)
     const [successStatus, setSuccessStatus] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false)
-
-    const handleDownloadPDF = () => {
-        const element = document.getElementById('report-content')
-
-        html2canvas(element).then(canvas => {
-            const imgData = canvas.toDataURL('image/png')
-            const pdf = new jsPDF('p', 'mm', 'a4')
-            const imgWidth = 210 // Ancho de A4 en mm
-            const imgHeight = (canvas.height * imgWidth) / canvas.width
-
-            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
-            pdf.save(`reporte_${result.candidate.personal_info.full_name}.pdf`)
-        })
-    }
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [deleteError, setDeleteError] = useState(null)
+    const [deleteSuccess, setDeleteSuccess] = useState(false)
 
     // Abrir modal
     const openModal = () => setIsModalOpen(true)
@@ -49,10 +38,6 @@ const ResultDetails = ({ params }) => {
         closeModal() // Cerrar el modal después de contratar
         console.log('Candidato contratado:', response)
     }
-
-    const [showDeleteModal, setShowDeleteModal] = useState(false)
-    const [deleteError, setDeleteError] = useState(null)
-    const [deleteSuccess, setDeleteSuccess] = useState(false)
 
     const openDeleteConfirmation = () => {
         setShowDeleteModal(true)
@@ -92,121 +77,160 @@ const ResultDetails = ({ params }) => {
         return `Resultado_selección_${candidateName}_${currentDate}.pdf`
     }
 
-    if (loading) {
-        return <StandardLoader />
-    }
-
+    if (loading) return <StandardLoader />
     if (error) return <div className="p-6 text-red-600">Error: {error}</div>
 
     return (
         <div
             id="report-content"
-            className="max-w-4xl p-8 mx-auto text-justify bg-white shadow-sm rounded-xl">
+            className="max-w-4xl p-6 mx-auto bg-white shadow-lg rounded-xl">
             {/* Encabezado y controles */}
             <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
                 <button
                     onClick={() => router.back()}
-                    className="flex items-center text-gray-600 hover:text-blue-800 group w-fit">
-                    <span className="mr-2 text-2xl transition-transform group-hover:-translate-x-1">
-                        ←
-                    </span>
-                    <span className="font-medium">Volver</span>
+                    className="flex items-center text-[#004b9a] hover:text-[#003a7a] group w-fit">
+                    <ArrowLeft className="mr-2 transition-transform group-hover:-translate-x-1" />
+                    <span className="font-medium">Volver a resultados</span>
                 </button>
 
                 <PDFDownloadLink
                     document={<SelectionResultPDF result={result} />}
                     fileName={getFileName()}
-                    className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                    {({ loading }) =>
-                        loading ? 'Generando PDF...' : 'Descargar Reporte'
-                    }
+                    className="flex items-center gap-2 px-4 py-2 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7a] transition-colors">
+                    {({ loading }) => (
+                        <>
+                            <Download size={18} />
+                            {loading ? 'Generando PDF...' : 'Descargar Reporte'}
+                        </>
+                    )}
                 </PDFDownloadLink>
             </div>
 
             {/* Contenido principal */}
             <div className="space-y-8">
                 {/* Información del candidato */}
-                <div className="space-y-4">
+                <div className="p-6 bg-[#004b9a]/5 rounded-xl border border-[#004b9a]/20">
                     <div className="flex items-center gap-4">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900">
+                        <div className="flex-1">
+                            <h1 className="text-2xl font-bold text-[#004b9a]">
                                 {result.candidate.personal_info.full_name}
                             </h1>
                             <p className="text-lg text-gray-600">
-                                Proceso de selección para:{' '}
+                                Proceso para:{' '}
                                 {result.candidate.vacancy_info.position}
                             </p>
                         </div>
+                        <span
+                            className={`px-3 py-1 rounded-full text-sm ${
+                                result.candidate.status_application?.name ===
+                                'Contratado'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-[#004b9a]/10 text-[#004b9a]'
+                            }`}>
+                            {result.candidate.status_application?.name}
+                        </span>
                     </div>
                 </div>
 
                 {/* Detalles principales */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <DetailCard
+                    <Card
                         title="Identificación"
                         value={result.candidate.personal_info.identification}
+                        icon="id-card"
+                        color="#004b9a"
                     />
-                    <DetailCard
+                    <Card
                         title="Promedio General"
                         value={result.process_details.average_score}
+                        icon="rating"
+                        color="#004b9a"
                     />
-                    <DetailCard
+                    <Card
                         title="Total Evaluaciones"
                         value={result.process_details.total_agendas}
+                        icon="list"
+                        color="#004b9a"
                     />
-                    <DetailCard
+                    <Card
                         title="Departamento"
                         value={result.candidate.vacancy_info.department}
+                        icon="building"
+                        color="#004b9a"
                     />
-                    <DetailCard
+                    <Card
                         title="Vacante"
                         value={result.candidate.vacancy_info.position}
+                        icon="job"
+                        color="#004b9a"
                     />
-                    <DetailCard
+                    <Card
                         title="Modalidad"
                         value={result.candidate.vacancy_info.modality}
+                        icon="clock"
+                        color="#004b9a"
                     />
                 </div>
 
-                {/* Detalles de evaluaciones */}
-                <div className="space-y-4">
-                    <h2 className="text-xl font-semibold text-gray-900">
+                {/* Evaluaciones */}
+                <div className="p-6 bg-white rounded-xl border border-[#004b9a]/20">
+                    <h2 className="text-xl font-semibold text-[#004b9a] mb-4 flex items-center gap-2">
+                        <CheckCircle2 className="text-[#004b9a]" />
                         Evaluaciones Realizadas
                     </h2>
                     <div className="space-y-4">
                         {result.process_details.agendas.map((agenda, index) => (
-                            <div key={index} className="p-4 border rounded-lg">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-lg font-semibold">
+                            <div
+                                key={index}
+                                className="p-4 rounded-lg border border-[#004b9a]/20 hover:border-[#004b9a]/40 transition-colors">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="font-semibold text-[#004b9a]">
                                         {agenda.type}
                                     </h3>
                                     <span
-                                        className={`px-2 py-1 text-sm rounded ${
+                                        className={`flex items-center gap-1 text-sm px-2 py-1 rounded ${
                                             agenda.status === 'Completada'
                                                 ? 'bg-green-100 text-green-800'
                                                 : 'bg-yellow-100 text-yellow-800'
                                         }`}>
+                                        {agenda.status === 'Completada' ? (
+                                            <CheckCircle2 size={16} />
+                                        ) : (
+                                            <Clock size={16} />
+                                        )}
                                         {agenda.status}
                                     </span>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4 mt-4">
-                                    <div>
-                                        <p className="text-sm text-gray-600">
-                                            Fecha: {agenda.scheduled_date}
+                                <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+                                    <div className="space-y-1">
+                                        <p className="text-gray-600">
+                                            <span className="font-medium">
+                                                Fecha:
+                                            </span>{' '}
+                                            {agenda.scheduled_date}
                                         </p>
-                                        <p className="text-sm text-gray-600">
-                                            Hora: {agenda.time}
+                                        <p className="text-gray-600">
+                                            <span className="font-medium">
+                                                Hora:
+                                            </span>{' '}
+                                            {agenda.time}
                                         </p>
-                                        <p className="text-sm text-gray-600">
-                                            Ubicación: {agenda.location}
+                                        <p className="text-gray-600">
+                                            <span className="font-medium">
+                                                Ubicación:
+                                            </span>{' '}
+                                            {agenda.location}
                                         </p>
                                     </div>
-                                    <div>
-                                        <p className="text-sm font-medium">
+                                    <div className="space-y-1">
+                                        <p className="font-medium text-[#004b9a]">
                                             Puntuación: {agenda.score}
                                         </p>
-                                        <p className="text-sm text-gray-600">
-                                            Comentarios: {agenda.comments}
+                                        <p className="text-gray-600">
+                                            <span className="font-medium">
+                                                Comentarios:
+                                            </span>{' '}
+                                            {agenda.comments}
                                         </p>
                                     </div>
                                 </div>
@@ -216,45 +240,80 @@ const ResultDetails = ({ params }) => {
                 </div>
 
                 {/* Línea de tiempo */}
-                <div className="space-y-4">
-                    <h2 className="text-xl font-semibold text-gray-900">
+                <div className="p-6 bg-white rounded-xl border border-[#004b9a]/20">
+                    <h2 className="text-xl font-semibold text-[#004b9a] mb-4 flex items-center gap-2">
+                        <Clock className="text-[#004b9a]" />
                         Cronología del Proceso
                     </h2>
                     <div className="space-y-4">
                         {result.process_details.timeline.map((event, index) => (
                             <div key={index} className="flex items-start gap-4">
-                                <div className="flex flex-col items-center">
+                                <div className="flex flex-col items-center pt-1">
                                     <div
                                         className={`w-3 h-3 rounded-full ${
                                             event.status === 'Completada'
-                                                ? 'bg-green-500'
+                                                ? 'bg-[#004b9a]'
                                                 : 'bg-gray-300'
-                                        }`}></div>
+                                        }`}
+                                    />
                                     {index <
                                         result.process_details.timeline.length -
                                             1 && (
-                                        <div className="w-px h-8 bg-gray-300"></div>
+                                        <div className="w-px h-8 bg-gray-300" />
                                     )}
                                 </div>
-                                <div>
-                                    <p className="font-medium">{event.event}</p>
+                                <div className="flex-1 pb-4 border-b border-[#004b9a]/10">
+                                    <p className="font-medium text-[#004b9a]">
+                                        {event.event}
+                                    </p>
                                     <p className="text-sm text-gray-600">
                                         {event.date}
                                     </p>
+                                    {event.details && (
+                                        <p className="mt-1 text-sm text-gray-500">
+                                            {event.details}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                {/* Modal de confirmación */}
-                {showDeleteModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                        <div className="p-6 bg-white rounded-lg w-96">
-                            <h3 className="mb-4 text-xl font-semibold">
-                                Confirmar
-                            </h3>
+                {/* Acciones */}
+                <div className="flex flex-wrap gap-4 mt-8">
+                    {(result.candidate.status_application?.name ===
+                        'Aceptado' ||
+                        result.candidate.status_application?.name ===
+                            'En Progreso') && (
+                        <button
+                            onClick={openDeleteConfirmation}
+                            className="flex items-center gap-2 px-4 py-2 text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700">
+                            <XCircle size={18} />
+                            Rechazar Candidato
+                        </button>
+                    )}
 
+                    {result.candidate.status_application?.name !==
+                        'Contratado' &&
+                        result.candidate.status_application?.name !==
+                            'Rechazado' && (
+                            <button
+                                onClick={openModal}
+                                className="flex items-center gap-2 px-4 py-2 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7a] transition-colors">
+                                <CheckCircle2 size={18} />
+                                Contratar Candidato
+                            </button>
+                        )}
+                </div>
+
+                {/* Modals (mantener misma estructura pero actualizar estilos) */}
+                {showDeleteModal && (
+                    <Modal isOpen={showDeleteModal} onClose={cancelDelete}>
+                        <div className="p-6 bg-white rounded-lg w-[500px] max-w-full">
+                            <h3 className="mb-4 text-xl font-semibold text-[#004b9a]">
+                                Confirmar Rechazo
+                            </h3>
                             {deleteError && (
                                 <div className="p-2 mb-4 text-red-600 bg-red-100 rounded">
                                     {deleteError}
@@ -301,47 +360,21 @@ const ResultDetails = ({ params }) => {
                                 </>
                             )}
                         </div>
-                    </div>
+                    </Modal>
                 )}
-
-                {/* Botón de Agendar Entrevista (solo si es Aceptado) */}
-                <div className="flex gap-4">
-                    {result.candidate.status_application?.name !==
-                        'Pendiente' && (
-                        <button
-                            onClick={openModal}
-                            className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                            Contratar
-                        </button>
-                    )}
-                    {(result.candidate.status_application?.name ===
-                        'Aceptado' ||
-                        result.candidate.status_application?.name ===
-                            'En Progreso') && (
-                        <div className="flex gap-4">
-                            <button
-                                onClick={openDeleteConfirmation} // Aquí se ejecuta correctamente la función
-                                className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">
-                                Rechazar
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                {/* Modal de Contratación */}
-                <Modal isOpen={isModalOpen} onClose={closeModal}>
-                    <div className="flex flex-col w-[500px] max-w-full max-h-[65vh] overflow-y-auto gap-6 p-4 bg-white rounded-lg shadow-lg scrollbar-none">
-                        <h2 className="text-xl font-semibold">
-                            Contratar Candidato
-                        </h2>
-
-                        <HireEmployeeForm
-                            candidateId={id}
-                            onSuccess={handleHireSuccess}
-                        />
-                    </div>
-                </Modal>
             </div>
+            <Modal isOpen={isModalOpen} onClose={closeModal}>
+                <div className="bg-white rounded-lg  max-h-[80vh] overflow-auto scrollbar-none">
+                    <h2 className="text-xl font-semibold text-[#004b9a] mb-4">
+                        <CheckCircle2 className="inline mr-2" />
+                        Contratar Candidato
+                    </h2>
+                    <HireEmployeeForm
+                        candidateId={id}
+                        onSuccess={handleHireSuccess}
+                    />
+                </div>
+            </Modal>
         </div>
     )
 }

@@ -282,7 +282,7 @@ const Navigation = () => {
                                                                         href={subItem.href}
                                                                         className={`${
                                                                             isActive
-                                                                                ? 'bg-blue-600 text-white'
+                                                                                ? 'bg-[#004b9a] text-white rounded-lg hover:bg-[#003a7a] transition-colors flex items-center gap-2'
                                                                                 : 'text-gray-600 hover:bg-gray-50'
                                                                         } flex items-center px-3 py-2 text-sm font-medium rounded-md`}>
                                                                         <subItem.icon

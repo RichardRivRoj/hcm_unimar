@@ -97,7 +97,7 @@ const Header = ({ user }) => {
                         <div className="flex items-center flex-shrink-0">
                             <Link href="/">
                                 <img
-                                    src="/logounimar-22.jpg"
+                                    src="/logo-5.png"
                                     alt="unimar"
                                     className="object-contain w-auto h-10"
                                 />

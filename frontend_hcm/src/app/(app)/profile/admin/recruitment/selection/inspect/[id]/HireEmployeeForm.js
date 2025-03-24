@@ -4,22 +4,30 @@ import { toast } from 'sonner'
 import useHireEmployee from '@/hooks/useHireEmployee'
 import useEmploymentTypes from '@/hooks/employmentTypesView'
 import useContractTypes from '@/hooks/contractTypesView'
+import useContractForm from '@/hooks/admin/useContractForm'
 
 const HireEmployeeForm = ({ candidateId, onSuccess }) => {
-    const { hireEmployee, loading, error, validationErrors, success } = useHireEmployee()
+    const { hireEmployee, loading, error, validationErrors, success } =
+        useHireEmployee()
     const { employment } = useEmploymentTypes()
     const { contract } = useContractTypes()
+    const { paymentTerms } = useContractForm() // Nuevo hook
     const [errors, setErrors] = useState([])
 
+    const today = new Date().toLocaleDateString('es-CA', { timeZone: 'UTC' });
+
     const [formData, setFormData] = useState({
-        start_date: '',
+        start_date: today,
         end_date: '',
         contract_type_id: '',
         employment_type_id: '',
+        payment_term_id: '', // Nuevo campo
         email: '',
     })
 
-    const indefiniteContract = contract?.find(con => con.name.toLowerCase() === 'indefinido')
+    const indefiniteContract = contract?.find(
+        con => con.name.toLowerCase() === 'indefinido',
+    )
     const isIndefinite = formData.contract_type_id == indefiniteContract?.id
 
     useEffect(() => {
@@ -55,29 +63,34 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
 
         // Validación de fechas
         if (!isIndefinite && !formData.end_date) {
-            toast.error('La fecha final es requerida para este tipo de contrato')
+            toast.error(
+                'La fecha final es requerida para este tipo de contrato',
+            )
             return setErrors({ end_date: ['Campo requerido'] })
         }
 
         try {
             const response = await hireEmployee(candidateId, formData)
             toast.success('Contratación exitosa!', {
-                description: 'El empleado ha sido registrado correctamente'
+                description: 'El empleado ha sido registrado correctamente',
             })
             onSuccess(response)
         } catch (err) {
             toast.error('Error en la contratación', {
-                description: err.message || 'Por favor verifica los datos ingresados'
+                description:
+                    err.errors || 'Por favor verifica los datos ingresados',
             })
         }
     }
 
     return (
-        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6">
+        <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
             {/* Sección de Tipo de Contrato */}
             <div className="p-6 bg-white border border-gray-100 rounded-lg shadow-sm">
-                <h3 className="text-lg font-semibold text-[#004b9a] mb-4">Datos del Contrato</h3>
-                
+                <h3 className="text-lg font-semibold text-[#004b9a] mb-4">
+                    Datos del Contrato
+                </h3>
+
                 <div className="space-y-4">
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">
@@ -89,9 +102,10 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
                             value={formData.contract_type_id}
                             onChange={handleChange}
                             required
-                            className="block w-full p-2.5 mt-1 border rounded-md focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a] transition-colors"
-                        >
-                            <option value="">Seleccione un tipo de contrato</option>
+                            className="block w-full p-2.5 mt-1 border rounded-md focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a] transition-colors">
+                            <option value="">
+                                Seleccione un tipo de contrato
+                            </option>
                             {contract.map(con => (
                                 <option key={con.id} value={con.id}>
                                     {con.short_name} - {con.name}
@@ -110,12 +124,15 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
                                 id="start_date"
                                 name="start_date"
                                 value={formData.start_date}
+                                min={new Date().toLocaleDateString('es-ES', { timeZone: 'UTC' })}
                                 onChange={handleChange}
                                 required
                                 className="block w-full p-2.5 mt-1 border rounded-md focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a] transition-colors"
                             />
                             {validationErrors.start_date && (
-                                <p className="mt-1 text-sm text-red-600">{validationErrors.start_date[0]}</p>
+                                <p className="mt-1 text-sm text-red-600">
+                                    {validationErrors.start_date[0]}
+                                </p>
                             )}
                         </div>
 
@@ -136,18 +153,44 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
                                     disabled={isIndefinite}
                                 />
                                 {validationErrors.end_date && (
-                                    <p className="mt-1 text-sm text-red-600">{validationErrors.end_date[0]}</p>
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {validationErrors.end_date[0]}
+                                    </p>
                                 )}
                             </div>
                         )}
+                    </div>
+
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">
+                            Términos de Pago *
+                        </label>
+                        <select
+                            id='payment_term_id'
+                            name="payment_term_id"
+                            value={formData.payment_term_id}
+                            onChange={handleChange}
+                            required
+                            className="block w-full p-2.5 mt-1 border rounded-md focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a] transition-colors">
+                            <option value="">
+                                Seleccione términos de pago
+                            </option>
+                            {paymentTerms.map(term => (
+                                <option key={term.id} value={term.id}>
+                                    {term.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 </div>
             </div>
 
             {/* Sección de Datos Laborales */}
             <div className="p-6 bg-white border border-gray-100 rounded-lg shadow-sm">
-                <h3 className="text-lg font-semibold text-[#004b9a] mb-4">Datos Laborales</h3>
-                
+                <h3 className="text-lg font-semibold text-[#004b9a] mb-4">
+                    Datos Laborales
+                </h3>
+
                 <div className="space-y-4">
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">
@@ -159,9 +202,10 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
                             value={formData.employment_type_id}
                             onChange={handleChange}
                             required
-                            className="block w-full p-2.5 mt-1 border rounded-md focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a] transition-colors"
-                        >
-                            <option value="">Seleccione un tipo de empleo</option>
+                            className="block w-full p-2.5 mt-1 border rounded-md focus:ring-2 focus:ring-[#004b9a] focus:border-[#004b9a] transition-colors">
+                            <option value="">
+                                Seleccione un tipo de empleo
+                            </option>
                             {employment.map(emp => (
                                 <option key={emp.id} value={emp.id}>
                                     {emp.short_name} - {emp.name}
@@ -181,7 +225,10 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
                             value={formData.email}
                             onChange={handleChange}
                             onBlur={() => {
-                                if (formData.email && !validateEmailFormat(formData.email)) {
+                                if (
+                                    formData.email &&
+                                    !validateEmailFormat(formData.email)
+                                ) {
                                     toast.error('Formato de correo inválido')
                                     setErrors({ email: ['Dominio incorrecto'] })
                                 }
@@ -191,7 +238,9 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
                             placeholder="ejemplo@unimar.edu.ve"
                         />
                         {errors.email && (
-                            <p className="mt-1 text-sm text-red-600">{errors.email[0]}</p>
+                            <p className="mt-1 text-sm text-red-600">
+                                {errors.email[0]}
+                            </p>
                         )}
                     </div>
                 </div>
@@ -200,9 +249,10 @@ const HireEmployeeForm = ({ candidateId, onSuccess }) => {
             <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-6 text-white bg-[#004b9a] rounded-md hover:bg-[#003366] transition-colors font-medium disabled:bg-opacity-70 disabled:cursor-not-allowed"
-            >
-                {loading ? 'Procesando contratación...' : 'Confirmar Contratación'}
+                className="w-full py-3 px-6 text-white bg-[#004b9a] rounded-md hover:bg-[#003366] transition-colors font-medium disabled:bg-opacity-70 disabled:cursor-not-allowed">
+                {loading
+                    ? 'Procesando contratación...'
+                    : 'Confirmar Contratación'}
             </button>
         </form>
     )

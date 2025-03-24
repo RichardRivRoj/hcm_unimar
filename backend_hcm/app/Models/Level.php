@@ -13,7 +13,7 @@ class Level extends Model
         'name',
     ];
 
-    public function position()
+    public function positions()
     {
         return $this->hasMany(Position::class, 'level_id');
     }

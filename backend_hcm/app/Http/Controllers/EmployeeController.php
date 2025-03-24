@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 
 class EmployeeController extends Controller
@@ -55,7 +56,8 @@ class EmployeeController extends Controller
                     'required',
                     'date',
                     function ($attribute, $value, $fail) {
-                        if (Carbon::parse($value)->isPast()) {
+                        $startDate = Carbon::parse($value)->timezone('UTC');
+                        if ($startDate->isPast()) {
                             $fail('La fecha de inicio no puede ser anterior a la fecha actual.');
                         }
                     }
@@ -69,6 +71,7 @@ class EmployeeController extends Controller
                         }
                     }
                 ],
+                'payment_term_id' => 'required|exists:payment_terms,id',
                 'contract_type_id' => 'required|exists:contract_types,id',
                 'employment_type_id' => 'required|exists:employment_types,id',
                 'email' => [
@@ -129,9 +132,9 @@ class EmployeeController extends Controller
                 'description' => 'Contrato para nuevo empleado',
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date ?? null,
-                'payment_terms' => 'Quincenal',
                 'notes' => 'Contrato generado automáticamente al contratar al candidato.',
                 'file_path' => 'Imagen',
+                'payment_term_id' => $request->payment_term_id, // Usar valor del request
                 'contract_type_id' => $request->contract_type_id,
                 'employment_type_id' => $request->employment_type_id,
                 'position_id' => $candidate->vacancy->position_id,

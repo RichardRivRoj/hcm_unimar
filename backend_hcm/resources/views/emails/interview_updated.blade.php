@@ -31,7 +31,7 @@
             <td style="padding: 40px 30px;">
                 <!-- Saludo -->
                 <h1 style="color: #004b9a; font-size: 26px; margin: 0 0 25px 0; font-weight: 600;">
-                    Hola {{ $candidate['name'] }},
+                    Hola {{ $emailData['candidate_name'] }},
                 </h1>
 
                 <!-- Contenido principal -->
@@ -44,10 +44,10 @@
                     <div style="background-color: #f8f9fa; padding: 20px; margin: 25px 0; border-radius: 4px; border-left: 4px solid #004b9a;">
                         <p style="color: #004b9a; font-weight: 600; margin: 0 0 15px 0;">📅 Nuevos detalles del evento:</p>
                         <ul style="padding-left: 20px; margin: 0;">
-                            <li style="margin-bottom: 8px;"><strong>Tipo:</strong> {{ $data['typeAgenda'] }}</li>
-                            <li style="margin-bottom: 8px;"><strong>Fecha:</strong> {{ $data['scheduledDate'] }}</li>
-                            <li style="margin-bottom: 8px;"><strong>Hora:</strong> {{ $data['time'] }}</li>
-                            <li style="margin-bottom: 0;"><strong>Ubicación:</strong> {{ $data['location'] }}</li>
+                            <li style="margin-bottom: 8px;"><strong>Tipo:</strong> {{ $emailData['type_agenda'] }}</li>
+                            <li style="margin-bottom: 8px;"><strong>Fecha:</strong> {{ $emailData['scheduled_date'] }}</li>
+                            <li style="margin-bottom: 8px;"><strong>Hora:</strong> {{ $emailData['time'] }}</li>
+                            <li style="margin-bottom: 0;"><strong>Ubicación:</strong> {{ $emailData['location'] }}</li>
                         </ul>
                     </div>
 
@@ -55,7 +55,7 @@
                     @if(!empty($changes))
                     <div style="background-color: #fff5f5; padding: 20px; margin: 25px 0; border-radius: 4px; border-left: 4px solid #dc3545;">
                         <p style="color: #dc3545; font-weight: 600; margin: 0 0 10px 0;">❗ Motivo de la modificación:</p>
-                        <p style="margin: 0; color: #444;">{{ $data['changes'] }}</p>
+                        <p style="margin: 0; color: #444;">{{ $emailData['changes'] }}</p>
                     </div>
                     @endif
 

@@ -5,8 +5,11 @@ use App\Http\Controllers\Admin\EvaluationPeriodController;
 use App\Http\Controllers\Admin\FileEmployeeController;
 use App\Http\Controllers\Admin\FormEvaluationDepartmentController;
 use App\Http\Controllers\Admin\NewTrainingProgramController;
+use App\Http\Controllers\Admin\PerformanceDashboardController;
+use App\Http\Controllers\Admin\PersonnelDashboardController;
 use App\Http\Controllers\Admin\RecruitmentDashboardController;
 use App\Http\Controllers\Admin\RegistrationHistoryController;
+use App\Http\Controllers\Admin\TrainingDashboardController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\AgendaResultController;
 use App\Http\Controllers\BankEmployeeController;
@@ -34,6 +37,7 @@ use App\Http\Controllers\General\ListDepartmentController;
 use App\Http\Controllers\General\ListEmployeeController;
 use App\Http\Controllers\General\ListTrainingModalityController;
 use App\Http\Controllers\General\ListTrainingTypeController;
+use App\Http\Controllers\General\PaymentTermController;
 use App\Http\Controllers\IdentificationController;
 use App\Http\Controllers\IdentificationTypeController;
 use App\Http\Controllers\ListAccountTypeController;
@@ -133,6 +137,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/', [ModalityController::class, 'index'])->name('api.madalities.index');
     });
 
+    Route::prefix('payment-terms')->group(function () {
+        Route::get('/', [PaymentTermController::class, 'index'])->name('api.payment-terms.index');
+    });
+
     Route::prefix('statuses')->group(function () {
         Route::get('/', [StatusController::class, 'index'])->name('api.statuses.index');
     });
@@ -148,6 +156,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('employment_types')->group(function () {
         Route::get('/', [EmploymentTypeController::class, 'index'])->name('api.employment_types.index');
     });
+
 
     Route::prefix('contract_types')->group(function () {
         Route::get('/', [ContractTypeController::class, 'index'])->name('api.contract_types.index');
@@ -240,15 +249,37 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('admin')->group(function () {
 
+        Route::prefix('agendas')->group(function () {
+            Route::get('/valid-times', [AgendaController::class, 'getValidTimes']);
+        });
+
         Route::prefix('recruitment-dashboard')->group(function () {
-            Route::get('average-hiring-time', [RecruitmentDashboardController::class, 'averageHiringTime']);
-            Route::get('conversion-rate', [RecruitmentDashboardController::class, 'conversionRate']);
-            Route::get('interview-ratio', [RecruitmentDashboardController::class, 'interviewRatio']);
-            Route::get('retention-rate', [RecruitmentDashboardController::class, 'sixMonthRetention']);
-            Route::get('average-performance', [RecruitmentDashboardController::class, 'averageInitialPerformance']);
-            Route::get('vacancies-analysis', [RecruitmentDashboardController::class, 'vacanciesAnalysis']);
-            Route::get('diversity-stats', [RecruitmentDashboardController::class, 'diversityStats']);
-            
+            Route::match(['GET', 'POST'], 'average-hiring-time', [RecruitmentDashboardController::class, 'averageHiringTime']);
+            Route::match(['GET', 'POST'], 'conversion-rate', [RecruitmentDashboardController::class, 'conversionRate']);
+            Route::match(['GET', 'POST'],'interview-ratio', [RecruitmentDashboardController::class, 'interviewRatio']);
+            Route::match(['GET', 'POST'],'active-vacancies', [RecruitmentDashboardController::class, 'activeVacancies']);
+            Route::match(['GET', 'POST'],'initial-performance', [RecruitmentDashboardController::class, 'initialPerformance']);
+            Route::match(['GET', 'POST'],'vacancy-status', [RecruitmentDashboardController::class, 'vacancyStatusDistribution']);
+            Route::match(['GET', 'POST'],'candidate-gender', [RecruitmentDashboardController::class, 'candidateGenderDistribution']);
+        });
+
+        Route::prefix('performance-dashboard')->group(function () {
+            Route::match(['GET', 'POST'], 'performance-tenure', [PerformanceDashboardController::class, 'performanceVsTenure']);
+            Route::match(['GET', 'POST'], 'goal-compliance', [PerformanceDashboardController::class, 'goalCompliance']);
+            Route::match(['GET', 'POST'], 'diversity-evaluations', [PerformanceDashboardController::class, 'diversityEvaluations']);
+            Route::match(['GET', 'POST'], 'level-gaps', [PerformanceDashboardController::class, 'levelGapsAnalysis']);
+        });
+
+        Route::prefix('training-dashboard')->group(function () {
+            Route::match(['GET', 'POST'], 'training-participation', [TrainingDashboardController::class, 'trainingParticipation']);
+            Route::match(['GET', 'POST'], 'program-completion', [TrainingDashboardController::class, 'programCompletionRate']);
+            Route::match(['GET', 'POST'], 'average-scores', [TrainingDashboardController::class, 'averageScores']);
+            Route::match(['GET', 'POST'], 'active-programs', [TrainingDashboardController::class, 'activeProgramsByType']);
+            Route::match(['GET', 'POST'], 'evaluation-impact', [TrainingDashboardController::class, 'evaluationImpact']);
+        });
+
+        Route::prefix('personnel-dashboard')->group(function () {
+            Route::match(['GET', 'POST'],'demographic-diversity', [PersonnelDashboardController::class, 'demographicDiversity']);
         });
     
         Route::prefix('departments')->group(function () {

@@ -95,6 +95,6 @@ export const useEmployeeTrainings = (filters = {}) => {
         },
         enroll,
         cancelEnrollment,
-        error
+        error,
     }
 }

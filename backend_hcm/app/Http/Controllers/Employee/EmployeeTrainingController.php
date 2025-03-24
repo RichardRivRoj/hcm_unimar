@@ -31,10 +31,7 @@ class EmployeeTrainingController extends Controller
         $completedStatus = CompletionStatus::firstWhere('name', 'COMPLETADO');
         $canceledStatus = CompletionStatus::firstWhere('name', 'Cancelado');
 
-        if (!$publicVisibility || !$activeStatus || !$completedStatus || !$canceledStatus) {
-            return response()->json(['error' => 'Configuración requerida no encontrada'], 500);
-        }
-
+        
         $perPage = $request->input('per_page', 2);
 
         // 1. Programas Públicos

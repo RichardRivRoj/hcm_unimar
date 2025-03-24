@@ -67,4 +67,13 @@ class Department extends Model
             $query->active();
         });
     }
+
+    public function scopeWithActiveEmployees($query)
+    {
+        return $query->whereHas('contracts', function ($q) {
+            $q->active()->whereHas('employee', function ($q) {
+                $q->active();
+            });
+        });
+    }
 }

@@ -31,7 +31,7 @@
             <td style="padding: 40px 30px;">
                 <!-- Saludo -->
                 <h1 style="color: #004b9a; font-size: 26px; margin: 0 0 25px 0; font-weight: 600;">
-                    Hola {{ $candidate }},
+                    Hola {{ $agendaData['candidate'] }},
                 </h1>
 
                 <!-- Contenido principal -->
@@ -46,10 +46,10 @@
                             📅 Detalles del evento
                         </p>
                         <ul style="padding-left: 20px; margin: 0;">
-                            <li style="margin-bottom: 8px;"><strong>Tipo:</strong> {{ $typeAgenda }}</li>
-                            <li style="margin-bottom: 8px;"><strong>Fecha:</strong> {{ $scheduledDate }}</li>
-                            <li style="margin-bottom: 8px;"><strong>Hora:</strong> {{ $time }}</li>
-                            <li style="margin-bottom: 0;"><strong>Ubicación:</strong> {{ $location }}</li>
+                            <li style="margin-bottom: 8px;"><strong>Tipo:</strong> {{ $agendaData['typeAgenda'] }}</li>
+                            <li style="margin-bottom: 8px;"><strong>Fecha:</strong> {{ $agendaData['scheduledDate'] }}</li>
+                            <li style="margin-bottom: 8px;"><strong>Hora:</strong> {{ $agendaData['time'] }}</li>
+                            <li style="margin-bottom: 0;"><strong>Ubicación:</strong> {{ $agendaData['location'] }}</li>
                         </ul>
                     </div>
 

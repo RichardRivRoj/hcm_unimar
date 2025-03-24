@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreEvaluationPeriodRequest;
 use App\Http\Requests\Admin\UpdateEvaluationPeriodRequest;
 use App\Models\EvaluationPeriod;
+use App\Models\Notification;
 use App\Models\Status;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Spatie\Permission\Models\Role;
 
 class EvaluationPeriodController extends Controller
 {
@@ -89,6 +92,31 @@ class EvaluationPeriodController extends Controller
 
             // Crear período (el observer manejará el estado)
             $period = EvaluationPeriod::create($data);
+
+            // Obtener supervisores
+            $supervisorRole = Role::where('name', 'supervisor')
+                ->where('guard_name', 'web')
+                ->first();
+
+            if ($supervisorRole) {
+                $supervisors = $supervisorRole->users()->pluck('id');
+
+                // Crear notificaciones
+                foreach ($supervisors as $userId) {
+                    Notification::create([
+                        'user_id' => $userId,
+                        'title' => 'Nuevo período de evaluación',
+                        'message' => "Nuevo período '{$period->name}' creado. " .
+                                      "Vigente del " . Carbon::parse($period->start_date)->format('d/m/Y') . 
+                                      " al " . Carbon::parse($period->end_date)->format('d/m/Y'),
+                        'type' => 'info',
+                        'metadata' => [
+                            'period_id' => $period->id,
+                            'action_url' => '/evaluation-periods'
+                        ]
+                    ]);
+                }
+            }
 
             DB::commit();
 

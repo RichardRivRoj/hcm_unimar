@@ -34,6 +34,11 @@ class Employee extends Model
         return $this->hasMany(Request::class, 'employee_id');
     }
 
+    public function trainingEnrollments()
+    {
+        return $this->hasMany(EmployeeTrainingEnrollment::class, 'employee_id');
+    }
+
     public function evaluations()
     {
         return $this->hasMany(PerformanceEvaluation::class, 'employee_id');

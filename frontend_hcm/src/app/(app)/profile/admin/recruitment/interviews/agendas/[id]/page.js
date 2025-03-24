@@ -2,16 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { CheckIcon, StarIcon, Trash2 } from 'lucide-react'
 import useAgenda from '@/hooks/useAgendasShow'
 import useTypeAgendas from '@/hooks/typeAgendasView'
 import useStatuses from '@/hooks/useStatuses'
 import DetailCard from '@/components/DetailCard'
-import { GeneralModal, Modal } from '@/components/Modal'
 import axios from '@/lib/axios'
 import StandardLoader from '@/components/StandardLoader'
-import { XMarkIcon } from '@heroicons/react/24/outline'
-import { Alert, AlertDescription } from '@/components/alert'
+import EditAgendaForm from './EditAgendaForm'
+import HeaderControls from './HeaderControls'
+import RatingModal from './RatingModal'
+import DeleteConfirmationModal from './DeleteConfirmationModal'
+import Card from '@/components/Card'
+import { CheckIcon, StarIcon } from 'lucide-react'
 
 const AgendaDetail = ({ params }) => {
     const router = useRouter()
@@ -35,137 +37,72 @@ const AgendaDetail = ({ params }) => {
         location: '',
         type_agenda_id: '',
         status_id: '',
-        changes_notification: '', // Nuevo campo para el motivo de los cambios
+        changes_notification: '',
     })
 
     const [isEditing, setIsEditing] = useState(false)
     const [updateError, setUpdateError] = useState(null)
     const [successMessage, setSuccessMessage] = useState(null)
-    const [isUpdating, setIsUpdating] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [deleteError, setDeleteError] = useState(null)
     const [deleteSuccess, setDeleteSuccess] = useState(false)
-
-    // Estado para el modal de calificación
     const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
     const [isRated, setIsRated] = useState(false)
-    const [ratingForm, setRatingForm] = useState({
-        score: 0,
-        comments: '',
-    })
-    const [ratingError, setRatingError] = useState(null)
 
     // Cargar datos iniciales
     useEffect(() => {
         if (agenda) {
-            setIsRated(agenda.agenda.has_rating); // Usar el campo del backend
+            setIsRated(agenda.agenda.has_rating)
             setFormState({
                 scheduled_date: agenda.agenda.scheduled_date,
-                time: agenda.agenda.time,
+                time: agenda.agenda.time_raw, // Usar el valor raw
                 location: agenda.agenda.location,
-                type_agenda_id: agenda.agenda.type_agenda_id,
-                status_id: agenda.agenda.status_id,
-                changes_notification: '', // Inicializar vacío
+                type_agenda_id: agenda.agenda.type_agenda_id.toString(), // Nuevo campo del backend
+                status_id: agenda.agenda.status_id.toString(), // Nuevo campo del backend
+                changes_notification: '',
             })
         }
     }, [agenda])
 
-    // Manejar cambios en el formulario
-    const handleChange = e => {
-        const { name, value } = e.target
-        setFormState(prev => ({ ...prev, [name]: value }))
-    }
-
-    // Función para abrir el modal de confirmación
-    const openDeleteConfirmation = () => {
-        setShowDeleteModal(true)
-        setDeleteError(null)
-        setDeleteSuccess(false)
-    }
-
-    // Función para cancelar la eliminación
-    const cancelDelete = () => {
-        setShowDeleteModal(false)
-    }
-
-    // Función para confirmar la eliminación
+    // Manejar eliminación
     const confirmDelete = async () => {
         try {
             const response = await axios.delete(`/api/agendas/${id}`)
-
             if (response.data.success) {
                 setDeleteSuccess(true)
-                setTimeout(() => {
-                    router.back()
-                }, 1500)
+                setTimeout(() => router.back(), 1500)
             }
         } catch (err) {
             setDeleteError(
                 err.response?.data?.message || 'Error al eliminar la agenda',
             )
-        } finally {
-            setShowDeleteModal(false)
         }
     }
 
-    // Enviar actualización
-    const handleUpdate = async e => {
-        e.preventDefault()
-        setUpdateError(null)
-        setSuccessMessage(null)
-        setIsUpdating(true)
+    // Manejar éxito de calificación
+    const handleRatingSuccess = () => {
+        setIsRated(true)
+        setSuccessMessage('Calificación guardada exitosamente')
+        setTimeout(() => setSuccessMessage(null), 3000)
+    }
 
-        try {
-            const response = await axios.put(`/api/agendas/${id}`, formState)
+    const handleUpdateSuccess = updatedData => {
+        // Actualizar estado local con los nuevos datos
+        setFormState(prev => ({
+            ...prev,
+            ...updatedData,
+        }))
+        setSuccessMessage('Agenda actualizada exitosamente')
+        setIsEditing(false)
 
-            if (response.data.success) {
-                setSuccessMessage('Agenda actualizada exitosamente')
-                setIsEditing(false)
-                setTimeout(() => setSuccessMessage(null), 3000)
-            }
-        } catch (err) {
-            setUpdateError(
-                err.response?.data?.message || 'Error al actualizar la agenda',
-            )
-        } finally {
-            setIsUpdating(false)
+        // Recargar datos principales
+        if (agenda?.mutate) {
+            agenda.mutate()
         }
     }
 
-    // Manejar el envío de la calificación
-    const handleRatingSubmit = async e => {
-        e.preventDefault()
-
-        try {
-            const response = await axios.post('/api/agenda-results', {
-                ...ratingForm,
-                agenda_id: id,
-            })
-
-            // Opcional: recargar datos o mostrar feedback
-
-            if (response.data.success) {
-                setIsRated(true) // Actualizar estado
-                setIsRatingModalOpen(false)
-                setSuccessMessage('Calificación guardada exitosamente')
-                setRatingForm({ score: 0, comments: '' })
-                setTimeout(() => setSuccessMessage(null), 3000)
-            }
-        } catch (err) {
-            setUpdateError(
-                err.response?.data?.message ||
-                    'Error al guardar la calificación',
-            )
-            setRatingError(
-                err.response?.data?.message ||
-                    'Error al guardar la calificación',
-            )
-        }
-    }
-
-    if (loading) {
-        return <StandardLoader />
-    }
+    if (loading) return <StandardLoader />
+    if (error) return <ErrorScreen error={error} />
 
     if (error) {
         return (
@@ -184,473 +121,248 @@ const AgendaDetail = ({ params }) => {
     }
 
     return (
-        <div className="max-w-4xl p-8 mx-auto text-justify bg-white shadow-sm rounded-xl">
-            <div className="p-2 bg-white">
-                {/* Header y controles */}
-                <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
-                    {/* Botón Volver a agendas (izquierda) */}
-                    <button
-                        onClick={() => router.back()}
-                        className="flex items-center text-gray-600 hover:text-blue-800 group w-fit">
-                        <span className="mr-2 text-2xl transition-transform group-hover:-translate-x-1">
-                            ←
-                        </span>
-                        <span className="font-medium">Volver a agendas</span>
-                    </button>
-
-                    {/* Contenedor para los botones de la derecha */}
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        {/* Modal de confirmación */}
-                        {showDeleteModal && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                                <div className="p-6 bg-white rounded-lg w-96">
-                                    <h3 className="mb-4 text-xl font-semibold">
-                                        Confirmar eliminación
-                                    </h3>
-
-                                    {deleteError && (
-                                        <div className="p-2 mb-4 text-red-600 bg-red-100 rounded">
-                                            {deleteError}
-                                        </div>
-                                    )}
-
-                                    {deleteSuccess ? (
-                                        <div className="p-2 text-green-600 bg-green-100 rounded">
-                                            Agenda eliminada exitosamente
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <p className="mb-4 text-gray-600">
-                                                ¿Estás seguro de que deseas
-                                                eliminar esta agenda?
-                                            </p>
-
-                                            <div className="flex justify-end gap-3">
-                                                <button
-                                                    type="button"
-                                                    onClick={cancelDelete}
-                                                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-                                                    Cancelar
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={confirmDelete}
-                                                    className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">
-                                                    Eliminar
-                                                </button>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Botón de eliminar modificado */}
+        <div className="max-w-6xl p-4 mx-auto sm:p-6 lg:p-8">
+            {/* Encabezado */}
+            <div className="border-b-2 border-[#004b9a] pb-6 mb-8">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
                         <button
-                            onClick={openDeleteConfirmation}
-                            className="p-2 text-red-600 transition rounded-md hover:bg-red-100">
-                            <Trash2 size={24} />
+                            onClick={() => router.back()}
+                            className="text-[#004b9a] hover:bg-[#004b9a]/10 p-2 rounded-lg transition-colors">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-6 h-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                                />
+                            </svg>
                         </button>
-
-                        {/* Botón Editar Agenda */}
-                        {!isEditing && (
-                            <button
-                                onClick={() => setIsEditing(true)}
-                                className="px-4 py-2 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700">
-                                Editar Agenda
-                            </button>
-                        )}
+                        <h1 className="text-2xl lg:text-3xl font-bold text-[#004b9a]">
+                            Detalle de Agenda
+                            <span className="block mt-1 text-sm font-normal text-gray-500">
+                                | Candidato:{' '}
+                                {agenda.candidate.person.first_name} {agenda.candidate.person.last_name}
+                            </span>
+                        </h1>
                     </div>
+                    <HeaderControls
+                        onDelete={() => setShowDeleteModal(true)}
+                        onEdit={() => setIsEditing(true)}
+                        isEditing={isEditing}
+                        agenda={agenda}
+                        isRated={isRated}
+                    />
                 </div>
             </div>
 
-            {/* Mensajes de estado */}
-            {successMessage && (
-                <div className="p-4 mb-6 text-green-700 bg-green-100 rounded-lg">
-                    {successMessage}
-                </div>
-            )}
-            {updateError && (
-                <div className="p-4 mb-6 text-red-700 bg-red-100 rounded-lg">
-                    {updateError}
-                </div>
-            )}
+            {/* Contenido principal */}
+            <div className="space-y-8">
+                {successMessage && (
+                    <div className="p-4 border-l-4 border-green-400 rounded-lg bg-green-50">
+                        <div className="flex items-center gap-3">
+                            <CheckIcon className="w-5 h-5 text-green-400" />
+                            <span className="text-green-700">
+                                {successMessage}
+                            </span>
+                        </div>
+                    </div>
+                )}
 
-            {/* Modal de calificación */}
-            {isRatingModalOpen && (
-                <GeneralModal
-                    size="lg"
-                    isOpen={isRatingModalOpen}
-                    onClose={() => {
-                        setIsRatingModalOpen(false)
-                        setRatingError(null) // Limpiar error al cerrar
-                    }}
-                    className="bg-[#004b9a]/20 backdrop-blur-sm flex items-center justify-center">
-                    <div className="max-w-md max-h-[calc(100vh-4rem)] w-full mx-4 p-6 overflow-y-auto bg-white rounded-xl shadow-2xl transition-all">
-                        {/* Encabezado */}
-                        <div className="flex items-center gap-3 mb-6 border-b border-[#004b9a]/20 pb-4">
-                            <div className="p-2 bg-[#004b9a]/10 rounded-lg">
-                                <StarIcon className="w-6 h-6 text-[#004b9a]" />
+                {isEditing ? (
+                    <EditAgendaForm
+                        initialData={{
+                            scheduled_date: agenda.agenda.scheduled_date,
+                            time: agenda.agenda.time_raw,
+                            location: agenda.agenda.location,
+                            type_agenda_id:
+                                agenda.agenda.type_agenda_id?.toString(),
+                            status_id: agenda.agenda.status_id?.toString(),
+                            changes_notification: '',
+                        }}
+                        typeAgendas={typeAgendas}
+                        statuses={statuses}
+                        onSuccess={handleUpdateSuccess}
+                        onCancel={() => setIsEditing(false)}
+                        agendaId={id}
+                    />
+                ) : (
+                    <div className="space-y-8">
+                        {/* Sección de Detalles Principales */}
+                        <div className="bg-white border border-gray-200 shadow-sm rounded-xl">
+                            <div className="p-6 border-b border-gray-200">
+                                <h2 className="text-xl font-semibold text-[#004b9a] flex items-center gap-2">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="w-6 h-6"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                        />
+                                    </svg>
+                                    Detalles del Evento
+                                </h2>
                             </div>
-                            <h2 className="text-2xl font-bold text-[#004b9a]">
-                                Evaluar Evento
-                            </h2>
-                        </div>
-
-                        <form
-                            onSubmit={handleRatingSubmit}
-                            className="space-y-6">
-                            {/* Campo de puntuación */}
-
-                            <div>
-                                <label className="block mb-2 text-sm font-medium text-[#004b9a]">
-                                    Calificación del 1 al 10
-                                    <span className="ml-1 text-[#004b9a]/70">
-                                        (requerido)
-                                    </span>
-                                </label>
-
-                                <div className="relative">
-                                    <input
-                                        type="range"
-                                        name="score"
-                                        value={ratingForm.score}
-                                        onChange={e =>
-                                            setRatingForm({
-                                                ...ratingForm,
-                                                score: Math.min(
-                                                    10,
-                                                    Math.max(1, e.target.value),
-                                                ),
-                                            })
-                                        }
-                                        min="1"
-                                        max="10"
-                                        step="1"
-                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg accent-[#004b9a]"
-                                    />
-
-                                    {/* Marcadores de escala */}
-                                    <div className="flex justify-between px-1 mt-2 text-sm text-[#004b9a]/80">
-                                        {[...Array(10)].map((_, i) => (
-                                            <span
-                                                key={i + 1}
-                                                className="w-4 text-center">
-                                                {i + 1}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <p className="mt-2 text-sm text-[#004b9a]/70">
-                                    Seleccione un valor entre 1 (Muy deficiente)
-                                    y 10 (Excelente)
-                                </p>
+                            <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2 lg:grid-cols-4">
+                                <Card
+                                    title="Fecha"
+                                    value={new Date(
+                                        agenda.agenda.scheduled_date,
+                                    ).toLocaleDateString('es-ES', {
+                                        timeZone: 'UTC'
+                                    })}
+                                    icon="calendar"
+                                    color="#004b9a"
+                                />
+                                <Card
+                                    title="Hora"
+                                    value={agenda.agenda.time}
+                                    icon="clock"
+                                    color="#004b9a"
+                                />
+                                <Card
+                                    title="Ubicación"
+                                    value={agenda.agenda.location}
+                                    icon="location"
+                                    color="#004b9a"
+                                />
+                                <Card
+                                    title="Estado"
+                                    value={agenda.agenda.status}
+                                    icon="rating"
+                                    color="#004b9a"
+                                />
                             </div>
+                        </div>
 
-                            {/* Campo de comentarios */}
-                            <div>
-                                <label className="block mb-2 text-sm font-medium text-[#004b9a]">
-                                    Comentarios detallados
-                                    <span className="ml-1 text-[#004b9a]/70">
-                                        (requerido)
-                                    </span>
-                                </label>
-
-                                <div className="relative">
-                                    <textarea
-                                        name="comments"
-                                        value={ratingForm.comments}
-                                        onChange={e =>
-                                            setRatingForm({
-                                                ...ratingForm,
-                                                comments: e.target.value.slice(
-                                                    0,
-                                                    500,
-                                                ),
-                                            })
-                                        }
-                                        className="w-full p-3 border-2 border-[#004b9a]/20 rounded-lg focus:border-[#004b9a] focus:ring-2 focus:ring-[#004b9a]/30 transition-all"
-                                        rows="4"
-                                        placeholder="Ej: Detalla aspectos relevantes del evento, puntos fuertes y áreas de mejora..."
-                                        required
-                                    />
-
-                                    {/* Contador de caracteres */}
-                                    <div className="absolute bottom-2 right-2 text-sm text-[#004b9a]/70 bg-white px-2 rounded">
-                                        {ratingForm.comments.length}/500
-                                    </div>
-                                </div>
-
-                                <p className="mt-2 text-sm text-[#004b9a]/70">
-                                    Por favor sea específico y objetivo en sus
-                                    comentarios
-                                </p>
+                        {/* Sección de Información del Candidato */}
+                        <div className="bg-white border border-gray-200 shadow-sm rounded-xl">
+                            <div className="p-6 border-b border-gray-200">
+                                <h2 className="text-xl font-semibold text-[#004b9a] flex items-center gap-2">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="w-6 h-6"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                        />
+                                    </svg>
+                                    Información del Candidato
+                                </h2>
                             </div>
-
-                            {ratingError && (
-                                <div className="p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800">
-                                    {ratingError}
-                                </div>
-                            )}
-                            {/* Botones */}
-                            <div className="flex justify-end gap-3 pt-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsRatingModalOpen(false)}
-                                    className="flex items-center gap-2 px-5 py-2.5 text-[#004b9a] bg-white border-2 border-[#004b9a]/20 rounded-lg hover:border-[#004b9a]/40 hover:bg-[#004b9a]/5 transition-all">
-                                    <XMarkIcon className="w-5 h-5" />
-                                    Cancelar
-                                </button>
-
-                                <button
-                                    type="submit"
-                                    className="flex items-center gap-2 px-5 py-2.5 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7d] transition-colors">
-                                    <CheckIcon className="w-5 h-5" />
-                                    Guardar Evaluación
-                                </button>
+                            <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2 lg:grid-cols-4">
+                                <Card
+                                    title="Nombre Completo"
+                                    value={`${agenda.candidate.person.first_name} ${agenda.candidate.person.last_name}`}
+                                    icon="user"
+                                />
+                                <Card
+                                    title="Email"
+                                    value={agenda.candidate.person.email}
+                                    icon="mail"
+                                />
+                                <Card
+                                    title="Teléfono"
+                                    value={agenda.candidate.person.phone}
+                                    icon="phone"
+                                />
+                                <Card
+                                    title="Identificación"
+                                    value={
+                                        agenda.candidate.person
+                                            .identification_value
+                                    }
+                                    icon="job"
+                                />
                             </div>
-                        </form>
-                    </div>
-                </GeneralModal>
-            )}
-
-            {isEditing ? (
-                // Formulario de edición
-                <form onSubmit={handleUpdate} className="space-y-8">
-                    <div className="grid gap-6 md:grid-cols-2">
-                        {/* Campo Fecha */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Fecha *
-                            </label>
-                            <input
-                                type="date"
-                                name="scheduled_date"
-                                value={formState.scheduled_date}
-                                onChange={handleChange}
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                required
-                            />
                         </div>
 
-                        {/* Campo Hora */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Hora *
-                            </label>
-                            <input
-                                type="time"
-                                name="time"
-                                value={formState.time}
-                                onChange={handleChange}
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                required
-                            />
-                        </div>
-
-                        {/* Campo Ubicación */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Ubicación *
-                            </label>
-                            <input
-                                type="text"
-                                name="location"
-                                value={formState.location}
-                                onChange={handleChange}
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                required
-                            />
-                        </div>
-
-                        {/* Campo Tipo de Agenda */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Tipo de Agenda *
-                            </label>
-                            <select
-                                name="type_agenda_id"
-                                value={formState.type_agenda_id}
-                                onChange={handleChange}
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                required>
-                                <option value="">Seleccionar tipo</option>
-                                {typeAgendas.map(type => (
-                                    <option
-                                        key={type.id}
-                                        value={type.id}
-                                        className="text-gray-600">
-                                        {type.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Campo Estado */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Estado *
-                            </label>
-                            <select
-                                name="status_id"
-                                value={formState.status_id}
-                                onChange={handleChange}
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                required>
-                                <option value="">Seleccionar estado</option>
-                                {statuses.map(status => (
-                                    <option
-                                        key={status.id}
-                                        value={status.id}
-                                        className="text-gray-600">
-                                        {status.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Campo Motivo de los Cambios */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Motivo de los Cambios (opcional)
-                            </label>
-                            <textarea
-                                name="changes_notification"
-                                value={formState.changes_notification}
-                                onChange={handleChange}
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Especifica el motivo de los cambios..."
-                                rows="3"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Botones de acción */}
-                    <div className="flex flex-col gap-4 mt-8 sm:flex-row sm:justify-end">
-                        <button
-                            type="button"
-                            onClick={() => setIsEditing(false)}
-                            className="px-6 py-2 text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200">
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isUpdating}
-                            className="px-6 py-2 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
-                            {isUpdating ? 'Guardando...' : 'Guardar Cambios'}
-                        </button>
-                    </div>
-                </form>
-            ) : (
-                // Vista de solo lectura
-                <div className="space-y-8">
-                    {/* Encabezado */}
-                    <div className="space-y-4">
-                        <h1 className="text-3xl font-bold text-gray-900">
-                            Detalle de la Agenda
-                        </h1>
-                    </div>
-
-                    {/* Detalles en tarjetas */}
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        <DetailCard
-                            title="Fecha"
-                            value={new Date(
-                                agenda.agenda.scheduled_date,
-                            ).toLocaleDateString()}
-                        />
-                        <DetailCard title="Hora" value={agenda.agenda.time} />
-                        <DetailCard
-                            title="Ubicación"
-                            value={agenda.agenda.location}
-                        />
-                        <DetailCard
-                            title="Tipo de Agenda"
-                            value={agenda.agenda.type_agenda}
-                        />
-                        <DetailCard
-                            title="Estado"
-                            value={agenda.agenda.status}
-                        />
-                    </div>
-
-                    {/* Información del Candidato */}
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-gray-900">
-                            Información del Candidato
-                        </h2>
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                            <DetailCard
-                                title="Nombre"
-                                value={`${agenda.candidate.person.first_name} ${agenda.candidate.person.last_name}`}
-                            />
-                            <DetailCard
-                                title="Email"
-                                value={agenda.candidate.person.email}
-                            />
-                            <DetailCard
-                                title="Teléfono"
-                                value={agenda.candidate.person.phone}
-                            />
-                            <DetailCard
-                                title="Identificación"
-                                value={
-                                    agenda.candidate.person.identification_value
-                                }
-                            />
-                        </div>
-                    </div>
-
-                    {/* Información de la Vacante */}
-                    <div className="p-6 bg-white border border-gray-200 shadow-lg rounded-xl">
-                        <h2 className="mb-4 text-xl font-semibold text-left text-gray-900">
-                            Información de la Vacante
-                        </h2>
-
-                        <div className="grid gap-6">
-                            {/* Tarjeta del Título */}
-                            <div className="flex items-center gap-4 p-4 border-l-4 border-blue-600 rounded-lg shadow-md bg-blue-50">
-                                <div className="text-2xl text-blue-600">📌</div>
-                                <div>
-                                    <h3 className="text-lg font-semibold text-gray-800">
-                                        Título
+                        {/* Sección de Información de la Vacante */}
+                        <div className="bg-white border border-gray-200 shadow-sm rounded-xl">
+                            <div className="p-6 border-b border-gray-200">
+                                <h2 className="text-xl font-semibold text-[#004b9a] flex items-center gap-2">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="w-6 h-6"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                        />
+                                    </svg>
+                                    Detalles de la Vacante
+                                </h2>
+                            </div>
+                            <div className="p-6 space-y-6">
+                                <div className="bg-[#004b9a]/5 p-4 rounded-lg border-l-4 border-[#004b9a]">
+                                    <h3 className="font-semibold text-[#004b9a] mb-2">
+                                        Título de la Posición
                                     </h3>
                                     <p className="text-gray-700">
                                         {agenda.vacancy.title}
                                     </p>
                                 </div>
-                            </div>
 
-                            {/* Tarjeta de la Descripción */}
-                            <div className="flex items-center gap-4 p-4 border-l-4 border-green-600 rounded-lg shadow-md bg-green-50">
-                                <div className="text-2xl text-green-600">
-                                    📝
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-semibold text-gray-800">
-                                        Descripción
+                                <div className="p-4 border-l-4 border-gray-300 rounded-lg bg-gray-50">
+                                    <h3 className="mb-2 font-semibold text-gray-700">
+                                        Descripción de la Vacante
                                     </h3>
-                                    <p className="text-gray-700">
+                                    <p className="text-gray-600">
                                         {agenda.vacancy.description}
                                     </p>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Sección de Acciones */}
+                        {agenda.agenda.status === 'Activo' && !isRated && (
+                            <div className="flex justify-end gap-4 mt-8">
+                                <button
+                                    onClick={() => setIsRatingModalOpen(true)}
+                                    className="px-6 py-2 bg-[#004b9a] text-white rounded-lg hover:bg-[#003a7a] transition-colors flex items-center gap-2">
+                                    <StarIcon className="w-5 h-5" />
+                                    Calificar Evento
+                                </button>
+                            </div>
+                        )}
                     </div>
-                    {/* Botón de Agendar Entrevista (solo si es Aceptado) */}
-                    {/* Botón de Calificar (solo si está activo y no calificado) */}
-                    {agenda.agenda.status === 'Activo' && !isRated && (
-                        <div className="flex gap-4">
-                            <button
-                                onClick={() => setIsRatingModalOpen(true)}
-                                className="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700">
-                                Calificar Evento
-                            </button>
-                        </div>
-                    )}
-                </div>
-            )}
+                )}
+            </div>
+
+            {/* Modals */}
+            <RatingModal
+                isOpen={isRatingModalOpen}
+                onClose={() => setIsRatingModalOpen(false)}
+                agendaId={id}
+                onSuccess={handleRatingSuccess}
+            />
+
+            <DeleteConfirmationModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={confirmDelete}
+                error={deleteError}
+                success={deleteSuccess}
+            />
         </div>
     )
 }

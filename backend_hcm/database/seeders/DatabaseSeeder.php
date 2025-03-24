@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             BankSeeder::class,
             DocumentTypeSeeder::class,
             LevelSeeder::class,
+            PaymentTermSeeder::class,
             ContractTypeSeeder::class,
             EmploymentTypeSeeder::class,
             CurrencySeeder::class,

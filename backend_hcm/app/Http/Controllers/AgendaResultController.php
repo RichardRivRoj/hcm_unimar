@@ -7,6 +7,7 @@ use App\Mail\ApplicationRejected;
 use App\Models\Agenda;
 use App\Models\AgendaResult;
 use App\Models\Candidate;
+use App\Models\Position;
 use App\Models\Status;
 use App\Models\StatusApplication;
 use Carbon\Carbon;
@@ -110,7 +111,10 @@ class AgendaResultController extends Controller
                     'last_page' => ceil($transformed->count() / $perPage),
                     'per_page' => $perPage,
                     'total' => $transformed->count(),
-                ]
+                ],
+                'filters' => [
+                    'position' => Position::all(['id', 'description'])
+                ],
             ], 200);
         } catch (\Exception $e) {
             return response()->json([

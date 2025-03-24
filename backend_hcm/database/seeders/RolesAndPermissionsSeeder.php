@@ -21,16 +21,15 @@ class RolesAndPermissionsSeeder extends Seeder
         Permission::create(['name' => 'evaluate performance']);
         Permission::create(['name' => 'manage personnel']);
 
-        $admin = Role::create(['name' => 'admin', 'guard_name' => 'sanctum']);
+        $admin = Role::create(['name' => 'admin']);
         $admin->givePermissionTo(['manage recruitment', 'manage training', 'evaluate performance', 'manage personnel']);
 
         $supervisor = Role::create([
             'name' => 'supervisor',
-            'guard_name' => 'sanctum' // <- Añadir guard_name
         ]);
         $supervisor->givePermissionTo(['manage recruitment', 'evaluate performance']);
 
-        $employee = Role::create(['name' => 'employee', 'guard_name' => 'sanctum']);
+        $employee = Role::create(['name' => 'employee']);
         $employee->givePermissionTo(['manage personnel']);
     }
 }

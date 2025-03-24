@@ -66,6 +66,7 @@ const EnrolledProgramDetail = ({ program }) => {
                     {new Date(item.enrollment_date).toLocaleDateString(
                         'es-ES',
                         {
+                            timeZone: 'UTC',
                             day: 'numeric',
                             month: 'long',
                             year: 'numeric',
@@ -105,7 +106,7 @@ const EnrolledProgramDetail = ({ program }) => {
 
                         {((program.classification === 'INSCRITOS' &&
                             program.visibility === 'Público') ||
-                            program.classification === 'EN_PROGRESO') && (
+                            (program.classification === 'EN_PROGRESO' && program.visibility === 'Público')) && (
                             <button
                                 onClick={() => setIsDeleteModalOpen(true)}
                                 className="bg-red-600 hover:bg-red-700' px-4 py-2 text-sm font-medium text-white transition-colors rounded-lg">
@@ -193,6 +194,7 @@ const EnrolledProgramDetail = ({ program }) => {
                                     {new Date(
                                         program.start_date,
                                     ).toLocaleDateString('es-ES', {
+                                        timeZone: 'UTC',
                                         day: 'numeric',
                                         month: 'long',
                                         year: 'numeric',
@@ -211,6 +213,7 @@ const EnrolledProgramDetail = ({ program }) => {
                                     {new Date(
                                         program.end_date,
                                     ).toLocaleDateString('es-ES', {
+                                        timeZone: 'UTC',
                                         day: 'numeric',
                                         month: 'long',
                                         year: 'numeric',

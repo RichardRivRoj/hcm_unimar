@@ -322,29 +322,42 @@ const JobDetails = ({ params }) => {
                             name: j.document_name,
                             issue_date: j.issue_date,
                             expiration_date: j.expiration_date,
-                            metadata: j.metadata ? JSON.parse(j.metadata) : {},
+                            metadata:
+                                typeof j.metadata === 'string'
+                                    ? JSON.parse(j.metadata)
+                                    : j.metadata || {},
                         })),
                         studies: result.documents.studies.map(s => ({
                             name: s.document_name,
                             issue_date: s.issue_date,
                             expiration_date: s.expiration_date,
-                            metadata: s.metadata ? JSON.parse(s.metadata) : {},
+                            metadata:
+                                typeof s.metadata === 'string'
+                                    ? JSON.parse(s.metadata)
+                                    : s.metadata || {},
                         })),
                         courses: result.documents.courses.map(c => ({
                             name: c.document_name,
                             issue_date: c.issue_date,
                             expiration_date: c.expiration_date,
-                            metadata: c.metadata ? JSON.parse(c.metadata) : {},
+                            metadata:
+                                typeof c.metadata === 'string'
+                                    ? JSON.parse(c.metadata)
+                                    : c.metadata || {},
                         })),
                         competencies: result.documents.competencies.map(c => ({
                             name: c.document_name,
-                            detail: c.detail ? JSON.parse(c.detail) : [],
+                            detail:
+                                typeof c.detail === 'string'
+                                    ? JSON.parse(c.detail)
+                                    : c.detail || [],
                         })),
                         languages: result.documents.languages.map(l => ({
                             name: l.document_name,
-                            detail: l.detail
-                                ? JSON.parse(l.detail)
-                                : { level: '' },
+                            detail:
+                                typeof l.detail === 'string'
+                                    ? JSON.parse(l.detail)
+                                    : l.detail || { level: '' },
                         })),
                     },
                 }))
@@ -438,7 +451,6 @@ const JobDetails = ({ params }) => {
 
     useEffect(() => {
         if (validationResult?.person_exists) {
-            // Verificar que coincida con la última validación realizada
             const isCurrentValidation =
                 validationData.identification_type_id ===
                     currentValidation.type &&
@@ -457,65 +469,54 @@ const JobDetails = ({ params }) => {
                                 name: item.document_name,
                                 issue_date: item.issue_date,
                                 expiration_date: item.expiration_date,
-                                metadata: item.metadata
-                                    ? JSON.parse(item.metadata)
-                                    : {},
+                                metadata:
+                                    typeof item.metadata === 'string'
+                                        ? JSON.parse(item.metadata)
+                                        : item.metadata || {},
                             })) || [],
                         studies:
                             validationResult.documents.studies?.map(item => ({
                                 name: item.document_name,
                                 issue_date: item.issue_date,
                                 expiration_date: item.expiration_date,
-                                metadata: item.metadata
-                                    ? JSON.parse(item.metadata)
-                                    : {},
+                                metadata:
+                                    typeof item.metadata === 'string'
+                                        ? JSON.parse(item.metadata)
+                                        : item.metadata || {},
                             })) || [],
                         courses:
                             validationResult.documents.courses?.map(item => ({
                                 name: item.document_name,
                                 issue_date: item.issue_date,
                                 expiration_date: item.expiration_date,
-                                metadata: item.metadata
-                                    ? JSON.parse(item.metadata)
-                                    : {},
+                                metadata:
+                                    typeof item.metadata === 'string'
+                                        ? JSON.parse(item.metadata)
+                                        : item.metadata || {},
                             })) || [],
                         competencies:
                             validationResult.documents.competencies?.map(
                                 item => ({
                                     name: item.document_name,
-                                    detail: item.detail
-                                        ? JSON.parse(item.detail)
-                                        : [],
+                                    detail:
+                                        typeof item.detail === 'string'
+                                            ? JSON.parse(item.detail)
+                                            : item.detail || [],
                                 }),
                             ) || [],
                         languages:
                             validationResult.documents.languages?.map(item => ({
                                 name: item.document_name,
-                                detail: item.detail
-                                    ? JSON.parse(item.detail)
-                                    : { level: '' },
+                                detail:
+                                    typeof item.detail === 'string'
+                                        ? JSON.parse(item.detail)
+                                        : item.detail || { level: '' },
                             })) || [],
                     },
                 }))
             }
         }
     }, [validationResult])
-
-    useEffect(() => {
-        if (candidateResponse?.success) {
-            toast.success('¡Aplicación registrada!', {
-                description: 'Hemos recibido tu postulación exitosamente',
-                duration: 5000,
-                action: {
-                    label: 'Cerrar',
-                    onClick: () => {},
-                },
-            })
-            setIsApplicationModalOpen(false)
-            setCurrentStep(1)
-            resetForm()
-        }
-    }, [candidateResponse])
 
     if (loading) {
         return <StandardLoader />

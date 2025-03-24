@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trash2 } from 'lucide-react'
+import { ArrowLeft, Edit, Trash2 } from 'lucide-react'
 import useDepartments from '@/hooks/useDepartments'
 import useModalities from '@/hooks/useModalities'
 import usePositions from '@/hooks/usePositions'
@@ -11,6 +11,7 @@ import DetailCard from '@/components/DetailCard'
 import CheckIcon from '@/components/CheckIcon'
 import axios from '@/lib/axios'
 import StandardLoader from '@/components/StandardLoader'
+import Badge from '@/components/Badge'
 
 const VacancyDetails = ({ params }) => {
     const router = useRouter()
@@ -221,114 +222,70 @@ const VacancyDetails = ({ params }) => {
     }
 
     return (
-        <div className="max-w-4xl p-8 mx-auto text-justify bg-white shadow-sm rounded-xl">
-            <div className="p-2 bg-white">
-                {/* Header y controles */}
-                <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
-                    {/* Botón Volver a vacantes (izquierda) */}
+        <div className="max-w-4xl p-8 mx-auto bg-white rounded-xl shadow-lg border border-[#004b9a]/20">
+            {/* Header */}
+            <div className="mb-8 border-b-2 border-[#004b9a] pb-4">
+                <div className="flex items-center justify-between">
                     <button
                         onClick={() => router.back()}
-                        className="flex items-center text-gray-600 hover:text-blue-800 group w-fit">
-                        <span className="mr-2 text-2xl transition-transform group-hover:-translate-x-1">
-                            ←
-                        </span>
+                        className="flex items-center text-[#004b9a] hover:text-[#003a7a] group">
+                        <ArrowLeft className="mr-2 transition-transform group-hover:-translate-x-1" />
                         <span className="font-medium">Volver a vacantes</span>
                     </button>
 
-                    {/* Contenedor para los botones de la derecha */}
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        {/* Modal de confirmación */}
-                        {showDeleteModal && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                                <div className="p-6 bg-white rounded-lg w-96">
-                                    <h3 className="mb-4 text-xl font-semibold">
-                                        Confirmar eliminación
-                                    </h3>
-
-                                    {deleteError && (
-                                        <div className="p-2 mb-4 text-red-600 bg-red-100 rounded">
-                                            {deleteError}
-                                        </div>
-                                    )}
-
-                                    {deleteSuccess ? (
-                                        <div className="p-2 text-green-600 bg-green-100 rounded">
-                                            Vacante eliminada exitosamente
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <p className="mb-4 text-gray-600">
-                                                ¿Estás seguro de que deseas
-                                                eliminar esta vacante?
-                                            </p>
-
-                                            <div className="flex justify-end gap-3">
-                                                <button
-                                                    type="button"
-                                                    onClick={cancelDelete}
-                                                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-                                                    Cancelar
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={confirmDelete}
-                                                    className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">
-                                                    Eliminar
-                                                </button>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Botón de eliminar modificado */}
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={openDeleteConfirmation}
-                            className="p-2 text-red-600 transition rounded-md hover:bg-red-100">
+                            className="p-2 text-red-600 transition-colors rounded-lg hover:bg-red-100">
                             <Trash2 size={24} />
                         </button>
 
-                        {/* Botón Editar Vacante */}
                         {!isEditing && (
                             <button
                                 onClick={() => setIsEditing(true)}
-                                className="px-4 py-2 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700">
+                                className="flex items-center gap-2 px-4 py-2 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7a] transition-colors">
+                                <Edit size={18} />
                                 Editar Vacante
                             </button>
                         )}
                     </div>
                 </div>
+
+                <h1 className="mt-6 text-3xl font-bold text-[#004b9a]">
+                    {vacancy.position?.description}
+                    <span className="block mt-2 text-xl text-gray-600">
+                        {vacancy.department?.name}
+                    </span>
+                </h1>
             </div>
 
             {/* Mensajes de estado */}
             {successMessage && (
-                <div className="p-4 mb-6 text-green-700 bg-green-100 rounded-lg">
+                <div className="p-4 mb-6 text-green-700 bg-green-100 border border-green-200 rounded-lg">
                     {successMessage}
                 </div>
             )}
+
             {updateError && (
-                <div className="p-4 mb-6 text-red-700 bg-red-100 rounded-lg">
+                <div className="p-4 mb-6 text-red-700 bg-red-100 border border-red-200 rounded-lg">
                     {updateError}
                 </div>
             )}
 
             {isEditing ? (
-                // Formulario de edición
+                // Formulario de edición (mantener estructura con mejoras de estilo)
                 <form onSubmit={handleUpdate} className="space-y-8">
                     <div className="grid gap-6 md:grid-cols-2">
-                        
-
-                        {/* Campo Departamento */}
+                        {/* Campos del formulario con estilos actualizados */}
                         <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
+                            <label className="block text-sm font-medium text-[#004b9a]">
                                 Departamento *
                             </label>
                             <select
                                 name="department_id"
                                 value={formState.department_id}
                                 onChange={handleChange}
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full p-3 border-2 border-[#004b9a]/20 rounded-lg focus:border-[#004b9a] focus:ring-2 focus:ring-[#004b9a]/30"
                                 required>
                                 <option value="">
                                     Seleccionar departamento
@@ -344,17 +301,19 @@ const VacancyDetails = ({ params }) => {
                             </select>
                         </div>
 
-                        {/* Campo Cargo */}
                         <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
+                            <label className="block text-sm font-medium text-[#004b9a]">
                                 Cargo *
                             </label>
                             <select
                                 name="position_id"
                                 value={formState.position_id}
                                 onChange={handleChange}
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full p-3 border-2 border-[#004b9a]/20 rounded-lg focus:border-[#004b9a] focus:ring-2 focus:ring-[#004b9a]/30"
                                 required>
+                                <option value="">
+                                    Seleccionar departamento
+                                </option>
                                 <option value="">Seleccionar Cargo</option>
                                 {positions.map(pos => (
                                     <option
@@ -367,18 +326,20 @@ const VacancyDetails = ({ params }) => {
                             </select>
                         </div>
 
-                        {/* Modalidad */}
                         <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
+                            <label className="block text-sm font-medium text-[#004b9a]">
                                 Modalidad *
                             </label>
                             <select
                                 name="mode_id"
                                 value={formState.mode_id}
                                 onChange={handleChange}
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full p-3 border-2 border-[#004b9a]/20 rounded-lg focus:border-[#004b9a] focus:ring-2 focus:ring-[#004b9a]/30"
                                 required>
-                                <option value="">Seleccionar Modalidad</option>
+                                <option value="">
+                                    Seleccionar departamento
+                                </option>
+                                <option value="">Seleccionar Cargo</option>
                                 {modalities.map(mode => (
                                     <option
                                         key={mode.id}
@@ -402,22 +363,21 @@ const VacancyDetails = ({ params }) => {
                                 value={formState.num_vacancy}
                                 onChange={handleChange}
                                 required
-                                className="p-4 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full p-3 border-2 border-[#004b9a]/20 rounded-lg focus:border-[#004b9a] focus:ring-2 focus:ring-[#004b9a]/30"
                             />
                         </div>
 
-                        {/* Modalidad */}
                         <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
+                            <label className="block text-sm font-medium text-[#004b9a]">
                                 Estado *
                             </label>
                             <select
                                 name="status_id"
                                 value={formState.status_id}
                                 onChange={handleChange}
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full p-3 border-2 border-[#004b9a]/20 rounded-lg focus:border-[#004b9a] focus:ring-2 focus:ring-[#004b9a]/30"
                                 required>
-                                <option value="">Seleccionar Modalidad</option>
+                                <option value="">Seleccionar Estado</option>
                                 {statuses.map(estatus => (
                                     <option
                                         key={estatus.id}
@@ -430,55 +390,53 @@ const VacancyDetails = ({ params }) => {
                         </div>
                     </div>
 
-                    {/* Sección de Requisitos */}
-                    <div className="space-y-4">
-                        <label className="block text-sm font-medium text-gray-700">
-                            Requisitos (uno por línea) *
+                    {/* Sección de requisitos y responsabilidades */}
+                    <div className="p-6 bg-[#004b9a]/5 rounded-xl border border-[#004b9a]/20">
+                        <label className="block mb-4 text-lg font-semibold text-[#004b9a]">
+                            Requisitos y Responsabilidades
                         </label>
-                        <textarea
-                            value={formState.requirements.join('\n')}
-                            onChange={handleRequirementsChange}
-                            className="w-full p-3 border rounded-lg h-44 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
-                        />
 
-                        <label className="block text-sm font-medium text-gray-700">
-                            Responsabilidades (uno por línea) *
-                        </label>
-                        <textarea
-                            value={formState.responsability.join('\n')}
-                            onChange={handleRequirementsChange}
-                            className="w-full p-3 border rounded-lg h-44 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
-                        />
+                        <div className="space-y-4">
+                            <textarea
+                                className="w-full p-4 border-2 border-[#004b9a]/20 rounded-lg focus:border-[#004b9a] focus:ring-2 focus:ring-[#004b9a]/30"
+                                value={formState.requirements.join('\n')}
+                                onChange={handleRequirementsChange}
+                                required
+                            />
 
+                            <textarea
+                                className="w-full p-4 border-2 border-[#004b9a]/20 rounded-lg focus:border-[#004b9a] focus:ring-2 focus:ring-[#004b9a]/30"
+                                value={formState.responsability.join('\n')}
+                                onChange={handleRequirementsChange}
+                                required
+                            />
+                        </div>
                         {/* Descripción */}
-                        <div className="flex flex-col">
-                            <label className="text-sm font-medium text-gray-600">
+                        <div className="flex flex-col space-y-4">
+                            <label className="block mb-4 text-lg font-semibold text-[#004b9a]">
                                 Descripción
                             </label>
                             <textarea
                                 name="description"
                                 value={formState.description}
                                 onChange={handleChange}
-                                className="p-4 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full p-4 border-2 border-[#004b9a]/20 rounded-lg focus:border-[#004b9a] focus:ring-2 focus:ring-[#004b9a]/30"
                                 rows="4"
                             />
                         </div>
                     </div>
 
                     {/* Botones de acción */}
-                    <div className="flex flex-col gap-4 mt-8 sm:flex-row sm:justify-end">
+                    <div className="flex gap-4 pt-6 mt-8 border-t">
                         <button
                             type="button"
                             onClick={() => setIsEditing(false)}
-                            className="px-6 py-2 text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200">
+                            className="px-6 py-2 text-[#004b9a] border-2 border-[#004b9a] rounded-lg hover:bg-[#004b9a]/10 transition-colors">
                             Cancelar
                         </button>
                         <button
                             type="submit"
-                            disabled={isUpdating}
-                            className="px-6 py-2 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                            className="px-6 py-2 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7a] transition-colors">
                             {isUpdating ? 'Guardando...' : 'Guardar Cambios'}
                         </button>
                     </div>
@@ -486,89 +444,141 @@ const VacancyDetails = ({ params }) => {
             ) : (
                 // Vista de solo lectura
                 <div className="space-y-8">
-                    {/* Encabezado */}
-                    <div className="space-y-4">
-                        <h1 className="text-3xl font-bold text-gray-900">
-                            {vacancy.position?.description}{' - '}
-                            {vacancy.department?.name}
-                        </h1>
-                        <p className="text-lg text-gray-600">
+                    {/* Detalles principales */}
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <div className="p-4 bg-[#004b9a]/5 rounded-xl border border-[#004b9a]/20">
+                            <h3 className="text-sm font-semibold text-[#004b9a] mb-2">
+                                Estado
+                            </h3>
+                            <p className='text-lg font-medium'>
+                            <Badge
+                                variant={
+                                    vacancy.status?.name === 'Activo'
+                                        ? 'success'
+                                        : vacancy.status?.name === 'Inactivo'
+                                          ? 'secondary'
+                                          : 'danyer'
+                                }>
+                                {vacancy.status?.name}
+                            </Badge>
+                            </p>
+                        </div>
+
+                        <div className="p-4 bg-[#004b9a]/5 rounded-xl border border-[#004b9a]/20">
+                            <h3 className="text-sm font-semibold text-[#004b9a] mb-2">
+                                Modalidad
+                            </h3>
+                            <p className="text-lg font-medium">
+                                {vacancy.mode?.name}
+                            </p>
+                        </div>
+
+                        <div className="p-4 bg-[#004b9a]/5 rounded-xl border border-[#004b9a]/20">
+                            <h3 className="text-sm font-semibold text-[#004b9a] mb-2">
+                                Vacantes
+                            </h3>
+                            <p className="text-lg font-medium">
+                                {vacancy.num_vacancy}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Descripción */}
+                    <div className="p-6 bg-[#004b9a]/5 rounded-xl border border-[#004b9a]/20">
+                        <h2 className="mb-4 text-lg font-semibold text-[#004b9a]">
+                            Descripción del Cargo
+                        </h2>
+                        <p className="text-gray-700 whitespace-pre-line">
                             {vacancy.description}
                         </p>
                     </div>
 
-                    {/* Detalles en tarjetas */}
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        <DetailCard
-                            title="Cargo"
-                            value={vacancy.position?.description}
-                        />
-                        <DetailCard
-                            title="Departamento"
-                            value={vacancy.department?.name}
-                        />
-                        <DetailCard
-                            title="Modalidad"
-                            value={vacancy.mode?.name}
-                        />
-                        <DetailCard
-                            title="Estatus"
-                            value={vacancy.status?.name}
-                        />
-                        <DetailCard
-                            title="Vacantes"
-                            value={vacancy.num_vacancy || 'Vacantes Cubiertas'}
-                        />
-                    </div>
-
-                    {/* Lista de Requisitos */}
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-gray-900">
-                            Requisitos principales
-                        </h2>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            {vacancy.requirements?.length > 0 ? (
-                                vacancy.requirements.map((req, index) => (
-                                    <div
+                    {/* Requisitos y Responsabilidades */}
+                    <div className="grid gap-6 md:grid-cols-2">
+                        <div className="p-6 bg-[#004b9a]/5 rounded-xl border border-[#004b9a]/20">
+                            <h2 className="mb-4 text-lg font-semibold text-[#004b9a]">
+                                Requisitos
+                            </h2>
+                            <ul className="space-y-3">
+                                {vacancy.requirements?.map((req, index) => (
+                                    <li
                                         key={index}
-                                        className="flex items-start p-4 rounded-lg bg-gray-50">
-                                        <CheckIcon />
-                                        <span className="ml-3 text-gray-700">
+                                        className="flex items-start gap-2">
+                                        <div className="w-5 h-5 mt-1 text-[#004b9a]">
+                                            <CheckIcon />
+                                        </div>
+                                        <span className="text-gray-700">
                                             {req}
                                         </span>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="p-4 text-gray-500 rounded-lg bg-gray-50">
-                                    No se han definido requisitos específicos
-                                </div>
-                            )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div className="p-6 bg-[#004b9a]/5 rounded-xl border border-[#004b9a]/20">
+                            <h2 className="mb-4 text-lg font-semibold text-[#004b9a]">
+                                Responsabilidades
+                            </h2>
+                            <ul className="space-y-3">
+                                {vacancy.responsability?.map((res, index) => (
+                                    <li
+                                        key={index}
+                                        className="flex items-start gap-2">
+                                        <div className="w-5 h-5 mt-1 text-[#004b9a]">
+                                            <CheckIcon />
+                                        </div>
+                                        <span className="text-gray-700">
+                                            {res}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
+                </div>
+            )}
 
-                    {/* Lista de Requisitos */}
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-gray-900">
-                            Responsabilidades principales
-                        </h2>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            {vacancy.responsability?.length > 0 ? (
-                                vacancy.responsability.map((req, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-start p-4 rounded-lg bg-gray-50">
-                                        <CheckIcon />
-                                        <span className="ml-3 text-gray-700">
-                                            {req}
-                                        </span>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="p-4 text-gray-500 rounded-lg bg-gray-50">
-                                    No se han definido responsabilidades específicas
+            {/* Modal de confirmación */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="p-6 bg-white rounded-xl w-96 border-2 border-[#004b9a]/20">
+                        <h3 className="mb-4 text-xl font-semibold text-[#004b9a]">
+                            Confirmar Eliminación
+                        </h3>
+
+                        {deleteError && (
+                            <div className="p-2 mb-4 text-red-600 bg-red-100 rounded">
+                                {deleteError}
+                            </div>
+                        )}
+
+                        {deleteSuccess ? (
+                            <div className="p-2 text-green-600 bg-green-100 rounded">
+                                Vacante eliminada exitosamente
+                            </div>
+                        ) : (
+                            <>
+                                <p className="mb-4 text-gray-600">
+                                    ¿Estás seguro de que deseas eliminar esta
+                                    vacante?
+                                </p>
+
+                                <div className="flex justify-end gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={cancelDelete}
+                                        className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={confirmDelete}
+                                        className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">
+                                        Eliminar
+                                    </button>
                                 </div>
-                            )}
-                        </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

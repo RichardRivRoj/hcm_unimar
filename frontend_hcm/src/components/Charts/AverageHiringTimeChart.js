@@ -11,7 +11,7 @@ const AverageHiringTimeChart = ({ data }) => {
         backgroundColor: '#004b9a', // Color de las barras
         borderColor: '#003a7a', // Borde de las barras
         borderWidth: 1,
-        borderRadius: 4, // Bordes redondeados
+        borderRadius: 8, // Bordes redondeados
       }
     ]
   };
@@ -22,13 +22,6 @@ const AverageHiringTimeChart = ({ data }) => {
     plugins: {
       legend: {
         position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Tiempo Promedio de Contratación por Departamento',
-        font: {
-          size: 16
-        }
       },
       tooltip: {
         enabled: true,

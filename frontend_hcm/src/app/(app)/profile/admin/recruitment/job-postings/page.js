@@ -11,8 +11,11 @@ import useVacancies from '@/hooks/useVacancies'
 import useStatuses from '@/hooks/useStatuses'
 import StandardLoader from '@/components/StandardLoader'
 import StandardTable from '@/components/StandardTable'
+import CreateVacancyForm from './CreateVacancyForm'
 import { toast } from 'sonner'
 import { mutate } from 'swr'
+import { GeneralModal } from '@/components/Modal'
+import Badge from '@/components/Badge'
 
 const JobListPage = () => {
     const router = useRouter()
@@ -74,22 +77,6 @@ const JobListPage = () => {
         }))
     }
 
-    const handleRequirementsChange = e => {
-        const requirementsArray = e.target.value.split('\n')
-        setFormState(prev => ({
-            ...prev,
-            requirements: requirementsArray,
-        }))
-    }
-
-    const handleResponsabilityChange = e => {
-        const responsabilityArray = e.target.value.split('\n')
-        setFormState(prev => ({
-            ...prev,
-            responsability: responsabilityArray,
-        }))
-    }
-
     const handleSubmit = async e => {
         e.preventDefault()
 
@@ -148,8 +135,8 @@ const JobListPage = () => {
         },
         {
             header: 'Departamento',
-            accessor: 'name',
-            render: item => ` ${item.department?.name}`,
+            accessor: 'description',
+            render: item => ` ${item.department?.description}`,
         },
         {
             header: 'Cargo',
@@ -164,7 +151,24 @@ const JobListPage = () => {
         {
             header: 'Estatus',
             accessor: 'status.name',
-            render: item => ` ${item.status?.name}`,
+            render: item => {
+                // Mapeo de estados a variantes
+                const statusVariant = {
+                    'Activo': 'success',
+                    'Inactivo': 'secondary',
+                    'Pendiente': 'default',
+                    // Agrega más mapeos según tus necesidades
+                }
+                
+                return (
+                    <Badge
+                        variant={statusVariant[item.status?.name] || 'default'}
+                        className="capitalize" // Para texto en minúsculas
+                    >
+                        {item.status?.name}
+                    </Badge>
+                )
+            }
         },
     ]
 
@@ -219,7 +223,14 @@ const JobListPage = () => {
     if (error) return <div className="p-6 text-red-600">Error: {error}</div>
 
     return (
-        <div className="static min-h-screen">
+        <div className="static min-h-screen ml-5 space-y-4">
+            <div className="flex justify-end mt-6 ">
+                <button
+                    onClick={() => setIsCreating(true)}
+                    className="px-6 py-2 bg-[#004b9a] text-white rounded-lg hover:bg-[#003a7a] transition-colors flex items-center gap-2">
+                    Crear Nueva Vacante
+                </button>
+            </div>
             {/* Tabla de vacantes */}
             <StandardTable
                 title="Resumen de Vacantes"
@@ -239,163 +250,42 @@ const JobListPage = () => {
                 actions={tableActions}
             />
 
-            <div className="flex justify-end mt-6">
-                <button
-                    onClick={() => setIsCreating(true)}
-                    className="px-6 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none">
-                    Crear Nueva Vacante
-                </button>
-            </div>
-
             {/* Formulario para crear vacante */}
             {isCreating && (
-                <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="w-3/6 p-8 overflow-y-auto bg-white rounded-lg shadow-lg h-3/4 sm:w-3/6 scrollbar-none">
-                        <h1 className="mb-6 text-2xl font-semibold text-gray-700">
-                            Crear Vacante
-                        </h1>
+                <GeneralModal
+                    size="p2xl"
+                    isOpen={isCreating}
+                    onClose={() => {
+                        setIsCreating(false)
+                    }}>
+                    <CreateVacancyForm
+                        departments={departments}
+                        positions={positions}
+                        modalities={modalities}
+                        onSubmit={async formData => {
+                            try {
+                                const payload = {
+                                    ...formData,
+                                    requirements: JSON.stringify(
+                                        formData.requirements,
+                                    ),
+                                    responsability: JSON.stringify(
+                                        formData.responsability,
+                                    ),
+                                }
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* Departamento */}
-                            <div className="flex flex-col">
-                                <label className="text-sm font-medium text-gray-600">
-                                    Departamento *
-                                </label>
-                                <select
-                                    name="department_id"
-                                    value={formState.department_id}
-                                    onChange={handleChange}
-                                    required
-                                    className="p-4 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                    <option value="">
-                                        Seleccione departamento
-                                    </option>
-                                    {departments.map(dept => (
-                                        <option key={dept.id} value={dept.id}>
-                                            {dept.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Posición */}
-                            <div className="flex flex-col">
-                                <label className="text-sm font-medium text-gray-600">
-                                    Posición *
-                                </label>
-                                <select
-                                    name="position_id"
-                                    value={formState.position_id}
-                                    onChange={handleChange}
-                                    required
-                                    className="p-4 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                    <option value="">
-                                        Seleccione posición
-                                    </option>
-                                    {positions.map(pos => (
-                                        <option key={pos.id} value={pos.id}>
-                                            {pos.description}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Modalidad */}
-                            <div className="flex flex-col">
-                                <label className="text-sm font-medium text-gray-600">
-                                    Modalidad *
-                                </label>
-                                <select
-                                    name="mode_id"
-                                    value={formState.mode_id}
-                                    onChange={handleChange}
-                                    required
-                                    className="p-4 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                    <option value="">
-                                        Seleccione modalidad
-                                    </option>
-                                    {modalities.map(mod => (
-                                        <option key={mod.id} value={mod.id}>
-                                            {mod.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Número de vacantes */}
-                            <div className="flex flex-col">
-                                <label className="text-sm font-medium text-gray-600">
-                                    Número de vacantes *
-                                </label>
-                                <input
-                                    type="number"
-                                    name="num_vacancy"
-                                    min="1"
-                                    value={formState.num_vacancy}
-                                    onChange={handleChange}
-                                    required
-                                    className="p-4 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                />
-                            </div>
-
-                            {/* Requisitos */}
-                            <div className="flex flex-col">
-                                <label className="text-sm font-medium text-gray-600">
-                                    Requisitos (uno por línea)
-                                </label>
-                                <textarea
-                                    value={formState.requirements.join('\n')}
-                                    onChange={handleRequirementsChange}
-                                    className="p-4 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                    rows="4"
-                                />
-                            </div>
-
-                            {/* Requisitos */}
-                            <div className="flex flex-col">
-                                <label className="text-sm font-medium text-gray-600">
-                                    Responsabilidades (uno por línea)
-                                </label>
-                                <textarea
-                                    value={formState.responsability.join('\n')}
-                                    onChange={handleResponsabilityChange}
-                                    className="p-4 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                    rows="4"
-                                />
-                            </div>
-
-                            {/* Descripción */}
-                            <div className="flex flex-col">
-                                <label className="text-sm font-medium text-gray-600">
-                                    Descripción
-                                </label>
-                                <textarea
-                                    name="description"
-                                    value={formState.description}
-                                    onChange={handleChange}
-                                    className="p-4 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                    rows="4"
-                                />
-                            </div>
-                            <div className="flex justify-end gap-4">
-                                <button
-                                    onClick={() => setIsCreating(false)}
-                                    className="w-1/4 px-3 py-2 mt-4 text-white bg-gray-400 rounded-lg hover:bg-gray-500">
-                                    Cancelar
-                                </button>
-
-                                <button
-                                    type="submit"
-                                    disabled={!isFormValid || creatingJob}
-                                    className="w-1/4 px-3 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50">
-                                    {creatingJob
-                                        ? 'Creando...'
-                                        : 'Crear Vacante'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                                await createVacancies(payload)
+                                toast.success('Vacante creada exitosamente')
+                                setIsCreating(false)
+                                mutate()
+                            } catch (error) {
+                                toast.error(`Error: ${error.message}`)
+                            }
+                        }}
+                        onCancel={() => setIsCreating(false)}
+                        isSubmitting={creatingJob}
+                    />
+                </GeneralModal>
             )}
         </div>
     )

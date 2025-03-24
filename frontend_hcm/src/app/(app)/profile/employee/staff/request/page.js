@@ -13,6 +13,8 @@ import CreateRequestForm from './CreateRequestForm'
 import { Alert, AlertDescription } from '@/components/alert'
 import EditRequestForm from './EditRequestForm'
 import Loader from '@/components/Loader'
+import StandardLoader from '@/components/StandardLoader'
+import BadgeRequest from '@/components/BadgeRequest'
 
 const EmployeeRequestsPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -73,20 +75,7 @@ const EmployeeRequestsPage = () => {
         {
             header: 'Estado',
             accessor: 'estatus',
-            render: item => (
-                <span
-                    className={`px-2 py-1 rounded ${
-                        item.estatus === 'Pendiente'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : item.estatus === 'Aprobado'
-                              ? 'bg-green-100 text-green-800'
-                              : item.estatus === 'Cancelado'
-                                ? 'bg-gray-100 text-gray-800'
-                                : 'bg-red-100 text-red-800'
-                    }`}>
-                    {item.estatus}
-                </span>
-            ),
+            render: item => <BadgeRequest>{item.estatus}</BadgeRequest>
         },
         {
             header: 'Fecha de Solicitud',
@@ -94,13 +83,15 @@ const EmployeeRequestsPage = () => {
         },
     ]
 
+    
+
     const handleSuccess = () => {
         refetch() // Actualizar tabla después de crear
         setIsModalOpen(false) // Cerrar modal
     }
 
     // Manejo de estados de carga y error
-    if (loading) return <Loader />
+    if (loading) return <StandardLoader />
 
     if (error)
         return (
@@ -110,7 +101,7 @@ const EmployeeRequestsPage = () => {
         )
 
     return (
-        <div className="p-6">
+        <div className="p-6 ml-8">
             {/* Mensaje de error flotante */}
             {errorMessage && (
                 <div className="fixed z-50 top-4 right-4">
@@ -186,7 +177,7 @@ const EmployeeRequestsPage = () => {
             <div className="flex justify-end mb-4">
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="flex items-center px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                    className="px-6 py-2 bg-[#004b9a] text-white rounded-lg hover:bg-[#003a7a] transition-colors flex items-center gap-2">
                     <PlusCircle className="w-5 h-5 mr-2" />
                     Nueva Solicitud
                 </button>
@@ -234,7 +225,7 @@ const EmployeeRequestsPage = () => {
                                 setEditModalOpen(true)
                             }
                         },
-                        disabled: item => item.estatus !== 'Pendiente'
+                        disiable: item => item.estatus !== 'Pendiente' ? 'hidden' : ''
                     },
                     {
                         icon: <TrashIcon className="w-4 h-4" />,

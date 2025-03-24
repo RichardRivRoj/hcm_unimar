@@ -55,13 +55,29 @@ const SectionStep = ({
 
     const currentQuestion = section.questions?.[localIndex] || {}
 
+    const isCurrentQuestionValid = useCallback(() => {
+        const currentQuestionId = section.questions[localIndex]?.id
+        return (
+            scores[section.id]?.[currentQuestionId]?.score !== null &&
+            scores[section.id]?.[currentQuestionId]?.comment?.trim() !== ''
+        )
+    }, [localIndex, scores, section])
+
     const handleNext = useCallback(() => {
+        if (!isCurrentQuestionValid()) return
+
         if (localIndex < section.questions.length - 1) {
             handleNavigation('next')
         } else if (isComplete) {
-            onNext() // Solo se ejecuta si la sección está completa
+            onNext()
         }
-    }, [localIndex, section.questions.length, isComplete, onNext])
+    }, [
+        localIndex,
+        section.questions.length,
+        isComplete,
+        onNext,
+        isCurrentQuestionValid,
+    ])
 
     return (
         <motion.div
@@ -122,14 +138,20 @@ const SectionStep = ({
                     onClick={handleNext}
                     className="px-6 py-2 bg-[#004b9a] text-white rounded-lg hover:bg-[#003a7a] disabled:opacity-50"
                     disabled={
-                        !isComplete &&
-                        localIndex === section.questions.length - 1
+                        (!isCurrentQuestionValid() &&
+                            localIndex === section.questions.length - 1) ||
+                        (!isComplete &&
+                            localIndex === section.questions.length - 1)
                     }>
                     {localIndex === section.questions.length - 1
                         ? isComplete
                             ? 'Siguiente Sección'
-                            : 'Completa todas las preguntas'
-                        : 'Siguiente'}
+                            : !isCurrentQuestionValid()
+                              ? 'Completa la pregunta actual'
+                              : 'Completa todas las preguntas'
+                        : !isCurrentQuestionValid()
+                          ? 'Completa los campos requeridos'
+                          : 'Siguiente'}
                 </button>
             </div>
         </motion.div>

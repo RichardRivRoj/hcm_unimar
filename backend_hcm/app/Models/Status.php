@@ -12,6 +12,10 @@ class Status extends Model
         'name'
     ];
 
+    // Constantes para los estados
+    public const ACTIVE = 1; // ID del estado "Activo"
+    public const INACTIVE = 2; // ID del estado "Inactivo"
+
     public function persons()
     {
         return $this->hasOne(Person::class, 'status_id');

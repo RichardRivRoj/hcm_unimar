@@ -10,14 +10,14 @@ class Document extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'metadata' => 'array'
+    ];
+
     protected $fillable = [
         'person_id', 'document_type_id', 'document_name',
         'issue_date', 'expiration_date', 'detail' , 'metadata',
         'file_path', 'status',
-    ];
-
-    protected $casts = [
-        'metadata' => 'array'
     ];
 
     public function persons()

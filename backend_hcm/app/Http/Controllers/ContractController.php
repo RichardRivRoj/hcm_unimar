@@ -77,7 +77,7 @@ class ContractController extends Controller
             ] : null,
             'salary_info' => $salary ? [
                 'amount' => $salary->amount,
-                'currency' => $salary->currency->code ?? 'USD'
+                'currency' => $salary->currency->short_name ?? 'USD'
             ] : null,
             'meta' => [
                 'current_page' => $contracts->currentPage(),

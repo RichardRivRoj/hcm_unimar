@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/skeleton'
 import useDebounce from '@/hooks/general/useDebounce'
 import { useAdminRequests } from '@/hooks/admin/useAdminRequests'
 import StandardLoader from '@/components/StandardLoader'
+import BadgeRequest from '@/components/BadgeRequest'
 
 const AdminRequests = () => {
     const router = useRouter()
@@ -26,23 +27,32 @@ const AdminRequests = () => {
         refetch: fetchRequests
     } = useAdminRequests()
 
+    useEffect(() => {
+        setSearchTerm(filters.search || '')
+    }, [filters.search])
+
     // Configuración de la tabla
     const tableConfig = {
         title: 'Listado de Solicitudes',
         columns: [
-            { header: 'Nombre Completo', accessor: 'full_name' },
-            { header: 'Tipo de Identificación', accessor: 'identification_type' },
-            { header: 'Número de Identificación', accessor: 'identification_number' },
-            { header: 'Departamento', accessor: 'department' },
             { header: 'Tipo de Solicitud', accessor: 'request_type' },
-            { header: 'Estado de Solicitud', accessor: 'request_status' },
+            { header: 'Nombre Completo', accessor: 'full_name' },
+            { header: 'Documento', accessor: 'identification_type', render: (item) => `${item.identification_type} - ${item.identification_number}` },
+            { header: 'Departamento', accessor: 'department' },
+            { header: 'Estado', accessor: 'request_status', render: (item) => <BadgeRequest>{item.request_status}</BadgeRequest> },
             { 
                 header: 'Fecha de Creación', 
                 accessor: 'created_at', 
-                render: (item) => new Date(item.created_at).toLocaleDateString()
+                render: (item) => new Date(item.created_at).toLocaleDateString('es-ES', { timeZone: 'UTC' })
             }
         ],
         filters: [
+            {
+                type: 'search',
+                name: 'search',
+                placeholder: 'Buscar por nombre...',
+                value: searchTerm // Usamos el estado local aquí
+            },
             {
                 name: 'request_type',
                 placeholder: 'Filtrar por Tipo de Solicitud',
@@ -72,7 +82,13 @@ const AdminRequests = () => {
         currentPage: meta.current_page || 1,
         totalPages: meta.last_page || 1,
         onPageChange: page => fetchRequests(page),
-        onFilterChange: updateFilter,
+        onFilterChange: (name, value) => {
+            if (name === 'search') {
+                setSearchTerm(value) // Actualizamos el estado local para búsqueda
+            } else {
+                updateFilter(name, value) // Filtros normales sin debounce
+            }
+        },
     }
 
     // Sincronizar búsqueda con debounce
@@ -94,16 +110,8 @@ const AdminRequests = () => {
     }
 
     return (
-        <div className="static min-h-screen">
-            <div className="grid grid-cols-1 gap-4 p-6 mx-auto mt-6 ml-6 bg-white rounded-lg shadow-lg md:grid-cols-1">
-                <Input
-                    type="text"
-                    placeholder="Buscar por nombre..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full border-b-2 focus:border-blue-500"
-                />
-            </div>
+        <div className="static min-h-screen ml-10">
+       
 
             <StandardTable
                 {...tableConfig}
@@ -111,6 +119,7 @@ const AdminRequests = () => {
                 loading={loading}
                 className="bg-white rounded-lg shadow-lg"
             />
+
         </div>
     )
 }

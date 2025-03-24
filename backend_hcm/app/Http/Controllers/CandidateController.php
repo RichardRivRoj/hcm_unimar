@@ -53,7 +53,7 @@ class CandidateController extends Controller
         });
 
         // Paginar los resultados
-        $candidates = $query->paginate(20);
+        $candidates = $query->paginate(10);
 
         return response()->json([
             'success' => true,
@@ -330,7 +330,7 @@ class CandidateController extends Controller
                         [
                             'issue_date' => $this->sanitizeDateInput($documentData['issue_date'] ?? null),
                             'expiration_date' => $this->sanitizeDateInput($documentData['expiration_date'] ?? null),
-                            'metadata' => $this->parseDocumentData($type, $documentData),
+                            'metadata' => $this->parseDocumentData($documentData, $type),
                             'detail' => $this->parseDetail($type, $documentData)
                         ]
                     );
@@ -341,34 +341,37 @@ class CandidateController extends Controller
 
     private function parseDocumentData($documentData, $type)
     {
-        $commonData = [
-            'issue_date' => $this->sanitizeDateInput($documentData['issue_date'] ?? null),
-            'expiration_date' => $this->sanitizeDateInput($documentData['expiration_date'] ?? null),
-        ];
+        $metadata = [];
 
         switch ($type) {
             case 'jobs':
-                $commonData['metadata'] = json_encode([
+                $metadata = [
                     'company_name' => $documentData['metadata']['company_name'] ?? null,
                     'position' => $documentData['metadata']['position'] ?? null,
                     'responsibilities' => $documentData['metadata']['responsibilities'] ?? null,
-                ]);
+                ];
                 break;
+
             case 'studies':
-                $commonData['metadata'] = json_encode([
+                $metadata = [
                     'institution' => $documentData['metadata']['institution'] ?? null,
                     'degree' => $documentData['metadata']['degree'] ?? null,
-                ]);
+                ];
                 break;
+
             case 'courses':
-                $commonData['metadata'] = json_encode([
+                $metadata = [
                     'hours' => $documentData['metadata']['hours'] ?? null,
                     'instructor' => $documentData['metadata']['instructor'] ?? null,
-                ]);
+                ];
+                break;
+
+            default:
+                $metadata = [];
                 break;
         }
 
-        return $commonData;
+        return !empty($metadata) ? json_encode($metadata) : null;
     }
 
     private function parseDetail($type, $documentData)
@@ -471,14 +474,38 @@ class CandidateController extends Controller
                     'countries_id'
                 ]);
 
+                // Procesar documentos para limpiar metadata
+                $processDocumentMetadata = function ($document) {
+                    $metadata = $document->metadata;
+
+                    // Si metadata es una cadena, decodifícala
+                    if (is_string($metadata)) {
+                        $metadata = json_decode($metadata, true) ?? [];
+                    }
+
+                    // Si metadata es null, conviértelo en un array vacío
+                    if (is_null($metadata)) {
+                        $metadata = [];
+                    }
+
+                    // Eliminar campos redundantes solo para tipos específicos
+                    if (in_array($document->document_type_id, [1, 2, 3])) { // Jobs, Estudios, Cursos
+                        unset($metadata['issue_date'], $metadata['expiration_date']);
+                    }
+
+                    $document->metadata = $metadata;
+                    return $document;
+                };
+
                 $response['documents'] = [
-                    'jobs' => $person->documents->where('document_type_id', 1)->values(),
-                    'studies' => $person->documents->where('document_type_id', 2)->values(),
-                    'courses' => $person->documents->where('document_type_id', 3)->values(),
+                    'jobs' => $person->documents->where('document_type_id', 1)->map($processDocumentMetadata)->values(),
+                    'studies' => $person->documents->where('document_type_id', 2)->map($processDocumentMetadata)->values(),
+                    'courses' => $person->documents->where('document_type_id', 3)->map($processDocumentMetadata)->values(),
                     'competencies' => $person->documents->where('document_type_id', 10)->values(),
                     'languages' => $person->documents->where('document_type_id', 9)->values()
                 ];
             }
+
 
             return response()->json($response);
         } catch (\Exception $e) {

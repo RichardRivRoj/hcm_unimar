@@ -72,8 +72,8 @@ const CompetenceStep = memo(
                     section.questions?.every(question => {
                         const questionData = scores[section.id]?.[question.id]
                         return (
-                            questionData?.score !== undefined &&
-                            questionData?.score !== null
+                            questionData?.score !== null &&
+                            questionData?.comment?.trim() !== ''
                         )
                     }) ?? false
                 )

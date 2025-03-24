@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import axios from '@/lib/axios'
 import { useCreateEmployeeRequest } from '@/hooks/employee/useEmployeeRequests'
+import { toast } from 'sonner'
 
 const CreateRequestForm = ({ onSuccess, onCancel }) => {
     const [requestTypes, setRequestTypes] = useState([])
@@ -24,7 +25,7 @@ const CreateRequestForm = ({ onSuccess, onCancel }) => {
                 })
                 setRequestTypes(response.data)
             } catch (err) {
-                console.error('Error fetching request types:', err)
+                toast.error('Error fetching request types:', err)
             }
         }
 
@@ -43,7 +44,7 @@ const CreateRequestForm = ({ onSuccess, onCancel }) => {
             onSuccess?.()
             window.location.reload()
         } catch (error) {
-            console.error('Error creando solicitud:', error)
+            toast.error('Error creando solicitud', error)
         }
     }
 
@@ -118,7 +119,7 @@ const CreateRequestForm = ({ onSuccess, onCancel }) => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">
+                    className="flex items-center gap-2 px-4 py-2 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7a] transition-colors">
                     {loading ? 'Enviando...' : 'Crear Solicitud'}
                 </button>
             </div>

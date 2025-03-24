@@ -69,8 +69,6 @@ class EmployeeRequestController extends Controller
      */
     public function store(HttpRequest $request)
     {
-
-        // Limpiar datos entrantes (solo campos necesarios)
         $request->merge([
             'request_type_id' => $request->request_type_id,
             'description' => $request->description
@@ -92,17 +90,30 @@ class EmployeeRequestController extends Controller
                 ], 403);
             }
 
-            $pendingRequests = $employee->requests
-                ->where('request_status_id', 1)
-                ->count();
-
-            if ($pendingRequests >= 3) {
-                return response()->json([
-                    'error' => 'Límite de solicitudes pendientes alcanzado'
-                ], 400);
-            }
-
             return DB::transaction(function () use ($employee, $validated) {
+                // Validar solicitud duplicada del mismo tipo pendiente
+                if ($employee->requests()
+                    ->where('request_type_id', $validated['request_type_id'])
+                    ->where('request_status_id', 1)
+                    ->exists()
+                ) {
+                    return response()->json([
+                        'error' => 'Ya existe una solicitud pendiente del mismo tipo'
+                    ], 400);
+                }
+
+                // Validar límite de solicitudes pendientes
+                $pendingCount = $employee->requests()
+                    ->where('request_status_id', 1)
+                    ->count();
+
+                if ($pendingCount >= 3) {
+                    return response()->json([
+                        'error' => 'Límite de solicitudes pendientes alcanzado'
+                    ], 400);
+                }
+
+                // Crear la nueva solicitud
                 $newRequest = $employee->requests()->create([
                     'request_type_id' => $validated['request_type_id'],
                     'request_status_id' => 1,
@@ -119,7 +130,6 @@ class EmployeeRequestController extends Controller
                 ], 201);
             });
         } catch (QueryException $e) {
-
             Log::error('Error en BD: ' . $e->getMessage());
             return response()->json([
                 'error' => 'Error de base de datos',
@@ -138,9 +148,9 @@ class EmployeeRequestController extends Controller
         try {
             $request = Request::with(['requestType', 'requestStatus'])
                 ->findOrFail($id);
-    
+
             $employee = Auth::user()->person->employee;
-    
+
             // Validar pertenencia de la solicitud
             if ($request->employee_id != $employee->id) {
                 return response()->json([
@@ -148,10 +158,10 @@ class EmployeeRequestController extends Controller
                     'message' => 'Esta solicitud no te pertenece'
                 ], 403);
             }
-    
+
             // Parsear el JSON de descripción
             $description = json_decode($request->description, true);
-    
+
             return response()->json([
                 'data' => [
                     'id' => $request->id,
@@ -165,7 +175,6 @@ class EmployeeRequestController extends Controller
                     ]
                 ]
             ]);
-    
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Error al obtener la solicitud',

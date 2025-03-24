@@ -44,12 +44,12 @@ class Person extends Model
         return $this->belongsTo(Gender::class, 'gender_id');
     }
 
-    public function country()
+    public function countries()
     {
         return $this->belongsTo(Country::class, 'countries_id');
     }
 
-    public function maritalstatus()
+    public function marital_status()
     {
         return $this->belongsTo(MaritalStatus::class, 'marital_status_id');
     }

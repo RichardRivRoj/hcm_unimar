@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class AgendaController extends Controller
 {
@@ -93,6 +94,9 @@ class AgendaController extends Controller
      */
     public function store(Request $request)
     {
+        // Generar horarios válidos
+        $validTimes = $this->getValidTimeSlots();
+
         // Validar los datos del formulario
         $validated = $request->validate([
             'candidate_id' => 'required|exists:candidates,id',
@@ -100,7 +104,6 @@ class AgendaController extends Controller
                 'required',
                 'exists:type_agendas,id',
                 function ($attribute, $value, $fail) use ($request) {
-                    // Verificar si ya existe una agenda del mismo tipo para el candidato
                     $existingAgenda = Agenda::where('candidate_id', $request->candidate_id)
                         ->where('type_agenda_id', $value)
                         ->exists();
@@ -114,7 +117,10 @@ class AgendaController extends Controller
                 'required',
                 'date',
                 function ($attribute, $value, $fail) {
-                    if (Carbon::parse($value)->isPast()) {
+                    $scheduledDate = Carbon::parse($value)->startOfDay();
+                    $today = Carbon::today()->startOfDay();
+
+                    if ($scheduledDate->lt($today)) {
                         $fail('La fecha no puede ser anterior a la fecha actual.');
                     }
                 }
@@ -122,10 +128,21 @@ class AgendaController extends Controller
             'time' => [
                 'required',
                 'date_format:H:i',
+                Rule::in($validTimes),
+                function ($attribute, $value, $fail) use ($request) {
+                    $exists = Agenda::where('scheduled_date', $request->scheduled_date)
+                        ->where('time', $value)
+                        ->exists();
+
+                    if ($exists) {
+                        $fail('Horario no disponible.');
+                    }
+                },
                 function ($attribute, $value, $fail) use ($request) {
                     $scheduledDateTime = Carbon::parse($request->scheduled_date . ' ' . $value);
+
                     if ($scheduledDateTime->isBefore(now()->addHour())) {
-                        $fail('La hora no puede ser menos de una hora a partir de ahora.');
+                        $fail('Debe haber al menos 1 hora de anticipación.');
                     }
                 }
             ],
@@ -149,9 +166,7 @@ class AgendaController extends Controller
 
             // Convertir los datos en un array antes de enviarlos
             $agendaData = [
-                'candidate' => [
-                    'name' => $candidate->persons->first_name,
-                ],
+                'candidate' => $candidate->persons->first_name . ' ' . $candidate->persons->last_name,
                 'typeAgenda' => $typeAgenda->name,
                 'scheduledDate' => Carbon::parse($agenda->scheduled_date)->format('d/m/Y'),
                 'time' => Carbon::parse($agenda->time)->format('h:i A'),
@@ -176,6 +191,37 @@ class AgendaController extends Controller
                 'details' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function getValidTimes()
+    {
+        return response()->json($this->getValidTimeSlots());
+    }
+
+    // Generador de horarios válidos
+    private function getValidTimeSlots()
+    {
+        $slots = [];
+        $startMorning = Carbon::createFromTime(8, 0);
+        $endMorning = Carbon::createFromTime(11, 30);
+        $startAfternoon = Carbon::createFromTime(13, 30);
+        $endOfWorkday = Carbon::createFromTime(16, 30);
+
+        // Generar horarios mañana
+        $current = $startMorning->copy();
+        while ($current <= $endMorning) {
+            $slots[] = $current->format('H:i');
+            $current->addMinutes(30);
+        }
+
+        // Generar horarios tarde
+        $current = $startAfternoon->copy();
+        while ($current <= $endOfWorkday) {
+            $slots[] = $current->format('H:i');
+            $current->addMinutes(30);
+        }
+
+        return $slots;
     }
 
     /**
@@ -215,10 +261,13 @@ class AgendaController extends Controller
             'agenda' => [
                 'id' => $agenda->id,
                 'scheduled_date' => $agenda->scheduled_date,
+                'time_raw' => $agenda->time, // Valor original de la base de datos
                 'time' => $formattedTime,
                 'location' => $agenda->location,
-                'status' => $agenda->status->name, // Asumiendo que el modelo Status tiene un campo 'name'
-                'type_agenda' => $agenda->typeagenda->name, // Asumiendo que el modelo TypeAgenda tiene un campo 'name'
+                'status_id' => $agenda->status->id, // <-- Nuevo campo
+                'status' => $agenda->status->name,
+                'type_agenda_id' => $agenda->typeagenda->id, // <-- Nuevo campo
+                'type_agenda' => $agenda->typeagenda->name,
                 'has_rating' => $agenda->agendaresult()->exists(), // Verificar si tiene resultados
             ],
             'candidate' => [
@@ -228,7 +277,7 @@ class AgendaController extends Controller
                     'last_name' => $agenda->candidate->persons->last_name,
                     'email' => $agenda->candidate->persons->email,
                     'phone' => $agenda->candidate->persons->phone,
-                    'identification_value' =>  $agenda->candidate->persons->identificationtype->code . ' ' . $agenda->candidate->persons->identification_value,
+                    'identification_value' =>  $agenda->candidate->persons->identificationtype->code . ' - ' . $agenda->candidate->persons->identification_value,
                     'ethnicity' => $agenda->candidate->persons->ethnicity->name, // Asumiendo que el modelo Ethnicity tiene un campo 'name'
                     'gender' => $agenda->candidate->persons->gender->name ?? 'NA', // Asumiendo que el modelo Gender tiene un campo 'name'
                     'country' => $agenda->candidate->persons->country->name, // Asumiendo que el modelo Country tiene un campo 'name'
@@ -263,11 +312,59 @@ class AgendaController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // Validación de datos
+        // Generar horarios válidos
+        $validTimes = $this->getValidTimeSlots();
+
+        // Validar los datos del formulario
         $validated = $request->validate([
-            'type_agenda_id' => 'required|exists:type_agendas,id',
-            'scheduled_date' => 'required|date',
-            'time' => 'required|date_format:H:i',
+            'type_agenda_id' => [
+                'required',
+                'exists:type_agendas,id',
+                function ($attribute, $value, $fail) use ($request, $id) {
+                    $existingAgenda = Agenda::where('candidate_id', Agenda::find($id)->candidate_id)
+                        ->where('type_agenda_id', $value)
+                        ->where('id', '!=', $id)
+                        ->exists();
+
+                    if ($existingAgenda) {
+                        $fail('Ya existe una agenda de este tipo para el candidato.');
+                    }
+                }
+            ],
+            'scheduled_date' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    $scheduledDate = Carbon::parse($value)->startOfDay();
+                    $today = Carbon::today()->startOfDay();
+
+                    if ($scheduledDate->lt($today)) {
+                        $fail('La fecha no puede ser anterior a la fecha actual.');
+                    }
+                }
+            ],
+            'time' => [
+                'required',
+                'date_format:H:i',
+                Rule::in($validTimes),
+                function ($attribute, $value, $fail) use ($request, $id) {
+                    $exists = Agenda::where('scheduled_date', $request->scheduled_date)
+                        ->where('time', $value)
+                        ->where('id', '!=', $id)
+                        ->exists();
+
+                    if ($exists) {
+                        $fail('Horario no disponible.');
+                    }
+                },
+                function ($attribute, $value, $fail) use ($request) {
+                    $scheduledDateTime = Carbon::parse($request->scheduled_date . ' ' . $value);
+
+                    if ($scheduledDateTime->isToday() && $scheduledDateTime->isBefore(now()->addHour())) {
+                        $fail('Debe haber al menos 1 hora de anticipación para eventos hoy.');
+                    }
+                }
+            ],
             'location' => 'required|string|max:255',
             'status_id' => 'required|exists:statuses,id'
         ]);
@@ -284,9 +381,14 @@ class AgendaController extends Controller
             // Obtener datos actualizados
             $agenda->refresh();
 
+            // Si cambió el estado a "En Progreso"
+            if ($agenda->status_id == StatusApplication::where('name', 'En Progreso')->first()->id) {
+                $agenda->candidate->update(['status_application_id' => $agenda->status_id]);
+            }
+
             // Preparar datos para el correo
             $emailData = [
-                'candidate_name' => $agenda->candidate->persons->first_name,
+                'candidate_name' => $agenda->candidate->persons->first_name . ' ' . $agenda->candidate->persons->last_name,
                 'type_agenda' => $agenda->typeagenda->name,
                 'scheduled_date' => Carbon::parse($agenda->scheduled_date)->format('d/m/Y'),
                 'time' => Carbon::parse($agenda->time)->format('h:i A'),
@@ -298,7 +400,6 @@ class AgendaController extends Controller
             Mail::to($agenda->candidate->persons->email)
                 ->send(new InterviewUpdated($emailData));
 
-            // Commit de la transacción
             DB::commit();
 
             return response()->json([
