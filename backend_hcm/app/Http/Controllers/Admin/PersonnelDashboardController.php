@@ -8,6 +8,7 @@ use App\Models\Ethnicity;
 use App\Models\Gender;
 use App\Models\MaritalStatus;
 use App\Models\Person;
+use App\Models\Request as ModelsRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -23,6 +24,11 @@ class PersonnelDashboardController extends Controller
             ->when($startDate, function ($q) use ($startDate) {
                 $q->where('created_at', '>=', $startDate);
             });
+        $requestQuery = ModelsRequest::query()
+            ->when($startDate, function ($q) use ($startDate) {
+                $q->where('created_at', '>=', $startDate);
+            });
+
 
         // Resto del código se mantiene igual...
         $genderData = $this->getDemographicData($query, 'gender_id', Gender::class);
@@ -38,6 +44,10 @@ class PersonnelDashboardController extends Controller
         // KPI 4: Distribución por Nivel
         $levelDistribution = $this->getLevelDistributionData($query);
 
+        // Nuevo KPI: Tipos de Solicitudes (filtrado por fecha de creación de la solicitud)
+
+        $requestTypeData = $this->getRequestTypeData($requestQuery);
+
         return response()->json([
             'gender' => $genderData,
             'ethnicity' => $ethnicityData,
@@ -45,6 +55,7 @@ class PersonnelDashboardController extends Controller
             'marital_status' => $maritalStatusData, // Nuevo KPI
             'age_pyramid' => $agePyramidData,
             'level_distribution' => $levelDistribution,
+            'request_types' => $requestTypeData,
             'filters' => [
                 'time_ranges' => $this->getTimeRanges()
             ]
@@ -149,6 +160,21 @@ class PersonnelDashboardController extends Controller
                 ];
             })
             ->values();
+    }
+
+    private function getRequestTypeData($query)
+    {
+        return $query->select('request_type_id', DB::raw('COUNT(*) as count'))
+            ->with(['requestType'])
+            ->groupBy('request_type_id')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'label' => optional($item->requestType)->name ?? 'No especificado',
+                    'count' => $item->count,
+  
+                ];
+            });
     }
 
     private function calculateStartDate($timeRange)

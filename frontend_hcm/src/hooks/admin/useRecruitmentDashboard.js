@@ -1,206 +1,116 @@
 'use client'
-
 import useSWR from 'swr'
 import axios from '@/lib/axios'
 import { useEffect, useState } from 'react'
 
-const fetcher = (url, params) =>
-    axios.get(url, { params }).then(res => res.data)
-
-const swrOptions = (params = {}) => ({
+const fetcher = (url, params) => axios.get(url, { params }).then(res => res.data)
+const swrOptions = { 
     revalidateOnFocus: false,
-    refreshInterval: 300000,
     shouldRetryOnError: true,
     errorRetryCount: 3,
-    dedupingInterval: 10000,
-    fallbackData: params.initialData,
-})
+    dedupingInterval: 10000
+}
 
 const useRecruitmentDashboard = (initialParams = {}) => {
-    const [departments, setDepartments] = useState([]);
+    const [departments, setDepartments] = useState([])
     const [params, setParams] = useState({
         page: 1,
         perPage: 5,
-        department_id: [], // Nombre alineado con backend
+        department_id: [],
         time_range: 'month',
-        ...initialParams,
+        ...initialParams
     })
 
     const buildKey = endpoint => [
         `/api/admin/recruitment-dashboard/${endpoint}`,
-        {
-            page: params.page,
-            per_page: params.perPage,
-            departments: params.departments,
-        },
+        params
     ]
 
-    const { data: hiringTime, mutate: mutateHiring } = useSWR(
-        buildKey('average-hiring-time'),
-        fetcher,
-        swrOptions({ initialData: { data: [], meta: {} } }),
-    )
+    // Definir cada endpoint individualmente
+    const hiringTime = useSWR(buildKey('average-hiring-time'), fetcher, swrOptions)
+    const conversionRate = useSWR(buildKey('conversion-rate'), fetcher, swrOptions)
+    const interviewRatio = useSWR(buildKey('interview-ratio'), fetcher, swrOptions)
+    const activeVacancies = useSWR(buildKey('active-vacancies'), fetcher, swrOptions)
+    const initialPerformance = useSWR(buildKey('initial-performance'), fetcher, swrOptions)
+    const vacancyStatus = useSWR(buildKey('vacancy-status'), fetcher, swrOptions)
+    const genderDistribution = useSWR(buildKey('candidate-gender'), fetcher, swrOptions)
 
-    const { data: conversionRate, mutate: mutateConversion } = useSWR(
-        buildKey('conversion-rate'),
-        fetcher,
-        swrOptions({
-            initialData: { total_candidates: 0, hired: 0, conversion_rate: 0 },
-        }),
-    )
+    // Agrupar endpoints para validación
+    const endpoints = {
+        hiringTime,
+        conversionRate,
+        interviewRatio,
+        activeVacancies,
+        initialPerformance,
+        vacancyStatus,
+        genderDistribution
+    }
 
-    const { data: interviewRatio, mutate: mutateRatio } = useSWR(
-        buildKey('interview-ratio', params),
-        fetcher,
-        swrOptions({
-            initialData: {
-                data: [],
-                total: {
-                    total_vacancies: 0,
-                    total_interviews: 0,
-                    global_ratio: 0,
-                },
-                meta: { pagination: { current_page: 1, last_page: 1 } },
-            },
-        }),
-    )
-
-    const { data: activeVacancies, mutate: mutateActive } = useSWR(
-        buildKey('active-vacancies'),
-        fetcher,
-        swrOptions({
-            initialData: {
-                data: [],
-                metrics: { global_total: 0 },
-                meta: {}
-            }
-        })
-    );
-
-    const { data: initialPerformance, mutate: mutatePermance } = useSWR(
-        buildKey('initial-performance'),
-        fetcher,
-        swrOptions({
-            initialData: {
-                data: [],
-                meta: {}
-            }
-        })
-    );
-
-    const { data: vacancyStatus, mutate: mutateStatus } = useSWR(
-        buildKey('vacancy-status'),
-        fetcher,
-        swrOptions({
-            initialData: {
-                data: [],
-                metrics: { total_vacancies: 0 },
-                meta: {}
-            }
-        })
-    );
-    
-    const { data: genderDistribution, mutate: mutateGender } = useSWR(
-        buildKey('candidate-gender'),
-        fetcher,
-        swrOptions({
-            initialData: {
-                data: [],
-                metrics: { total_candidates: 0 },
-                meta: {}
-            }
-        })
-    );
+    // Estados de carga y errores
+    const isLoading = Object.values(endpoints).some(e => e.isValidating)
+    const errors = Object.values(endpoints)
+        .map(e => e.error)
+        .filter(Boolean)
 
     useEffect(() => {
-        axios.get('/api/departments')
-            .then(res => setDepartments(res.data))
-            .catch(console.error);
-    }, []);
-    // Añadir similares para los demás endpoints...
+        const loadDepartments = async () => {
+            try {
+                const response = await axios.get('/api/departments')
+                setDepartments(response.data || [])
+            } catch (error) {
+                console.error('Error fetching departments:', error)
+            }
+        }
+        loadDepartments()
+    }, [])
 
     const handleParamChange = newParams => {
         setParams(prev => ({ ...prev, ...newParams }))
     }
 
     const refreshAll = () => {
-        mutateHiring()
-        mutateConversion()
-        mutateRatio()
-        mutateActive()
-        mutatePermance()
-        mutateStatus()
-        mutateGender()
-        // Añadir mutaciones para los demás endpoints...
+        Object.values(endpoints).forEach(endpoint => endpoint.mutate())
     }
 
     return {
         metrics: {
-            averageHiringTime: hiringTime?.data || [], // Asegúrate que hiringTime también esté correcto
-            // Tasa de conversión
-            conversionRate: conversionRate?.data || {
-                total_candidates: 0,
-                hired: 0,
-                conversion_rate: 0,
+            averageHiringTime: hiringTime.data?.data || [],
+            conversionRate: {
+                ...conversionRate.data?.data,
+                conversion_rate: conversionRate.data?.data?.conversion_rate || 0
             },
-            // Ratio de entrevistas
             interviewRatio: {
-                data:
-                    interviewRatio?.data?.map(item => ({
-                        department_id: item.department_id,
-                        department:
-                            departments.find(d => d.id === item.department_id)
-                                ?.name || 'Sin departamento',
-                        total_vacancies: item.total_vacancies,
-                        total_interviews: item.total_interviews,
-                        ratio:
-                            item.total_vacancies > 0
-                                ? (
-                                      item.total_interviews /
-                                      item.total_vacancies
-                                  ).toFixed(2)
-                                : 0,
-                    })) || [],
-                meta: interviewRatio?.meta || {},
-                globalRatio:
-                    interviewRatio?.metrics?.global_ratio?.toFixed(2) || 0,
+                data: interviewRatio.data?.data?.map(item => ({
+                    department_id: item.department_id,
+                    department: departments.find(d => d.id === item.department_id)?.name || 'Sin departamento',
+                    total_vacancies: item.total_vacancies || 0,
+                    total_interviews: item.total_interviews || 0,
+                    ratio: item.total_vacancies > 0 
+                        ? (item.total_interviews / item.total_vacancies).toFixed(2)
+                        : 0
+                })) || [],
+                meta: interviewRatio.data?.meta || {},
+                globalRatio: interviewRatio.data?.metrics?.global_ratio?.toFixed(2) || 0
             },
-
             activeVacancies: {
-                data: activeVacancies?.data || [],
-                globalTotal: activeVacancies?.metrics?.global_total || 0
+                data: activeVacancies.data?.data || [],
+                globalTotal: activeVacancies.data?.metrics?.global_total || 0
             },
-
-            initialPerformance: initialPerformance?.data || [],
-
+            initialPerformance: initialPerformance.data?.data || [],
             vacancyStatus: {
-                data: vacancyStatus?.data || [],
-                total: vacancyStatus?.metrics?.total_vacancies || 0
+                data: vacancyStatus.data?.data || [],
+                total: vacancyStatus.data?.metrics?.total_vacancies || 0
             },
             genderDistribution: {
-                data: genderDistribution?.data || [],
-                total: genderDistribution?.metrics?.total_candidates || 0
-            },
-
-            meta: {
-                hiring: hiringTime?.meta || { current_page: 1, total_pages: 1 },
-                interview: interviewRatio?.meta || {
-                    pagination: {
-                        current_page: 1,
-                        last_page: 1,
-                    },
-                },
-            },
+                data: genderDistribution.data?.data || [],
+                total: genderDistribution.data?.metrics?.total_candidates || 0
+            }
         },
         params,
         setParams: handleParamChange,
         refresh: refreshAll,
-        isLoading: !hiringTime && !conversionRate && !interviewRatio,
-        errors: [
-            ...(hiringTime?.error ? [hiringTime.error] : []),
-            ...(conversionRate?.error ? [conversionRate.error] : []),
-            ...(interviewRatio?.error ? [interviewRatio.error] : []),
-        ],
+        isLoading,
+        errors
     }
 }
 

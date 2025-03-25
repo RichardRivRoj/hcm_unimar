@@ -239,7 +239,7 @@ class RegistrationHistoryController extends Controller
                         'person' => function ($q) {
                             $q->with([
                                 'user:id,email,department_id,person_id',
-                                'country:id,name',
+                                'countries:id,name',
                                 'gender:id,name',
                                 'identificationtype:id,name,code'
                             ])->select(

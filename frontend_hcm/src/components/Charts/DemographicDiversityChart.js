@@ -25,7 +25,7 @@ const DemographicDiversityChart = ({ data, title }) => {
                 <Doughnut 
                     data={chartData}
                     options={{ 
-                        plugins: { legend: { position: 'bottom' } },
+                        plugins: { legend: { position: 'bottom',  align: 'center' } },
                         maintainAspectRatio: false
                     }}
                 />

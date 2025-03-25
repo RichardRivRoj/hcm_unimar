@@ -14,6 +14,7 @@ import TrainingParticipationChart from '@/components/Charts/TrainingParticipatio
 import StackedBarChart from '@/components/Charts/StackedBarChart'
 import HorizontalBarChart from '@/components/Charts/HorizontalBarChart'
 import LineImpactChart from '@/components/Charts/LineImpactChart '
+import ScoreDistributionChart from '@/components/Charts/ScoreDistributionChart'
 
 const TrainingDashboard = () => {
     const [departments, setDepartments] = useState([])

@@ -8,38 +8,37 @@ use Illuminate\Http\Request;
 
 trait DashboardFilters
 {
-    protected function getDateRange($range, Request $request)
+    protected function getDateRange($timeRange, $referenceDate = null)
     {
+        $referenceDate = $referenceDate ?: Carbon::now();
 
-        if ($range === 'custom' && $request->has(['start_date', 'end_date'])) {
-            return [
-                'start' => Carbon::parse($request->start_date),
-                'end' => Carbon::parse($request->end_date)
-            ];
-        };
-        
-        return match($range) {
-            'week' => [
-                'start' => Carbon::now()->subWeek(),
-                'end' => Carbon::now()
-            ],
-            'month' => [
-                'start' => Carbon::now()->subMonth(),
-                'end' => Carbon::now()
-            ],
-            'quarter' => [
-                'start' => Carbon::now()->subQuarter(),
-                'end' => Carbon::now()
-            ],
-            'year' => [
-                'start' => Carbon::now()->subYear(),
-                'end' => Carbon::now()
-            ],
-            default => [
-                'start' => Carbon::now()->subMonth(),
-                'end' => Carbon::now()
-            ]
-        };
+        switch ($timeRange) {
+            case 'last_week':
+                return [
+                    'start' => $referenceDate->copy()->subWeek(),
+                    'end' => $referenceDate
+                ];
+            case 'last_month':
+                return [
+                    'start' => $referenceDate->copy()->subMonth(),
+                    'end' => $referenceDate
+                ];
+            case 'last_semester':
+                return [
+                    'start' => $referenceDate->copy()->subMonths(6),
+                    'end' => $referenceDate
+                ];
+            case 'last_year':
+                return [
+                    'start' => $referenceDate->copy()->subYear(),
+                    'end' => $referenceDate
+                ];
+            default: // 'all_time'
+                return [
+                    'start' => Carbon::create(2000, 1, 1),
+                    'end' => $referenceDate
+                ];
+        }
     }
 
     protected function paginateResults(Builder $query, Request $request)

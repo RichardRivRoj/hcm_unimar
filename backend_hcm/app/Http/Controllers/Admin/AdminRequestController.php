@@ -121,9 +121,9 @@ class AdminRequestController extends Controller
                     $query->with([
                         'identificationType',
                         'status',
-                        'country',
+                        'countries',
                         'ethnicity',
-                        'maritalStatus',
+                        'marital_status',
                         'gender',
                         'user' // Para email institucional
                     ]);

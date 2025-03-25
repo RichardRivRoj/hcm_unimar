@@ -22,7 +22,7 @@ class RecruitmentDashboardController extends Controller
     use DashboardFilters;
 
     // Método único para manejar filtros comunes
-    protected function applyCommonFilters($query, Request $request)
+    protected function applyCommonFilters($query, Request $request, $table = null)
     {
         // Filtro por departamento
         if ($request->has('department_id')) {
@@ -31,8 +31,12 @@ class RecruitmentDashboardController extends Controller
 
         // Filtro temporal
         if ($request->has('time_range')) {
-            $dates = $this->getDateRange($request->time_range);
-            $query->whereBetween('created_at', [$dates['start'], $dates['end']]);
+            $dates = $this->getDateRange(
+                $request->time_range,
+                now()
+            );
+            $column = $table ? "{$table}.created_at" : "created_at";
+            $query->whereBetween($column, [$dates['start'], $dates['end']]);
         }
 
         // Eliminar ordenamiento por defecto
@@ -55,7 +59,7 @@ class RecruitmentDashboardController extends Controller
             ->groupBy('departments.id', 'departments.name') // Agrupar por ambos campos
             ->orderByDesc('average_days'); // Ordenar solo por el alias
 
-        $query = $this->applyCommonFilters($baseQuery, $request)
+        $query = $this->applyCommonFilters($baseQuery, $request, 'vacancies') // Añadir tabla
             ->when(!$request->show_all, fn($q) => $q->limit(5));
 
         $result = $this->paginateResults($query, $request);
@@ -82,7 +86,7 @@ class RecruitmentDashboardController extends Controller
             ->leftJoin('contracts', 'employees.id', '=', 'contracts.employee_id');
 
         // Aplicar filtros sin paginación
-        $this->applyCommonFilters($query, $request);
+        $this->applyCommonFilters($query, $request, 'candidates'); // Añadir tabla
 
         $result = $query->first();
 
@@ -112,7 +116,7 @@ class RecruitmentDashboardController extends Controller
         // Ordenamiento por ratio calculado
         $query->orderByDesc(DB::raw('total_interviews/total_vacancies'));
 
-        $result = $this->applyCommonFilters($query, $request)
+        $result = $this->applyCommonFilters($query, $request, 'vacancies')
             ->paginate($request->per_page ?? 10);
 
         return response()->json([
@@ -134,7 +138,7 @@ class RecruitmentDashboardController extends Controller
             ->with('department')
             ->groupBy('department_id');
 
-        $query = $this->applyCommonFilters($query, $request);
+        $query = $this->applyCommonFilters($query, $request, 'vacancies');
 
         $result = $query->paginate($request->per_page ?? 5);
 
@@ -159,7 +163,7 @@ class RecruitmentDashboardController extends Controller
             ->join('departments', 'vacancies.department_id', '=', 'departments.id')
             ->groupBy('departments.id');
 
-        $query = $this->applyCommonFilters($query, $request);
+        $query = $this->applyCommonFilters($query, $request, 'agenda_results');
 
         $result = $query->paginate($request->per_page ?? 5);
 
@@ -180,7 +184,7 @@ class RecruitmentDashboardController extends Controller
             ->join('statuses', 'vacancies.status_id', '=', 'statuses.id')
             ->groupBy('status_id', 'statuses.name');
 
-        $result = $this->applyCommonFilters($query, $request)
+        $result = $this->applyCommonFilters($query, $request, 'vacancies')
             ->paginate($request->per_page ?? 5);
 
         return response()->json([
@@ -201,7 +205,7 @@ class RecruitmentDashboardController extends Controller
 
         // 2. Construir query base
         $query = Person::select([
-            'gender_id',
+            'persons.gender_id', // Especificar tabla
             DB::raw('COUNT(*) as total'),
             'genders.name as gender'
         ])
@@ -214,7 +218,7 @@ class RecruitmentDashboardController extends Controller
         }
 
         // 4. Aplicar filtros comunes
-        $query = $this->applyCommonFilters($query, $request)
+        $query = $this->applyCommonFilters($query, $request, 'candidates')
             ->groupBy('gender_id', 'genders.name');
 
         $result = $query->paginate($request->per_page ?? 5);

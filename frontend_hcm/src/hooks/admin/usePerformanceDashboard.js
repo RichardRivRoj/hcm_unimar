@@ -1,18 +1,15 @@
 'use client'
-
 import useSWR from 'swr'
 import axios from '@/lib/axios'
 import { useEffect, useState } from 'react'
 
-const fetcher = (url, params) =>
-    axios.get(url, { params }).then(res => res.data)
-
-const swrOptions = (params = {}) => ({
+const fetcher = (url, params) => axios.get(url, { params }).then(res => res.data)
+const swrOptions = {
     revalidateOnFocus: false,
     shouldRetryOnError: true,
     errorRetryCount: 2,
-    fallbackData: params.initialData,
-})
+    dedupingInterval: 10000
+}
 
 const usePerformanceDashboard = (initialParams = {}) => {
     const [params, setParams] = useState({
@@ -31,131 +28,80 @@ const usePerformanceDashboard = (initialParams = {}) => {
         },
     ]
 
-    const { data: performanceTenure, mutate: mutatePerformance } = useSWR(
-        buildKey('performance-tenure'),
-        fetcher,
-        swrOptions({
-            initialData: {
-                data: [],
-                correlation: 0,
-                departments: [],
-            },
-        }),
-    )
+    // Definir todos los endpoints individualmente
+    const performanceTenure = useSWR(buildKey('performance-tenure'), fetcher, swrOptions)
+    const goalCompliance = useSWR(buildKey('goal-compliance'), fetcher, swrOptions)
+    const diversityData = useSWR(buildKey('diversity-evaluations'), fetcher, swrOptions)
+    const levelGaps = useSWR(buildKey('level-gaps'), fetcher, swrOptions)
 
-    const { data: goalCompliance, mutate: mutateCompliance } = useSWR(
-        buildKey('goal-compliance'),
-        fetcher,
-        swrOptions({
-            initialData: {
-                overall: {
-                    total: 0,
-                    compliant: 0,
-                    compliance_rate: 0,
-                    goal: 75,
-                },
-                positions: {
-                    data: [],
-                    current_page: 1,
-                    total: 0,
-                },
-                filters: {
-                    departments: [],
-                    positions: [],
-                },
-            },
-        }),
-    )
+    // Agrupar endpoints para validación
+    const endpoints = {
+        performanceTenure,
+        goalCompliance,
+        diversityData,
+        levelGaps
+    }
 
-    const { data: diversityData, mutate: mutateDiversity } = useSWR(
-        buildKey('diversity-evaluations'),
-        fetcher,
-        swrOptions({
-            initialData: {
-                labels: [],
-                datasets: [],
-                filters: {
-                    ethnicities: [],
-                    genders: [],
-                },
-            },
-        }),
-    )
-
-    const { data: levelGaps, mutate: mutateLevelGaps } = useSWR(
-        buildKey('level-gaps'),
-        fetcher,
-        swrOptions({
-            initialData: {
-                heatmap: [],
-                levels: [],
-                departments: [],
-                colorScale: { min: 0, max: 100 },
-            },
-        }),
-    )
+    // Estados unificados
+    const isLoading = Object.values(endpoints).some(e => e.isValidating)
+    const errors = Object.values(endpoints)
+        .map(e => e.error)
+        .filter(Boolean)
 
     const handleParamChange = newParams => {
         setParams(prev => ({ ...prev, ...newParams }))
     }
 
     const refreshAll = () => {
-        mutatePerformance()
-        mutateCompliance()
-        mutateDiversity()
-        mutateLevelGaps()
-
-        // Añadir mutaciones para los demás endpoints...
+        Object.values(endpoints).forEach(endpoint => endpoint.mutate())
     }
 
     return {
         metrics: {
             performanceTenure: {
-                data: performanceTenure?.data || [],
-                correlation: performanceTenure?.correlation || 0,
-                departments: performanceTenure?.departments || [],
+                data: performanceTenure.data?.data || [],
+                correlation: performanceTenure.data?.correlation || 0,
+                departments: performanceTenure.data?.departments || [],
             },
             goalCompliance: {
-                overall: goalCompliance?.overall || {
+                overall: goalCompliance.data?.overall || {
                     total: 0,
                     compliant: 0,
                     compliance_rate: 0,
                     goal: 75,
                 },
-                positions: goalCompliance?.positions || {
+                positions: goalCompliance.data?.positions || {
                     data: [],
                     current_page: 1,
                     total: 0,
                 },
-                filters: goalCompliance?.filters || {
+                filters: goalCompliance.data?.filters || {
                     departments: [],
                     positions: [],
                 },
             },
             diversity: {
                 chartData: {
-                    labels: diversityData?.labels || [],
-                    datasets: diversityData?.datasets || [],
+                    labels: diversityData.data?.labels || [],
+                    datasets: diversityData.data?.datasets || [],
                 },
-                filters: diversityData?.filters || {
+                filters: diversityData.data?.filters || {
                     ethnicities: [],
                     genders: [],
                 },
             },
             levelGaps: {
-                heatmap: levelGaps?.heatmap || [],
-                levels: levelGaps?.levels || [],
-                departments: levelGaps?.departments || [],
-                colorScale: levelGaps?.colorScale || { min: 0, max: 100 }
+                heatmap: levelGaps.data?.heatmap || [],
+                levels: levelGaps.data?.levels || [],
+                departments: levelGaps.data?.departments || [],
+                colorScale: levelGaps.data?.colorScale || { min: 0, max: 100 }
             },
         },
         params,
         setParams: handleParamChange,
         refresh: refreshAll,
-        errors: [
-            ...(performanceTenure?.error ? [performanceTenure.error] : []),
-            ...(goalCompliance?.error ? [goalCompliance.error] : []),
-        ],
+        isLoading,
+        errors
     }
 }
 

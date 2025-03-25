@@ -525,9 +525,9 @@ class CandidateController extends Controller
             $candidate = Candidate::with([
                 'persons.identificationtype',
                 'persons.ethnicity',
-                'persons.maritalstatus',
+                'persons.marital_status',
                 'persons.gender',
-                'persons.country',
+                'persons.countries',
                 'persons.status',
                 'persons.documents' => function ($query) {
                     $query->orderBy('created_at', 'desc')

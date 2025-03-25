@@ -1,18 +1,15 @@
 'use client'
-
 import useSWR from 'swr'
 import axios from '@/lib/axios'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
-const fetcher = (url, params) =>
-    axios.get(url, { params }).then(res => res.data)
-
-const swrOptions = (params = {}) => ({
+const fetcher = (url, params) => axios.get(url, { params }).then(res => res.data)
+const swrOptions = {
     revalidateOnFocus: false,
     shouldRetryOnError: true,
     errorRetryCount: 2,
-    fallbackData: params.initialData,
-})
+    dedupingInterval: 10000
+}
 
 const useTrainingDashboard = (initialParams = {}) => {
     const [params, setParams] = useState({
@@ -30,103 +27,36 @@ const useTrainingDashboard = (initialParams = {}) => {
             time_range: params.time_range,
             training_type_id: params.training_type_id,
             page: params.page,
-        },
+        }
     ]
 
-    const {
-        data: participationData,
-        error: participationError,
-        mutate: mutateParticipation,
-    } = useSWR(
-        buildKey('training-participation'),
-        fetcher,
-        swrOptions({
-            initialData: {
-                overall: {
-                    enrolled: 0,
-                    total_employees: 0,
-                    participation_rate: 0,
-                },
-                by_department: { data: [], current_page: 1, total: 0 },
-                filters: { departments: [], time_ranges: [] },
-            },
-        }),
-    )
+    // Definir todos los endpoints
+    const participation = useSWR(buildKey('training-participation'), fetcher, swrOptions)
+    const completion = useSWR(buildKey('program-completion'), fetcher, swrOptions)
+    const scores = useSWR(buildKey('average-scores'), fetcher, swrOptions)
+    const activePrograms = useSWR(buildKey('active-programs'), fetcher, swrOptions)
+    const impact = useSWR(buildKey('evaluation-impact'), fetcher, swrOptions)
 
+    // Agrupar endpoints para gestión centralizada
+    const endpoints = {
+        participation,
+        completion,
+        scores,
+        activePrograms,
+        impact
+    }
 
-    const {
-        data: completionData,
-        error: completionError,
-        mutate: mutateCompletion,
-    } = useSWR(
-        buildKey('program-completion'),
-        fetcher,
-        swrOptions({
-            initialData: {
-                overall: {
-                    total_enrollments: 0,
-                    completed: 0,
-                    completion_rate: 0,
-                },
-                by_status: [],
-                filters: { time_ranges: [] },
-            },
-        }),
-    )
-
-    const { 
-        data: scoresData, 
-        error: scoresError,
-        mutate: mutateScores 
-    } = useSWR(
-        buildKey('average-scores'),
-        fetcher,
-        swrOptions({
-            initialData: {
-                overall: { average_score: 0, total_graded: 0 },
-                distribution: [],
-                filters: { time_ranges: [] }
-            }
-        })
-    );
-
-    const { 
-        data: activeProgramsData, 
-        error: activeProgramsError,
-        mutate: mutateActivePrograms 
-    } = useSWR(
-        buildKey('active-programs'),
-        fetcher,
-        swrOptions({
-            initialData: {
-                overall: { total_active: 0 },
-                by_type: { data: [], current_page: 1, total: 0 },
-                filters: { training_types: [], time_ranges: [] }
-            }
-        })
-    );
-
-    const { 
-        data: impactData, 
-        error: impactError,
-        mutate: mutateImpact 
-    } = useSWR(
-        buildKey('evaluation-impact'),
-        fetcher,
-        swrOptions({
-            initialData: {
-                labels: [],
-                datasets: [],
-                filters: { time_ranges: [] }
-            }
-        })
-    );
+    // Estados unificados
+    const isLoading = Object.values(endpoints).some(e => e.isValidating)
+    const errors = Object.values(endpoints)
+        .map(e => e.error)
+        .filter(Boolean)
 
     const handleParamChange = newParams => {
         setParams(prev => ({
             ...prev,
             ...newParams,
-            ...(newParams.time_range ? { page: 1 } : {}), // Reset paginación al cambiar filtros
+            ...(newParams.time_range && { page: 1 }) // Reset paginación
         }))
     }
 
@@ -135,73 +65,68 @@ const useTrainingDashboard = (initialParams = {}) => {
     }
 
     const refreshAll = () => {
-        mutateParticipation()
-        mutateCompletion()
-        mutateScores()
-        mutateActivePrograms()
-        mutateImpact()
-        // Añadir mutaciones para los demás endpoints...
+        Object.values(endpoints).forEach(endpoint => endpoint.mutate())
     }
 
     return {
         metrics: {
             participation: {
-                overall: participationData?.overall || {
+                overall: participation.data?.overall || {
                     enrolled: 0,
                     total_employees: 0,
                     participation_rate: 0,
                 },
-                departments: participationData?.by_department?.data || [], // Acceso directo a data
+                departments: participation.data?.by_department?.data || [],
                 pagination: {
-                    currentPage:
-                        participationData?.by_department?.current_page || 1,
+                    currentPage: participation.data?.by_department?.current_page || 1,
                     totalPages: Math.ceil(
-                        (participationData?.by_department?.total || 0) / 5,
+                        (participation.data?.by_department?.total || 0) / 5
                     ),
-                    totalItems: participationData?.by_department?.total || 0,
+                    totalItems: participation.data?.by_department?.total || 0,
                 },
-                filters: participationData?.filters || {
+                filters: participation.data?.filters || {
                     departments: [],
                     time_ranges: [],
                 },
             },
             completion: {
-                overall: completionData?.overall || {
+                overall: completion.data?.overall || {
                     total_enrollments: 0,
                     completed: 0,
                     completion_rate: 0,
                 },
-                statuses: completionData?.by_status || [],
-                filters: completionData?.filters || { time_ranges: [] },
+                statuses: completion.data?.by_status || [],
+                filters: completion.data?.filters || { time_ranges: [] },
             },
             scores: {
-                average: scoresData?.overall || { average_score: 0, total_graded: 0 },
-                distribution: scoresData?.distribution || [],
-                filters: scoresData?.filters || { time_ranges: [] }
+                average: scores.data?.overall || { average_score: 0, total_graded: 0 },
+                distribution: scores.data?.distribution || [],
+                filters: scores.data?.filters || { time_ranges: [] }
             },
             activePrograms: {
-                overall: activeProgramsData?.overall || { total_active: 0 },
-                types: activeProgramsData?.by_type?.data || [],
+                overall: activePrograms.data?.overall || { total_active: 0 },
+                types: activePrograms.data?.by_type?.data || [],
                 pagination: {
-                    currentPage: activeProgramsData?.by_type?.current_page || 1,
-                    totalPages: activeProgramsData?.by_type?.last_page || 1,
-                    totalItems: activeProgramsData?.by_type?.total || 0
+                    currentPage: activePrograms.data?.by_type?.current_page || 1,
+                    totalPages: activePrograms.data?.by_type?.last_page || 1,
+                    totalItems: activePrograms.data?.by_type?.total || 0
                 },
-                filters: activeProgramsData?.filters || { training_types: [] }
+                filters: activePrograms.data?.filters || { training_types: [] }
             },
             impact: {
                 chartData: {
-                    labels: impactData?.labels || [],
-                    datasets: impactData?.datasets || []
+                    labels: impact.data?.labels || [],
+                    datasets: impact.data?.datasets || []
                 },
-                filters: impactData?.filters || { time_ranges: [] }
+                filters: impact.data?.filters || { time_ranges: [] }
             }
         },
         params,
         setParams: handleParamChange,
         changePage,
         refresh: refreshAll,
-        errors: { participation: participationError, completion: completionError, score: scoresError, active: activeProgramsError, impact: impactError },
+        isLoading,
+        errors
     }
 }
 

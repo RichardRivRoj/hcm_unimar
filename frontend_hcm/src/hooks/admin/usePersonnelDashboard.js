@@ -35,7 +35,6 @@ const usePersonnelDashboard = (initialParams = {}) => {
 
     const refreshAll = () => {
         mutateDiversity()
-        // Añadir mutaciones para los demás endpoints...
     }
 
     return {
@@ -47,6 +46,7 @@ const usePersonnelDashboard = (initialParams = {}) => {
                 marital_status: diversityData?.marital_status || [],
                 age_pyramid: diversityData?.age_pyramid || [],
                 level_distribution: diversityData?.level_distribution || [],
+                request_types: diversityData?.request_types || [],
                 filters: diversityData?.filters || { time_ranges: [] }
             }
         },

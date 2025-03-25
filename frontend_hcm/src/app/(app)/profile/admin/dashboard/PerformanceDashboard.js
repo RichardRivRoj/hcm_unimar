@@ -17,6 +17,8 @@ const PerformanceDashboard = () => {
     const filterDepartments = metrics.performanceTenure?.departments || []
     const filterPositions = metrics.goalCompliance?.filters?.positions || []
 
+    if (isLoading) return <StandardLoader />
+
     return (
         <div className="min-h-screen p-2 bg-gray-50">
             <div className="mx-auto space-y-8 max-w-7xl">

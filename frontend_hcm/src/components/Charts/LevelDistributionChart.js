@@ -7,11 +7,10 @@ const LevelDistributionChart = ({ data }) => {
     ];
 
     return (
-        <div className="p-4 bg-white rounded-lg shadow-md">
-            <h3 className="mb-4 text-xl font-semibold">Distribución por Nivel</h3>
+        <div className="bg-white rounded-lg shadow-md ">
             <Treemap
-                width={400}
-                height={400}
+                width={220}
+                height={245}
                 data={data}
                 dataKey="value"
                 aspectRatio={4/3}
@@ -23,7 +22,7 @@ const LevelDistributionChart = ({ data }) => {
                         if (active && payload) {
                             const { name, value } = payload[0];
                             return (
-                                <div className="p-2 bg-white border rounded shadow">
+                                <div className="bg-white rounded ">
                                     <p className="font-medium">{name}</p>
                                     <p>{`${value}%`}</p>
                                 </div>
