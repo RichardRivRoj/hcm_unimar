@@ -1,0 +1,12 @@
+# Ignorar archivos de Docker
+.env
+docker-compose.override.yml
+docker-compose.yml
+
+# Ignorar dependencias
+backend_hcm/vendor/
+frontend_hcm/node_modules/
+
+# Ignorar archivos generados
+backend_hcm/storage/logs/
+frontend_hcm/.next/

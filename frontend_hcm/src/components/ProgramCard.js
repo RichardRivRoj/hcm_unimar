@@ -98,7 +98,7 @@ export const ProgramCard = ({ program, type }) => {
 }
 
 export const Pagination = ({ pagination, setPage }) => {
-    const { links, current_page, last_page, from, to, total } = pagination
+    const { links, from, to, total } = pagination
 
     const labelTranslations = {
         '&laquo; Previous': '&laquo; Anterior',

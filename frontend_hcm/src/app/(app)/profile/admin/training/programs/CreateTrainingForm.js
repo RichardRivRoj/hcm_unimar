@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react'
 import axios from '@/lib/axios'
 import { useTrainingProgram } from '@/hooks/admin/useTrainingPrograms'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 const CreateTrainingProgramForm = ({ onClose }) => {
+    const router = useRouter()
     const { createProgram, loading, error, validationErrors } =
         useTrainingProgram()
     const [options, setOptions] = useState({
@@ -48,7 +50,7 @@ const CreateTrainingProgramForm = ({ onClose }) => {
                     modalities: mods.data,
                 })
             } catch (error) {
-                console.error('Error loading options:', error)
+                toast.error('Error loading options:', error)
             }
         }
         fetchOptions()

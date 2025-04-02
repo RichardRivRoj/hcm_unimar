@@ -2,7 +2,6 @@
 
 import { CalendarIcon, DocumentCheckIcon, ChartBarIcon, ClockIcon } from '@heroicons/react/24/outline'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
@@ -15,7 +14,7 @@ const ProgramResultsDetail = ({ program }) => {
             if (!program.content) return null
             return JSON.parse(program.content)
         } catch (error) {
-            console.error('Error parsing program content:', error)
+            toast.error('Contenido del programa de análisis de errores')
             return null
         }
     }

@@ -3,13 +3,13 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import axios from '@/lib/axios'
+import Image from 'next/image'
 import useCandidate from '@/hooks/useCandidateShow'
 import DetailCard from '@/components/DetailCard'
 import { Modal } from '@/components/Modal'
 import useScheduleInterview from '@/hooks/useScheduleInterview'
 import useTypeAgendas from '@/hooks/typeAgendasView'
 import DownloadCVButton from '@/components/DownloadCVButton'
-import { Alert, AlertDescription } from '@/components/alert'
 import StandardLoader from '@/components/StandardLoader'
 import { DocumentIcon } from '@heroicons/react/24/outline'
 import { GlobeIcon, Sun } from 'lucide-react'
@@ -24,17 +24,9 @@ const CandidateDetails = ({ params }) => {
         loading: loadingCandidate,
         error: errorCandidate,
     } = useCandidate(id)
-    const {
-        typeAgendas,
-        loading: loadingType,
-        error: errorType,
-    } = useTypeAgendas()
-    const {
-        scheduleInterview,
-        loading: loadingInterview,
-        error: errorInterview,
-        success: successInterview,
-    } = useScheduleInterview()
+    const { typeAgendas } = useTypeAgendas()
+    const { scheduleInterview, loading: loadingInterview } =
+        useScheduleInterview()
     const [validTimes, setValidTimes] = useState([]) // Añadir este estado
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
@@ -262,10 +254,13 @@ const CandidateDetails = ({ params }) => {
                 <div className="flex flex-col items-start gap-6 md:flex-row">
                     {candidate.person.photo_url && (
                         <div className="overflow-hidden rounded-lg w-36 h-36">
-                            <img
+                            {' '}
+                            <Image
                                 src={candidate.person.photo_url}
                                 alt={`${candidate.person.first_name} ${candidate.person.last_name}`}
                                 className="object-cover w-full h-full"
+                                width={144}
+                                height={144}
                             />
                         </div>
                     )}
@@ -339,7 +334,7 @@ const CandidateDetails = ({ params }) => {
                                 label: 'Fecha de nacimiento',
                                 value: new Date(
                                     candidate.person.birth_date,
-                                ).toLocaleDateString(),
+                                ).toLocaleDateString('es-ES', {timeZone: 'UTC',}),
                             },
                             {
                                 label: 'Género',
@@ -347,7 +342,7 @@ const CandidateDetails = ({ params }) => {
                             },
                             {
                                 label: 'Estado civil',
-                                value: candidate.person.maritalstatus?.name,
+                                value: candidate.person.marital_status?.name,
                             },
                         ]}
                     />
@@ -472,7 +467,7 @@ const CandidateDetails = ({ params }) => {
                                                                 <p className="text-sm text-gray-600">
                                                                     {new Date(
                                                                         doc.issue_date,
-                                                                    ).toLocaleDateString()}
+                                                                    ).toLocaleDateString('es-ES', {timeZone: 'UTC',})}
                                                                 </p>
                                                             </div>
                                                             <div>
@@ -484,7 +479,7 @@ const CandidateDetails = ({ params }) => {
                                                                     {doc.expiration_date
                                                                         ? new Date(
                                                                               doc.expiration_date,
-                                                                          ).toLocaleDateString()
+                                                                          ).toLocaleDateString('es-ES', {timeZone: 'UTC',})
                                                                         : 'No expira'}
                                                                 </p>
                                                             </div>
@@ -556,7 +551,7 @@ const CandidateDetails = ({ params }) => {
                         ))
                     ) : (
                         <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50 rounded-xl">
-                            <DocumentMissingIcon className="w-12 h-12 text-[#004b9a]/50" />
+                            <DocumentIcon className="w-12 h-12 text-[#004b9a]/50" />
                             <p className="mt-4 text-gray-500">
                                 No se encontraron documentos adjuntos
                             </p>

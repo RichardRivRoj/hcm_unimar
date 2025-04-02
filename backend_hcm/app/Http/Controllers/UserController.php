@@ -114,8 +114,8 @@ class UserController extends Controller
                 'identification_type' => $person->identificationtype ? $person->identificationtype->code : null,
                 'gender' => $person->gender ? $person->gender->name : null,
                 'ethnicity' => $person->ethnicity ? $person->ethnicity->name : null,
-                'marital_status' => $person->maritalstatus ? $person->maritalstatus->name : null,
-                'country' => $person->country ? $person->country->name : null,
+                'marital_status' => $person->marital_status ? $person->marital_status->name : null,
+                'country' => $person->countries ? $person->countries->name : null,
                 'status' => $person->status ? $person->status->name : null,
                 'summary' => $person->summary,
                 'photo_url' => $person->file_path

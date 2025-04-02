@@ -1,24 +1,24 @@
-'use client';
-import React, { useEffect } from 'react';
-import useFormEvaluations from '@/hooks/supervisor/useFormEvaluation';
-import Image from 'next/image';
-import DownloadEvaluationPDF from '@/components/EvaluationPDF';
-import { DownloadCloud } from 'lucide-react';
-import StandardLoader from '@/components/StandardLoader';
-import { formatDateToUTC } from '@/utils/formatDateToUTC';
+'use client'
+import React, { useEffect } from 'react'
+import useFormEvaluations from '@/hooks/supervisor/useFormEvaluation'
+import Image from 'next/image'
+import DownloadEvaluationPDF from '@/components/EvaluationPDF'
+import { DownloadCloud } from 'lucide-react'
+import StandardLoader from '@/components/StandardLoader'
+import { formatDateToUTC } from '@/utils/formatDateToUTC'
 
 const EvaluationDetailPage = ({ params }) => {
-    const { id } = params;
-    const { evaluationDetail, detailLoading, detailError, fetchEvaluationDetail } = useFormEvaluations();
+    const { id } = params
+    const { evaluationDetail, detailLoading, detailError, fetchEvaluationDetail } = useFormEvaluations()
 
     useEffect(() => {
         if (id) {
-            fetchEvaluationDetail(id);
+            fetchEvaluationDetail(id)
         }
-    }, [id]);
+    }, [id])
 
-    if (detailLoading) return <StandardLoader />;
-    if (detailError) return <div className="p-4 text-red-500">Error: {detailError}</div>;
+    if (detailLoading) return <StandardLoader />
+    if (detailError) return <div className="p-4 text-red-500">Error: {detailError}</div>
 
     return (
         <div className="container p-6 mx-auto bg-white rounded-lg shadow-md">
@@ -156,7 +156,7 @@ const EvaluationDetailPage = ({ params }) => {
                         <div className="grid grid-cols-1 gap-6 mt-6 md:grid-cols-3">
                             {['EL TRABAJADOR(A)', 'EVALUADOR(A)', 'DIRECTORA DE TALENTO HUMANO'].map((title) => (
                                 <div key={title} className="text-center">
-                                    <div className="h-20 mb-4 border-b-2 border-[#004b9a]"></div>
+                                    <div className="h-20 mb-4 border-b-2 border-[#004b9a]" />
                                     <p className="text-sm font-medium text-[#004b9a]">{title}</p>
                                 </div>
                             ))}
@@ -165,7 +165,7 @@ const EvaluationDetailPage = ({ params }) => {
                 </div>
             )}
         </div>
-    );
-};
+    )
+}
 
-export default EvaluationDetailPage;
+export default EvaluationDetailPage

@@ -8,10 +8,8 @@ import {
     DownloadIcon,
     FileIcon,
     FileTextIcon,
-    Loader,
     UserIcon,
     XCircle,
-    XCircleIcon,
 } from 'lucide-react'
 import InfoItem from '@/components/InfoItem'
 import { toast } from 'sonner'

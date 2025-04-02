@@ -76,4 +76,4 @@ const DollarPrice = () => {
     )
 }
 
-export default DollarPrice;
+export default DollarPrice

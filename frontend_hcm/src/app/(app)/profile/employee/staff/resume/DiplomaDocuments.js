@@ -173,7 +173,7 @@ const DiplomaDocuments = () => {
                                             className="w-full p-2 border rounded"
                                             rows="4"
                                             onChange={handleInputChange}
-                                            placeholder="Ej. Diplomado intensivo en metodologías ágiles y gestión de proyectos empresariales."></textarea>
+                                            placeholder="Ej. Diplomado intensivo en metodologías ágiles y gestión de proyectos empresariales." />
                                             {validationErrors.diploma_description && (
                                             <span className="text-sm text-red-500">
                                                 {validationErrors.diploma_description[0]}
@@ -400,9 +400,7 @@ const DiplomaDocuments = () => {
                                 </button>
                                 <button
                                     className="px-4 py-2 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7a]"
-                                    onClick={() =>
-                                        console.log('Descargar documento')
-                                    }>
+                                    >
                                     Descargar
                                 </button>
                             </div>

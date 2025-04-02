@@ -235,8 +235,8 @@ class AgendaController extends Controller
             'candidate.persons.identificationtype', // Candidato, persona y tipo de identificación
             'candidate.persons.ethnicity', // Etnia
             'candidate.persons.gender', // Género
-            'candidate.persons.country', // País
-            'candidate.persons.maritalstatus', // Estado civil
+            'candidate.persons.countries', // País
+            'candidate.persons.marital_status', // Estado civil
             'candidate.vacancy.mode', // Vacante y modalidad
             'candidate.vacancy.position',
             'status', // Estado de la agenda
@@ -280,8 +280,8 @@ class AgendaController extends Controller
                     'identification_value' =>  $agenda->candidate->persons->identificationtype->code . ' - ' . $agenda->candidate->persons->identification_value,
                     'ethnicity' => $agenda->candidate->persons->ethnicity->name, // Asumiendo que el modelo Ethnicity tiene un campo 'name'
                     'gender' => $agenda->candidate->persons->gender->name ?? 'NA', // Asumiendo que el modelo Gender tiene un campo 'name'
-                    'country' => $agenda->candidate->persons->country->name, // Asumiendo que el modelo Country tiene un campo 'name'
-                    'marital_status' => $agenda->candidate->persons->maritalstatus->name, // Asumiendo que el modelo MaritalStatus tiene un campo 'name'
+                    'countries' => $agenda->candidate->persons->countries->name, // Asumiendo que el modelo Country tiene un campo 'name'
+                    'marital_status' => $agenda->candidate->persons->marital_status->name, // Asumiendo que el modelo MaritalStatus tiene un campo 'name'
                 ],
             ],
             'vacancy' => [

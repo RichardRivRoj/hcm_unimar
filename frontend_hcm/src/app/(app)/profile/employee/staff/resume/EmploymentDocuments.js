@@ -266,7 +266,7 @@ const EmploymentDocuments = () => {
                                         className="w-full p-2 border rounded"
                                         rows="4"
                                         onChange={handleInputChange}
-                                        placeholder="Separar cada responsabilidad con una nueva línea"></textarea>
+                                        placeholder="Separar cada responsabilidad con una nueva línea" />
                                 </div>
 
                                 <div className="flex justify-end gap-2 mt-4">
@@ -358,9 +358,7 @@ const EmploymentDocuments = () => {
                                 </button>
                                 <button
                                     className="px-4 py-2 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7a]"
-                                    onClick={() =>
-                                        console.log('Descargar documento')
-                                    }>
+                                    >
                                     Descargar
                                 </button>
                             </div>

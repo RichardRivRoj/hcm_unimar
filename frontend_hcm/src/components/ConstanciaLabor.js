@@ -64,12 +64,6 @@ const ConstanciaLaborPDF = ({ data }) => {
         new Date(contrato.fecha_inicio) : 
         new Date()
 
-    const fechaActual = new Date().toLocaleDateString('es-VE', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    })
-
     const directorRH = process.env.NEXT_PUBLIC_DIRECTOR_RH || 'Esp. Sujey Avane'
     const cedulaDirector = process.env.NEXT_PUBLIC_CEDULA_DIRECTOR || 'V-XXXXXXXX'
     const lugarEmision = process.env.NEXT_PUBLIC_LUGAR_EMISION || 'El Valle del Espíritu Santo'

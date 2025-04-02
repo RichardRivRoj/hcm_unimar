@@ -7,14 +7,14 @@ import useContractTypes from '@/hooks/contractTypesView'
 import useContractForm from '@/hooks/admin/useContractForm'
 
 const HireEmployeeForm = ({ candidateId, onSuccess }) => {
-    const { hireEmployee, loading, error, validationErrors, success } =
+    const { hireEmployee, loading, validationErrors } =
         useHireEmployee()
     const { employment } = useEmploymentTypes()
     const { contract } = useContractTypes()
     const { paymentTerms } = useContractForm() // Nuevo hook
     const [errors, setErrors] = useState([])
 
-    const today = new Date().toLocaleDateString('es-CA', { timeZone: 'UTC' });
+    const today = new Date().toLocaleDateString('es-CA', { timeZone: 'UTC' })
 
     const [formData, setFormData] = useState({
         start_date: today,

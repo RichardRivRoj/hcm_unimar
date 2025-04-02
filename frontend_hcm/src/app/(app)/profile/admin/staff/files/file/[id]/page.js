@@ -7,15 +7,12 @@ import useEmployeeFiles from '@/hooks/admin/useEmployeeFiles'
 import {
     BookMarked,
     BookUser,
-    BriefcaseBusiness,
     ClipboardPlus,
     FileBadge,
     FileUser,
-    FolderCog,
     GraduationCap,
     IdCard,
     Newspaper,
-    NotepadText,
     School,
     ScrollText,
 } from 'lucide-react'
@@ -23,7 +20,6 @@ import DocumentCategory from './DocumentCategory'
 import DocumentPreview from '@/components/DocumentPreview'
 import EmployeeHeader from './EmployeeHeader'
 import { Alert, AlertDescription } from '@/components/alert'
-import { Skeleton } from '@/components/skeleton'
 import StandardLoader from '@/components/StandardLoader'
 
 export default function DigitalFiles() {
@@ -35,7 +31,6 @@ export default function DigitalFiles() {
         selectedEmployee,
         detailLoading,
         detailError,
-        pagination,
         handlePageChange,
         fetchEmployeeDetails,
     } = useEmployeeFiles()

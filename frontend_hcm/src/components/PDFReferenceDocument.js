@@ -6,6 +6,7 @@ import {
     StyleSheet,
     Font,
 } from '@react-pdf/renderer'
+import { toast } from 'sonner'
 import writtenNumber from 'written-number'
 
 // Registrar fuente Arial (asegúrate de tener el archivo .ttf en /public/fonts)
@@ -73,7 +74,7 @@ const PDFReferenceDocument = ({ reference }) => {
                 year: 'numeric'
             }).replace(/\//g, ' de ')
         } catch (error) {
-            console.error('Error formateando fecha:', error)
+            toast.error('Error formateando fecha')
             return 'Fecha inválida'
         }
     }

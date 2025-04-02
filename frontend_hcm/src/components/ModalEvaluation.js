@@ -1,7 +1,7 @@
-import { motion } from 'framer-motion';
-import { Dialog } from '@headlessui/react';
+import { motion } from 'framer-motion'
+import { Dialog } from '@headlessui/react'
 
-const ModalEvaluation = ({ children, title, onClose, isOpen }) => (
+const ModalEvaluation = ({ children, title, onClose }) => (
   <Dialog open={true} onClose={onClose} className="relative z-50">
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
     <motion.div
@@ -21,6 +21,6 @@ const ModalEvaluation = ({ children, title, onClose, isOpen }) => (
       </Dialog.Panel>
     </motion.div>
   </Dialog>
-);
+)
 
-export default ModalEvaluation;
+export default ModalEvaluation

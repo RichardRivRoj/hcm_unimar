@@ -24,7 +24,6 @@ const EditAgendaForm = ({
 
     const [validTimes, setValidTimes] = useState([])
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(null)
     const [validationErrors, setValidationErrors] = useState({})
 
     // Cargar datos iniciales y horarios válidos
@@ -54,7 +53,7 @@ const EditAgendaForm = ({
                         initialData.changes_notification || '',
                 })
             } catch (error) {
-                console.error('Error loading initial data:', error)
+                toast.error('Error al cargar datos iniciales')
             }
         }
 
@@ -79,7 +78,6 @@ const EditAgendaForm = ({
     const handleSubmit = async e => {
         e.preventDefault()
         setLoading(true)
-        setError(null)
         setValidationErrors({})
 
         try {

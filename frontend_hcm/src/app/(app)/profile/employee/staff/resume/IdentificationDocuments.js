@@ -373,9 +373,7 @@ const IdentificationDocuments = () => {
                                 </button>
                                 <button
                                     className="px-4 py-2 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7a]"
-                                    onClick={() =>
-                                        console.log('Descargar documento')
-                                    }>
+                                    >
                                     Descargar
                                 </button>
                             </div>

@@ -1,8 +1,7 @@
 // components/Charts/GoalComplianceChart.js
 'use client'
 
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS } from 'chart.js/auto';
+import { Bar } from 'react-chartjs-2'
 
 const GoalComplianceChart = ({ data }) => {
     const chartData = {
@@ -15,7 +14,7 @@ const GoalComplianceChart = ({ data }) => {
                 borderWidth: 0
             }
         ]
-    };
+    }
 
     const options = {
         responsive: true,
@@ -43,19 +42,19 @@ const GoalComplianceChart = ({ data }) => {
             tooltip: {
                 callbacks: {
                     label: (context) => {
-                        const dataItem = data[context.dataIndex];
-                        return `${dataItem.position}: ${dataItem.compliance_rate}% (${dataItem.compliant}/${dataItem.total_evaluations})`;
+                        const dataItem = data[context.dataIndex]
+                        return `${dataItem.position}: ${dataItem.compliance_rate}% (${dataItem.compliant}/${dataItem.total_evaluations})`
                     }
                 }
             }
         }
-    };
+    }
 
     return (
         <div className="h-96"> {/* Contenedor con altura fija */}
             <Bar data={chartData} options={options} />
         </div>
-    );
-};
+    )
+}
 
-export default GoalComplianceChart;
+export default GoalComplianceChart

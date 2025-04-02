@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 
 const Header = () => {
@@ -8,10 +9,16 @@ const Header = () => {
                     {/* Imagen alineada a la izquierda */}
                     <div>
                         <Link href="/">
-                            <img
+                            <Image
                                 src="/logounimar-22.jpg"
                                 alt="unimar22"
-                                className="object-cover w-auto h-12"
+                                width={50} // Ajusta según el ancho real de tu imagen
+                                height={48} // h-12 = 48px (12 * 4)
+                                className="object-cover"
+                                style={{
+                                    width: 'auto',
+                                    height: '48px',
+                                }}
                             />
                         </Link>
                     </div>

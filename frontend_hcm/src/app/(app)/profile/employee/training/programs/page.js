@@ -3,6 +3,7 @@
 import EmptyState from '@/components/EmptyState'
 import { Pagination, ProgramCard } from '@/components/ProgramCard'
 import { useEmployeeTrainings } from '@/hooks/employee/useEmployeeTrainings'
+import Image from 'next/image'
 import { useState } from 'react'
 
 const EmployeeTrainingList = () => {
@@ -16,7 +17,7 @@ const EmployeeTrainingList = () => {
 
     if (error) return (
       <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gray-50">
-        <Image 
+        <Image
           src="/logo-7.png"
           alt="Error"
           width={200}

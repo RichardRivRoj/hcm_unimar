@@ -2,9 +2,8 @@
 'use client'
 
 import { Doughnut } from 'react-chartjs-2'
-import { Chart as ChartJS } from 'chart.js/auto'
 
-const ActiveVacanciesChart = ({ data, departments }) => {
+const ActiveVacanciesChart = ({ data }) => {
   // Mapear datos a formato requerido
   const chartData = {
     labels: data.map(item => item.department?.name || 'Desconocido'),

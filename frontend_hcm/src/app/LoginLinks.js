@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useAuth } from '@/hooks/auth'
+import Image from 'next/image'
 
 const LoginLinks = () => {
     const { user } = useAuth({ middleware: 'guest' })
@@ -11,52 +12,66 @@ const LoginLinks = () => {
             {/* Social Media Links */}
             <div className="flex justify-center flex-1 space-x-2">
                 <Link href="#" className="flex items-center">
-                    <img
+                    <Image
                         src="/email.png"
                         alt="Email"
-                        className="object-contain w-6 h-6"
+                        width={24}
+                        height={24}
+                        className="object-contain"
                     />
                 </Link>
                 <Link href="#" className="flex items-center">
-                    <img
+                    <Image
                         src="/facebook.png"
                         alt="Facebook"
-                        className="object-contain w-6 h-6"
+                        width={24}
+                        height={24}
+                        className="object-contain"
                     />
                 </Link>
                 <Link href="#" className="flex items-center">
-                    <img
+                    <Image
                         src="/instagram.png"
                         alt="Instagram"
-                        className="object-contain w-6 h-6"
+                        width={24}
+                        height={24}
+                        className="object-contain"
                     />
                 </Link>
                 <Link href="#" className="flex items-center">
-                    <img
+                    <Image
                         src="/youtube-03.png"
                         alt="YouTube"
-                        className="object-contain w-6 h-6"
+                        width={24}
+                        height={24}
+                        className="object-contain"
                     />
                 </Link>
                 <Link href="#" className="flex items-center">
-                    <img
+                    <Image
                         src="/gorjeo.png"
                         alt="Twitter"
-                        className="object-contain w-6 h-6"
+                        width={24}
+                        height={24}
+                        className="object-contain"
                     />
                 </Link>
                 <Link href="#" className="flex items-center">
-                    <img
+                    <Image
                         src="/linkedin.png"
                         alt="LinkedIn"
-                        className="object-contain w-6 h-6"
+                        width={24}
+                        height={24}
+                        className="object-contain"
                     />
                 </Link>
                 <Link href="#" className="flex items-center">
-                    <img
+                    <Image
                         src="/bank-onlineb.png"
                         alt="Bank"
-                        className="object-contain w-6 h-6"
+                        width={24}
+                        height={24}
+                        className="object-contain"
                     />
                 </Link>
             </div>

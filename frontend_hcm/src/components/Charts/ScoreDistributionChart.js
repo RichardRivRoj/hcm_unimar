@@ -1,8 +1,8 @@
-import { Bar } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2"
 
 const ScoreDistributionChart = ({ data }) => {
     // Asegurar el orden correcto de los rangos
-    const orderedRanges = ['0-20', '21-40', '41-60', '61-80', '81-100'];
+    const orderedRanges = ['0-20', '21-40', '41-60', '61-80', '81-100']
     
     // Mapear datos y llenar vacíos
     const chartData = {
@@ -10,14 +10,14 @@ const ScoreDistributionChart = ({ data }) => {
         datasets: [{
             label: 'Cantidad de Evaluaciones',
             data: orderedRanges.map(range => {
-                const found = data.find(item => item.score_range === range);
-                return found ? found.count : 0;
+                const found = data.find(item => item.score_range === range)
+                return found ? found.count : 0
             }),
             backgroundColor: '#004B9A',
             borderColor: '#003A7A',
             borderWidth: 1
         }]
-    };
+    }
 
     const options = {
         responsive: true,
@@ -51,9 +51,9 @@ const ScoreDistributionChart = ({ data }) => {
                 }
             }
         }
-    };
+    }
 
-    return <Bar data={chartData} options={options} />;
-};
+    return <Bar data={chartData} options={options} />
+}
 
-export default ScoreDistributionChart;
+export default ScoreDistributionChart

@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react'
 import axios from '@/lib/axios'
 import { useTrainingProgram } from '@/hooks/admin/useTrainingPrograms'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 const UpdateTrainingProgramForm = ({ programId, onClose }) => {
+    const router = useRouter()
     const { updateProgram, loading, error, validationErrors, fetchProgram } =
         useTrainingProgram()
     const [options, setOptions] = useState({
@@ -61,7 +63,7 @@ const UpdateTrainingProgramForm = ({ programId, onClose }) => {
                     })
                 }
             } catch (error) {
-                console.error('Error loading data:', error)
+                toast.error('Error al cargar los datos:', error)
             }
         }
 

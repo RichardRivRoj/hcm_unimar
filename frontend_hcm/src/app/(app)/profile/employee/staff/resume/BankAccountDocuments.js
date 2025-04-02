@@ -13,27 +13,23 @@ import StandardLoader from '@/components/StandardLoader'
 
 const BankAccountDocuments = () => {
     const {
-        personal_info,
         bank_accounts,
         loading,
         error,
-        meta,
         refresh,
         currentPage,
         totalPages,
         goToPage,
     } = useBankAccounts()
 
-    const { banks, loading: loadingBanks, error: errorBanks } = useListBanks()
-    const { accounts, loading: loadingAccounts, error: errorAccounts } = useListAccountTypes()
-    const { currencies, loading: loadingCurrencies, error: errorCurrenciess } = useListCurrencies()
+    const { banks, loading: loadingBanks } = useListBanks()
+    const { accounts, loading: loadingAccounts } = useListAccountTypes()
+    const { currencies } = useListCurrencies()
 
     const [selectedAccount, setSelectedAccount] = useState(null)
     const [isFormModalOpen, setIsFormModalOpen] = useState(false)
     const [formError, setFormError] = useState(null)
     const [validationErrors, setValidationErrors] = useState({})
-
-    const token = localStorage.getItem('token'); // ¡Faltaba esta línea!
 
     const [formData, setFormData] = useState({
         bank_id: '',
@@ -54,34 +50,34 @@ const BankAccountDocuments = () => {
 
     const handleCreateAccount = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token')
             
             const response = await axios.post('/api/documents/banks', formData, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 }
-            });
+            })
     
             if (response.status === 201) {
-                setIsFormModalOpen(false);
-                refresh(currentPage);
+                setIsFormModalOpen(false)
+                refresh(currentPage)
                 setFormData({
                     bank_id: '',
                     account_type_id: '',
                     currency_id: '',
                     status_id: 1,
                     account_number: ''
-                });
+                })
             }
         } catch (err) {
             if (err.response?.status === 422) {
-                setValidationErrors(err.response.data.errors);
+                setValidationErrors(err.response.data.errors)
             } else {
-                setFormError(err.response?.data?.message || 'Error de conexión');
+                setFormError(err.response?.data?.message || 'Error de conexión')
             }
         }
-    };
+    }
 
     if (loading) return <StandardLoader />
 

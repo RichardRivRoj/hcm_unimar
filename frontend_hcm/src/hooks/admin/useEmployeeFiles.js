@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import axios from '@/lib/axios'
 
-const useEmployeeFiles = (initialFilters = {}) => {
+const useEmployeeFiles = () => {
     const [data, setData] = useState({
         employees: [], // Inicializado como array vacío
         meta: {

@@ -1,30 +1,30 @@
-import { useState } from 'react';
-import axios from '@/lib/axios';
+import { useState } from 'react'
+import axios from '@/lib/axios'
 
 const useCreateVacancies = () => {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(false);
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
+    const [success, setSuccess] = useState(false)
 
     const createVacancies = async (formData) => {
-        setLoading(true);
-        setError(null);
-        setSuccess(false);
+        setLoading(true)
+        setError(null)
+        setSuccess(false)
 
         try {
-            const response = await axios.post('/api/vacancies', formData);
-            setSuccess(true);
-            return response.data;
+            const response = await axios.post('/api/vacancies', formData)
+            setSuccess(true)
+            return response.data
         } catch (err) {
-            const errorMessage = err.response?.data?.message || err.message;
-            setError(errorMessage);
-            throw new Error(errorMessage);
+            const errorMessage = err.response?.data?.message || err.message
+            setError(errorMessage)
+            throw new Error(errorMessage)
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    };
+    }
 
-    return { createVacancies, loading, error, success };
-};
+    return { createVacancies, loading, error, success }
+}
 
-export default useCreateVacancies;
+export default useCreateVacancies

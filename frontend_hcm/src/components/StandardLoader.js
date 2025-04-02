@@ -53,8 +53,8 @@ const StandardLoader = () => (
         src="/logo-1.png"
         alt="UNIMAR"
         onError={(e) => {
-          e.target.onerror = null;
-          e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="40" fill="%23004b9a">V</text></svg>';
+          e.target.onerror = null
+          e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="40" fill="%23004b9a">V</text></svg>'
         }}
       />
       <Spinner />

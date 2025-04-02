@@ -12,10 +12,12 @@ import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import axios from '@/lib/axios'
 import Loader from '@/components/Loader'
+import Image from 'next/image'
 
 const Header = ({ user }) => {
     const { logout } = useAuth()
 
+    const [open, setOpen] = useState(false) // Añade esto al inicio del componente
     const [openNotifications, setOpenNotifications] = useState(false)
     const router = useRouter()
     const [notifications, setNotifications] = useState([])
@@ -61,7 +63,8 @@ const Header = ({ user }) => {
             )
             setUnreadCount(prev => prev - 1)
         } catch (error) {
-            console.error('Error marking as read:', error)
+            // Eliminado el console.error
+            setNotificationsError('Error al marcar como leída')
         }
     }
 
@@ -96,10 +99,13 @@ const Header = ({ user }) => {
                         {/* Logo */}
                         <div className="flex items-center flex-shrink-0">
                             <Link href="/">
-                                <img
+                                <Image
                                     src="/logo-5.png"
                                     alt="unimar"
+                                    width={120} // Ajusta según las dimensiones reales de tu logo
+                                    height={40} // Ajusta según las dimensiones reales de tu logo
                                     className="object-contain w-auto h-10"
+                                    priority // Opcional: si es el logo principal, carga con prioridad
                                 />
                             </Link>
                         </div>
@@ -115,7 +121,7 @@ const Header = ({ user }) => {
                             className="relative flex items-center p-2 text-gray-500 transition duration-150 ease-in-out rounded-full hover:bg-gray-100 focus:outline-none">
                             <Bell className="w-6 h-6" />
                             {/* Notification Badge (Example) */}
-                            <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full ring-2 ring-white"></span>
+                            <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full ring-2 ring-white" />
                         </button>
 
                         {/* Settings Dropdown */}
@@ -325,7 +331,7 @@ const Header = ({ user }) => {
             {/* Responsive Navigation Menu */}
             {open && (
                 <div className="block sm:hidden">
-                    <div className="pt-2 pb-3 space-y-1"></div>
+                    <div className="pt-2 pb-3 space-y-1" />
 
                     {/* Responsive Settings Options */}
                     <div className="pt-4 pb-1 border-t border-gray-200">

@@ -2,6 +2,7 @@
 import useSWR from 'swr'
 import axios from '@/lib/axios'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 const fetcher = (url, params) => axios.get(url, { params }).then(res => res.data)
 const swrOptions = { 
@@ -58,7 +59,7 @@ const useRecruitmentDashboard = (initialParams = {}) => {
                 const response = await axios.get('/api/departments')
                 setDepartments(response.data || [])
             } catch (error) {
-                console.error('Error fetching departments:', error)
+                toast.error('Error fetching departments:', error)
             }
         }
         loadDepartments()

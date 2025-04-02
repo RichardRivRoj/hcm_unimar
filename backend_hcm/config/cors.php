@@ -19,13 +19,19 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
+    'allowed_origins' => [env(
+        'FRONTEND_URL',
+        'http://localhost:3000',
+        'http://frontend:3000',
+        'http://localhost:8000',
+        'http://backend:80'
+    )],
 
     'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => ['*'],
 
     'max_age' => 0,
 

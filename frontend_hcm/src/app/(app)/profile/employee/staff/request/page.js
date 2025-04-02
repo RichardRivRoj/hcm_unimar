@@ -12,9 +12,9 @@ import { Modal } from '@/components/Modal'
 import CreateRequestForm from './CreateRequestForm'
 import { Alert, AlertDescription } from '@/components/alert'
 import EditRequestForm from './EditRequestForm'
-import Loader from '@/components/Loader'
 import StandardLoader from '@/components/StandardLoader'
 import BadgeRequest from '@/components/BadgeRequest'
+import { toast } from 'sonner'
 
 const EmployeeRequestsPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -32,9 +32,9 @@ const EmployeeRequestsPage = () => {
         refetch,
     } = useEmployeeRequests()
     const { deleteRequest, error: errorDelete } = useDeleteEmployeeRequest()
-    const [detailModalOpen, setDetailModalOpen] = useState(false);
-    const [selectedRequestId, setSelectedRequestId] = useState(null);
-    const { data: requestDetails, loading: detailLoading, error: detailError } = useEmployeeRequestDetails(selectedRequestId);
+    const [detailModalOpen, setDetailModalOpen] = useState(false)
+    const [selectedRequestId, setSelectedRequestId] = useState(null)
+    const { data: requestDetails, loading: detailLoading, error: detailError } = useEmployeeRequestDetails(selectedRequestId)
 
     // Manejar errores temporales
     useEffect(() => {
@@ -55,7 +55,7 @@ const EmployeeRequestsPage = () => {
             await deleteRequest(selectedRequest.id)
             await refetch()
         } catch (error) {
-            console.error('Error:', error.message)
+            toast.error('Error al Eliminar')
         } finally {
             setShowDeleteModal(false)
             setSelectedRequest(null)
@@ -205,15 +205,15 @@ const EmployeeRequestsPage = () => {
                 ]}
                 onFilterChange={e => {
                     // Implementar lógica de filtrado si es necesario
-                    console.log('Filtro aplicado:', e.target.value)
+                    toast.info('Filtro aplicado:', e.target.value)
                 }}
                 actions={[
                     {
                         icon: <EyeIcon className="w-4 h-4" />,
                         color: 'text-blue-600',
                         handler: item => {
-                            setSelectedRequestId(item.id);
-                            setDetailModalOpen(true);
+                            setSelectedRequestId(item.id)
+                            setDetailModalOpen(true)
                         }
                     },
                     {

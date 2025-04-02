@@ -56,15 +56,15 @@ export const useEmployeeTrainings = (filters = {}) => {
 
     const cancelEnrollment = async (programId) => {
         try {
-            await axios.delete(`/api/employee/training-programs/${programId}/cancel`);
+            await axios.delete(`/api/employee/training-programs/${programId}/cancel`)
             
             // Revalidar datos
-            mutate();
-            mutateDetails();
+            mutate()
+            mutateDetails()
             
-            return true;
+            return true
         } catch (error) {
-            throw new Error(error.response?.data?.message || 'Error al cancelar la inscripción');
+            throw new Error(error.response?.data?.message || 'Error al cancelar la inscripción')
         }
     }
 

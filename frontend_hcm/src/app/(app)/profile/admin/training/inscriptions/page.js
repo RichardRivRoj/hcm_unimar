@@ -21,7 +21,6 @@ const TrainingProgramsPage = () => {
         meta,
         loading,
         error,
-        params,
         updateParams,
         goToPage,
     } = useRegistrationHistory(filters)
@@ -58,8 +57,6 @@ const TrainingProgramsPage = () => {
             header: 'Inscritos',
             accessor: 'total_enrollments',
         },
-
-        ,
     ]
 
     const tableActions = [

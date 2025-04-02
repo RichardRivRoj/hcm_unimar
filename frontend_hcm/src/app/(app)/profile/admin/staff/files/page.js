@@ -6,7 +6,6 @@ import StandardTable from '@/components/StandardTable'
 import Input from '@/components/Input'
 import { Eye } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/alert'
-import { Skeleton } from '@/components/skeleton'
 import useEmployeeFiles from '@/hooks/admin/useEmployeeFiles'
 import useDebounce from '@/hooks/general/useDebounce'
 import StandardLoader from '@/components/StandardLoader'
@@ -22,8 +21,6 @@ const AdminEmployeesList = () => {
         error,
         updateFilter,
         goToPage,
-        handlePageChange,
-        refetch,
     } = useEmployeeFiles()
 
     const [searchTerm, setSearchTerm] = useState('')
@@ -108,7 +105,7 @@ const AdminEmployeesList = () => {
             updateFilter(filterMap[name] || name, value)
         },
        
-    };
+    }
 
     if (loading) return <StandardLoader />
     if (error) {

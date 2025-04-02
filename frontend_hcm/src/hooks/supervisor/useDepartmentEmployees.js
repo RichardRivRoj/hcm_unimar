@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react';
-import axios from '@/lib/axios';
+import { useState, useEffect } from 'react'
+import axios from '@/lib/axios'
 
 const useDepartmentEmployees = (filters = {}) => {
   const [data, setData] = useState({
@@ -13,28 +13,28 @@ const useDepartmentEmployees = (filters = {}) => {
       lastPage: 1,
       perPage: 4
     }
-  });
-  const [employee, setEmployee] = useState(null); // Nuevo estado para empleado individual
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [errorEmployee, setErrorEmployee] = useState(null); // Error específico para empleado
+  })
+  const [employee, setEmployee] = useState(null) // Nuevo estado para empleado individual
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [errorEmployee, setErrorEmployee] = useState(null) // Error específico para empleado
 
   // Función existente para listar empleados
   const fetchEmployees = async (page = 1) => {
     try {
-      setLoading(true);
+      setLoading(true)
       
       const params = {
         page,
         ...filters
-      };
+      }
 
       const response = await axios.get('/api/supervisor/departments/employees', {
         params,
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
-      });
+      })
 
       setData({
         employees: response.data.employees,
@@ -45,51 +45,51 @@ const useDepartmentEmployees = (filters = {}) => {
           lastPage: response.data.last_page,
           perPage: response.data.per_page
         }
-      });
+      })
 
-      setError(null);
+      setError(null)
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al cargar empleados');
+      setError(err.response?.data?.message || 'Error al cargar empleados')
       setData(prev => ({
         ...prev,
         employees: [],
         department: '',
-      }));
+      }))
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // Nueva función para obtener un empleado específico
   const fetchEmployee = async (id) => {
     try {
-      setLoading(true);
-      setErrorEmployee(null);
+      setLoading(true)
+      setErrorEmployee(null)
       
       const response = await axios.get(`/api/supervisor/departments/employees/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
-      });
+      })
 
-      setEmployee(response.data);
+      setEmployee(response.data)
     } catch (err) {
-      setErrorEmployee(err.response?.data?.message || 'Error al cargar empleado');
-      setEmployee(null);
+      setErrorEmployee(err.response?.data?.message || 'Error al cargar empleado')
+      setEmployee(null)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchEmployees();
-  }, [filters.search, filters.position]);
+    fetchEmployees()
+  }, [filters.search, filters.position])
 
   const goToPage = (page) => {
     if (page >= 1 && page <= data.pagination.lastPage) {
-      fetchEmployees(page);
+      fetchEmployees(page)
     }
-  };
+  }
 
   return {
     // Datos existentes
@@ -104,7 +104,7 @@ const useDepartmentEmployees = (filters = {}) => {
     employee,
     fetchEmployee,
     errorEmployee
-  };
-};
+  }
+}
 
-export default useDepartmentEmployees;
+export default useDepartmentEmployees

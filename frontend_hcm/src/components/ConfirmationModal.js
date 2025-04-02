@@ -1,7 +1,7 @@
-import Button from "./Button";
+import Button from "./Button"
 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -31,8 +31,8 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ConfirmationModal;
+export default ConfirmationModal
 

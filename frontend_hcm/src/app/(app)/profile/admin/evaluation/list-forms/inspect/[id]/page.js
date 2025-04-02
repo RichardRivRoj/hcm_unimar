@@ -1,13 +1,11 @@
 'use client'
 import React, { useEffect } from 'react'
 import useFormEvaluationDepartments from '@/hooks/admin/useFormEvaluationDepartments'
-import Loader from '@/components/Loader'
 import Image from 'next/image'
 import DownloadEvaluationPDF from '@/components/EvaluationPDF'
 import { DownloadCloud } from 'lucide-react'
 import StandardLoader from '@/components/StandardLoader'
 import { Alert, AlertDescription } from '@/components/alert'
-import formatearFecha from '@/utils/formtDate'
 
 const EvaluationDetailPage = ({ params }) => {
     const { id } = params
@@ -244,7 +242,7 @@ const EvaluationDetailPage = ({ params }) => {
                                 'DIRECTORA DE TALENTO HUMANO',
                             ].map(title => (
                                 <div key={title} className="text-center">
-                                    <div className="h-20 mb-4 border-b-2 border-[#004b9a]"></div>
+                                    <div className="h-20 mb-4 border-b-2 border-[#004b9a]" />
                                     <p className="text-sm font-medium text-[#004b9a]">
                                         {title}
                                     </p>

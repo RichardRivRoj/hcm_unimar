@@ -176,6 +176,12 @@ class EmployeeController extends Controller
             $statusContratado = StatusApplication::where('name', 'Contratado')->first();
             $candidate->update(['status_application_id' => $statusContratado->id]);
 
+            // Rechazar todas las demás postulaciones del candidato en otras vacantes
+            $statusRechazado = StatusApplication::where('name', 'Rechazado')->first();
+            Candidate::where('person_id', $candidate->person_id)
+                ->where('id', '!=', $candidate->id)
+                ->update(['status_application_id' => $statusRechazado->id]);
+
             // Enviar un correo electrónico al candidato con sus credenciales
             Mail::to($candidate->persons->email)->send(new EmployeeHiredNotification([
                 'name' => $candidate->persons->first_name . ' ' . $candidate->persons->last_name,

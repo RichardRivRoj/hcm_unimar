@@ -1,9 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation';
-
-import LoginLinks from '@/app/LoginLinks'
 import Header from './Header'
 import ProfileCard from '@/components/ProfileCard'
 import Link from 'next/link'
@@ -12,7 +10,6 @@ import JobList from '@/components/JobList';
 
 const Home = () => {
     const [selectedImage, setSelectedImage] = useState(null)
-    const router = useRouter();
 
     // Información de cada imagen
     const imageDetails = {

@@ -1,12 +1,12 @@
 'use client'
 
-import React from 'react';
-import { Tooltip, Treemap } from 'recharts';
+import React from 'react'
+import { Tooltip, Treemap } from 'recharts'
 
 const colorPalette = [
     '#004B9A', '#B0BEC5', '#003A7A', '#8C9CA3', '#0056b3',
     '#c0ccd1', '#002851', '#66757f', '#001a3d', '#99a6ad'
-];
+]
 
 const MaritalStatusTreemap = ({ data }) => {
     const formattedData = data.map((item, index) => ({
@@ -14,7 +14,7 @@ const MaritalStatusTreemap = ({ data }) => {
         value: item.percentage,
         count: item.count,
         color: colorPalette[index % colorPalette.length]
-    }));
+    }))
 
     return (
         <div className="p-4 bg-white rounded-lg shadow-md">
@@ -46,7 +46,7 @@ const MaritalStatusTreemap = ({ data }) => {
                 />
             </Treemap>
         </div>
-    );
-};
+    )
+}
 
-export default MaritalStatusTreemap;
+export default MaritalStatusTreemap

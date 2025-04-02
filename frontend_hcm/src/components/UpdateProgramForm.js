@@ -156,4 +156,4 @@ const CalificationForm = ({ enrollment, onSuccess, updateEnrollment }) => {
     )
 }
 
-export default CalificationForm;
+export default CalificationForm

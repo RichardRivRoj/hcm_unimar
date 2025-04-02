@@ -569,7 +569,7 @@ class CandidateController extends Controller
                 'documents' => $filteredDocuments,
                 'identification_type' => $person->identificationtype,
                 'ethnicity' => $person->ethnicity,
-                'marital_status' => $person->maritalstatus,
+                'marital_status' => $person->marital_status,
                 'gender' => $person->gender,
                 'country' => $person->country,
                 'status' => $person->status

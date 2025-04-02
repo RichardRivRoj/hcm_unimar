@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from 'framer-motion'
 
 const ResultsStep = ({ scores, sections }) => {
   return (
@@ -41,7 +41,7 @@ const ResultsStep = ({ scores, sections }) => {
                 </div>
             ))}
     </motion.div>
-  );
-};
+  )
+}
 
-export default ResultsStep;
+export default ResultsStep

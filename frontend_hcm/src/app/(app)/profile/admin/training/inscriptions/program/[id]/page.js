@@ -7,9 +7,6 @@ import StandardTable from '@/components/StandardTable'
 import { EyeIcon } from '@heroicons/react/24/solid'
 import { ArrowLeft } from 'lucide-react'
 import { useRegistrationProgramDetail } from '@/hooks/admin/useRegistrationDetail'
-import { toast } from 'sonner'
-import { useState } from 'react'
-import { DeleteModal } from '@/components/Modal'
 import StandardLoader from '@/components/StandardLoader'
 
 const RegistrationProgram = ({ params }) => {

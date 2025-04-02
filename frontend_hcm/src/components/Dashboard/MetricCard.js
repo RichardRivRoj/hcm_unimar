@@ -8,4 +8,4 @@ const MetricCard = ({ title, value, description, color = '#004b9a' }) => (
     </div>
   )
 
-export default MetricCard;
+export default MetricCard

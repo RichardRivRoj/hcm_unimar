@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic' // Añadir esto al inicio
+
 import { useState } from 'react'
 import { ChartPieIcon, UserGroupIcon, AcademicCapIcon, BriefcaseIcon } from '@heroicons/react/24/outline'
 import DashboardTab from '@/components/Dashboard/DashboardTab'

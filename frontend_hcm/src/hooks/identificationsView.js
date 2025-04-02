@@ -1,28 +1,28 @@
-import { useState, useEffect } from 'react';
-import axios from '@/lib/axios';
+import { useState, useEffect } from 'react'
+import axios from '@/lib/axios'
 
 const useIdentificacitionTypes = () => {
-    const [identifications, setIdentifications] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [identifications, setIdentifications] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
 
     useEffect(() => {
         const fetchIdentifications = async () => {
             try {
-                const response = await axios.get('/api/public/identifications'); // Llama al endpoint del backend
-                setIdentifications(response.data);
+                const response = await axios.get('/api/public/identifications') // Llama al endpoint del backend
+                setIdentifications(response.data)
             } catch (err) {
-                console.error('Error al cargar identificaciones:', err);
-                setError(err);
+         
+                setError(err)
             } finally {
-                setLoading(false);
+                setLoading(false)
             }
-        };
+        }
 
-        fetchIdentifications();
-    }, []);
+        fetchIdentifications()
+    }, [])
 
-    return { identifications, loading, error };
-};
+    return { identifications, loading, error }
+}
 
-export default useIdentificacitionTypes;
+export default useIdentificacitionTypes

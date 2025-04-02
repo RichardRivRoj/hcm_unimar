@@ -7,4 +7,4 @@ const ChartCard = ({ title, children, className = "" }) => (
     </div>
 )
 
-export default ChartCard;
+export default ChartCard

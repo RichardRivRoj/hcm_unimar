@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Eye, Edit, Trash2 } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import useDepartments from '@/hooks/useDepartments' // Importa el hook para listar departamentos
 import useModalities from '@/hooks/useModalities'
 import usePositions from '@/hooks/usePositions'
@@ -21,29 +21,19 @@ const JobListPage = () => {
     const router = useRouter()
     const {
         departments,
-        loading: loadingDepartments,
-        error: errorDepartments,
     } = useDepartments()
     const {
         statuses,
-        loading: loadingStatuses,
-        error: errorStatuses,
     } = useStatuses()
     const {
         modalities,
-        loading: loadingModalities,
-        error: errorModalities,
     } = useModalities()
     const {
         positions,
-        loading: loadingPositions,
-        error: errorPositions,
     } = usePositions()
     const {
         createVacancies,
         loading: creatingJob,
-        error: errorCreate,
-        success,
     } = useCreateVacancies()
     const [filters, setFilters] = useState({
         department_id: '',
@@ -56,74 +46,8 @@ const JobListPage = () => {
         filters,
     )
 
-    const [formState, setFormState] = useState({
-        position_id: '',
-        department_id: '',
-        description: '',
-        requirements: [],
-        responsability: [],
-        num_vacancy: 1,
-        mode_id: '',
-    })
-
     const [isCreating, setIsCreating] = useState(false)
 
-    const handleChange = e => {
-        const { name, value, type } = e.target
-
-        setFormState(prev => ({
-            ...prev,
-            [name]: type === 'number' ? parseInt(value) : value,
-        }))
-    }
-
-    const handleSubmit = async e => {
-        e.preventDefault()
-
-        if (
-            !formState.position_id ||
-            !formState.department_id ||
-            !formState.mode_id
-        ) {
-            toast.error('Complete todos los campos obligatorios (*)')
-            return
-        }
-
-        try {
-            const payload = {
-                ...formState,
-                requirements: JSON.stringify(formState.requirements),
-                responsability: JSON.stringify(formState.responsability),
-            }
-
-            await createVacancies(payload)
-
-            // Notificación de éxito
-            toast.success('Vacante creada exitosamente')
-
-            // Resetear el formulario
-            setFormState({
-                position_id: '',
-                department_id: '',
-                description: '',
-                requirements: [],
-                responsability: [],
-                num_vacancy: 1,
-                mode_id: '',
-            })
-
-            setIsCreating(false)
-
-            // Reiniciar la tabla
-            mutate()
-        } catch (errorCreate) {
-            // Notificación de error
-            toast.error(`Error al crear la vacante: ${errorCreate.message}`)
-        }
-    }
-
-    const isFormValid =
-        formState.position_id && formState.department_id && formState.mode_id
 
     // Configuración de la tabla
     const tableColumns = [

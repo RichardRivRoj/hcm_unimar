@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUpdateEmployeeRequest } from '@/hooks/employee/useEmployeeRequests'
+import { toast } from 'sonner'
 
 const EditRequestForm = ({ request, onSuccess, onCancel }) => {
     const [description, setDescription] = useState('')
@@ -16,7 +17,7 @@ const EditRequestForm = ({ request, onSuccess, onCancel }) => {
                 // Compatibilidad con diferentes formatos
                 setDescription(parsed.content || parsed.descripcion || '')
             } catch (error) {
-                console.error('Error parsing description:', error)
+                toast.error('Error al analizar la descripción')
                 setDescription(request.description) // Fallback a texto plano
             }
         }
@@ -30,7 +31,7 @@ const EditRequestForm = ({ request, onSuccess, onCancel }) => {
             await updateRequest(request.id, jsonData)
             onSuccess?.()
         } catch (error) {
-            console.error('Error actualizando:', error)
+            toast.error('Error al actualizar la solicitud')
         }
     }
 

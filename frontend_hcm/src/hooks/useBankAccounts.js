@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import axios from '@/lib/axios';
+import { useState, useEffect } from 'react'
+import axios from '@/lib/axios'
 
 const useBankAccounts = () => {
     const [state, setState] = useState({
@@ -10,12 +10,12 @@ const useBankAccounts = () => {
         error: null,
         currentPage: 1,
         totalPages: 1
-    });
+    })
 
     const fetchBankAccounts = async (page = 1) => {
-        setState(prev => ({...prev, loading: true}));
+        setState(prev => ({...prev, loading: true}))
         try {
-            const response = await axios.get(`/api/documents/banks?page=${page}`);
+            const response = await axios.get(`/api/documents/banks?page=${page}`)
             
             setState({
                 personal_info: response.data.personal_info || {},
@@ -25,27 +25,27 @@ const useBankAccounts = () => {
                 error: null,
                 currentPage: response.data.meta?.current_page || 1,
                 totalPages: response.data.meta?.total_pages || 1
-            });
+            })
 
         } catch (err) {
             setState(prev => ({
                 ...prev,
                 error: err.response?.data?.error || 'Error al cargar contratos',
                 loading: false
-            }));
+            }))
         }
-    };
+    }
 
     useEffect(() => {
-        fetchBankAccounts();
-    }, []);
+        fetchBankAccounts()
+    }, [])
 
     return {
         ...state,
         refresh: fetchBankAccounts,
         goToNextPage: () => state.currentPage < state.totalPages && fetchBankAccounts(state.currentPage + 1),
         goToPrevPage: () => state.currentPage > 1 && fetchBankAccounts(state.currentPage - 1)
-    };
-};
+    }
+}
 
-export default useBankAccounts;
+export default useBankAccounts

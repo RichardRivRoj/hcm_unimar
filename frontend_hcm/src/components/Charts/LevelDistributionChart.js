@@ -1,10 +1,10 @@
-import { Treemap, Tooltip } from 'recharts';
+import { Treemap, Tooltip } from 'recharts'
 
 const LevelDistributionChart = ({ data }) => {
     const colorPalette = [
         '#004B9A', '#B0BEC5', '#003A7A', '#8C9CA3', '#0056b3',
         '#c0ccd1', '#002851', '#66757f', '#001a3d', '#99a6ad'
-    ];
+    ]
 
     return (
         <div className="bg-white rounded-lg shadow-md ">
@@ -20,23 +20,23 @@ const LevelDistributionChart = ({ data }) => {
                 <Tooltip
                     content={({ active, payload }) => {
                         if (active && payload) {
-                            const { name, value } = payload[0];
+                            const { name, value } = payload[0]
                             return (
                                 <div className="bg-white rounded ">
                                     <p className="font-medium">{name}</p>
                                     <p>{`${value}%`}</p>
                                 </div>
-                            );
+                            )
                         }
-                        return null;
+                        return null
                     }}
                 />
             </Treemap>
         </div>
-    );
-};
+    )
+}
 
-const CustomizedContent = ({ root, depth, x, y, width, height, index, colors, colorPalette }) => {
+const CustomizedContent = ({ root, x, y, width, height, index, colorPalette }) => {
     return (
         <g>
             <rect
@@ -58,7 +58,7 @@ const CustomizedContent = ({ root, depth, x, y, width, height, index, colors, co
                 {root.name}
             </text>
         </g>
-    );
-};
+    )
+}
 
-export default LevelDistributionChart;
+export default LevelDistributionChart

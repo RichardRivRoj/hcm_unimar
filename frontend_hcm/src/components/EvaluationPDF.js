@@ -11,7 +11,7 @@ import {
     Font,
 } from '@react-pdf/renderer'
 import writtenNumber from 'written-number'
-import { format } from 'date-fns'
+import { toast } from 'sonner'
 
 // Configurar written-number en español
 writtenNumber.defaults.lang = 'es'
@@ -397,7 +397,7 @@ const DownloadEvaluationPDF = ({ evaluationDetail }) => (
         document={<EvaluationPDF evaluationDetail={evaluationDetail} />}
         fileName={`evaluacion_${evaluationDetail?.evaluated_employee?.full_name?.replace(/ /g, '_') || 'evaluacion'}.pdf`}>
         {({ loading, error }) => {
-            if (error) console.error('Error generando PDF:', error)
+            if (error) toast.error('Error generando PDF:', error)
             return loading
                 ? 'Generando documento...'
                 : 'Descargar evaluación PDF'

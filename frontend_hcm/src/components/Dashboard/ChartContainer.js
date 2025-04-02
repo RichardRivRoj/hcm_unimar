@@ -5,4 +5,4 @@ const ChartContainer = ({ title, children }) => (
     </div>
 )
 
-export default ChartContainer;
+export default ChartContainer

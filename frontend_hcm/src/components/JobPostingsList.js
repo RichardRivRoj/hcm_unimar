@@ -1,12 +1,12 @@
-'use client';
+'use client'
 
-import useFetchJobPostings from '@/hooks/useJobPostings';
+import useFetchJobPostings from '@/hooks/useJobPostings'
 
 const JobPostingsList = () => {
-    const { jobPostings, loading, error } = useFetchJobPostings();
+    const { jobPostings, loading, error } = useFetchJobPostings()
 
-    if (loading) return <p>Cargando vacantes...</p>;
-    if (error) return <p>Error al cargar las vacantes: {error}</p>;
+    if (loading) return <p>Cargando vacantes...</p>
+    if (error) return <p>Error al cargar las vacantes: {error}</p>
 
     return (
         <div className="container p-8 mx-auto">
@@ -50,7 +50,7 @@ const JobPostingsList = () => {
                 </table>
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default JobPostingsList;
+export default JobPostingsList

@@ -7,13 +7,11 @@ import {
     BookOpenIcon,
     CalendarIcon,
     IdentificationIcon,
-    BriefcaseIcon,
     EnvelopeIcon,
     PhoneIcon,
     DocumentArrowDownIcon,
 } from '@heroicons/react/24/outline'
 import useEnrollmentDetails from '@/hooks/admin/useEnrollmentDetails'
-import Loader from '@/components/Loader'
 import { ArrowLeft, CheckCircleIcon } from 'lucide-react'
 import Button from '@/components/Button'
 import { PDFDownloadLink } from '@react-pdf/renderer'

@@ -161,10 +161,7 @@ const TrainingProgramsPage = () => {
 
     return (
         <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">
-                    Programas de Capacitación
-                </h1>
+            <div className="flex items-center justify-end mb-6">
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="px-6 py-3 text-white bg-[#004b9a] rounded-lg hover:bg-[#003a7a]">

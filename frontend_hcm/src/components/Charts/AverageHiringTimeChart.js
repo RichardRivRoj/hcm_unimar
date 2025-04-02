@@ -1,5 +1,4 @@
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS } from 'chart.js/auto';
+import { Bar } from 'react-chartjs-2'
 
 const AverageHiringTimeChart = ({ data }) => {
   const chartData = {
@@ -14,7 +13,7 @@ const AverageHiringTimeChart = ({ data }) => {
         borderRadius: 8, // Bordes redondeados
       }
     ]
-  };
+  }
 
   const options = {
     indexAxis: 'y', // Hace que las barras sean horizontales
@@ -51,9 +50,9 @@ const AverageHiringTimeChart = ({ data }) => {
       axis: 'y',
       intersect: false,
     },
-  };
+  }
 
-  return <Bar data={chartData} options={options} />;
-};
+  return <Bar data={chartData} options={options} />
+}
 
-export default AverageHiringTimeChart;
+export default AverageHiringTimeChart

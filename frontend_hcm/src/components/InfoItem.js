@@ -5,4 +5,4 @@ const InfoItem = ({ label, value }) => (
     </div>
 )
 
-export default InfoItem;
+export default InfoItem

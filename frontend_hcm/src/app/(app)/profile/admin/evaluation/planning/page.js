@@ -31,7 +31,6 @@ const PlanningPage = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [selectedPeriod, setSelectedPeriod] = useState(null)
-    const [selectedPeriodId, setSelectedPeriodId] = useState(null)
 
     // Efecto para actualización periódica
     useEffect(() => {
@@ -54,16 +53,10 @@ const PlanningPage = () => {
             setSelectedPeriod(null)
             fetchEvaluationPeriods() // Recargar la lista
         } catch (error) {
-            console.error('Error eliminando:', error.message)
+            setSelectedPeriod(null)
+            setIsDeleteModalOpen(false)
         }
     }
-
-    const handleEdit = useCallback(period => {
-        if (period && period.id) {
-            setSelectedPeriod(period)
-            setIsEditModalOpen(true)
-        }
-    }, [])
 
     const handleUpdateSuccess = useCallback(() => {
         setIsEditModalOpen(false)

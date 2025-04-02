@@ -1,16 +1,16 @@
-import { motion } from 'framer-motion';
+import { motion } from 'framer-motion'
 
-const ConfirmationStep = ({ data, scores = {}, departmentId, periodId }) => {
+const ConfirmationStep = ({ data, scores = {} }) => {
   const calculateTotalScore = () => {
-    if (!scores || typeof scores !== 'object') return 0;
+    if (!scores || typeof scores !== 'object') return 0
     
     return Object.values(scores).reduce((total, section) => {
-      if (!section) return total;
+      if (!section) return total
       return total + Object.values(section).reduce((sum, scoreData) => {
-        return sum + (Number(scoreData?.score) || 0);
-      }, 0);
-    }, 0);
-  };
+        return sum + (Number(scoreData?.score) || 0)
+      }, 0)
+    }, 0)
+  }
 
   return (
     <motion.div
@@ -57,7 +57,7 @@ const ConfirmationStep = ({ data, scores = {}, departmentId, periodId }) => {
         </p>
       </div>
     </motion.div>
-  );
-};
+  )
+}
 
-export default ConfirmationStep;
+export default ConfirmationStep

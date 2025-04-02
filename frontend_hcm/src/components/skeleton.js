@@ -10,7 +10,7 @@ export const Skeleton = ({ className, lines = 1, ...props }) => {
             />
           ))}
         </div>
-      );
+      )
     }
     
     return (
@@ -18,5 +18,5 @@ export const Skeleton = ({ className, lines = 1, ...props }) => {
         className={`animate-pulse bg-gray-200 rounded-lg ${className}`}
         {...props}
       />
-    );
-  };
+    )
+  }

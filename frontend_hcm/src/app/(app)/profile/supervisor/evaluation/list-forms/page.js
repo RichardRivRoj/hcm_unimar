@@ -1,13 +1,13 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Eye } from 'lucide-react';
-import StandardTable from '@/components/StandardTable';
-import useFormEvaluations from '@/hooks/supervisor/useFormEvaluation';
-import StandardLoader from '@/components/StandardLoader';
+'use client'
+import React, { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Eye } from 'lucide-react'
+import StandardTable from '@/components/StandardTable'
+import useFormEvaluations from '@/hooks/supervisor/useFormEvaluation'
+import StandardLoader from '@/components/StandardLoader'
 
 const EvaluationPage = () => {
-    const router = useRouter();
+    const router = useRouter()
     const {
         evaluationsList: data,
         loading,
@@ -17,11 +17,10 @@ const EvaluationPage = () => {
         handlePageChange,
         handleFilterChange,
         filters,
-        fetchEvaluations
-    } = useFormEvaluations();
+    } = useFormEvaluations()
 
     // Estado para el debounce del buscador
-    const [searchInput, setSearchInput] = useState('');
+    const [searchInput, setSearchInput] = useState('')
     
     // Efecto para debounce del campo de búsqueda
     useEffect(() => {
@@ -31,11 +30,11 @@ const EvaluationPage = () => {
                     name: 'search',
                     value: searchInput
                 }
-            });
-        }, 500);
+            })
+        }, 500)
 
-        return () => clearTimeout(delayDebounce);
-    }, [searchInput]);
+        return () => clearTimeout(delayDebounce)
+    }, [searchInput])
 
     const columns = [
         { header: 'Nombre Completo', accessor: 'full_name' },
@@ -44,7 +43,7 @@ const EvaluationPage = () => {
         { header: 'Puntaje Total', accessor: 'total_score' },
         { header: 'Periodo', accessor: 'period' },
         { header: 'Fecha Evaluación', accessor: 'evaluation_date' }
-    ];
+    ]
 
     const actions = [
         {
@@ -52,7 +51,7 @@ const EvaluationPage = () => {
             color: 'text-blue-600',
             handler: item => router.push(`/profile/supervisor/evaluation/list-forms/inspect/${item.evaluation_id}`)
         }
-    ];
+    ]
 
     const filtersConfig = [
         {
@@ -64,8 +63,8 @@ const EvaluationPage = () => {
                 label: period.name
             }))
         }
-    ];
-;
+    ]
+
     if (loading) return <StandardLoader />
 
     return (
@@ -102,7 +101,7 @@ const EvaluationPage = () => {
                 </div>
             )}
         </div>
-    );
-};
+    )
+}
 
-export default EvaluationPage;
+export default EvaluationPage

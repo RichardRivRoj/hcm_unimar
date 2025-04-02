@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
 import { Cake, IdCard, Captions, HeartHandshake, NotebookPen } from 'lucide-react'
 import DownloadCVButton from '@/components/DownloadCVButton'
 import ProfilePhotoEditor from '@/components/ProfilePhotoEditor'
 
 const EmployeeProfile = ({ user }) => {
+    
     return (
         <div className="mb-8">
             {/* Encabezado */}
@@ -43,7 +43,7 @@ const EmployeeProfile = ({ user }) => {
                             <li className="flex items-center">
                                 <IdCard
                                     size={20}
-                                    className="mr-2 text-gray-600"></IdCard>
+                                    className="mr-2 text-gray-600" />
                                 {user.person?.identification_type}
                                 {' - '}
                                 {user.person.identification_value}
@@ -170,25 +170,25 @@ const EmployeeProfile = ({ user }) => {
                             <li className="flex items-center">
                                 <Cake
                                     size={20}
-                                    className="mr-2 text-gray-600"></Cake>
-                                {user.person?.birth_date}
+                                    className="mr-2 text-gray-600" />
+                                {new Date(user.person?.birth_date).toLocaleDateString('es-ES', {timeZone:'UTC'})}
                             </li>
                             <li className="flex items-center">
                                 <Captions
                                     size={20}
-                                    className="mr-2 text-gray-600"></Captions>
+                                    className="mr-2 text-gray-600" />
                                 {user.person?.gender}
                             </li>
                             <li className="flex items-center">
                                 <HeartHandshake
                                     size={20}
-                                    className="mr-2 text-gray-600"></HeartHandshake>
+                                    className="mr-2 text-gray-600" />
                                 {user.person?.ethnicity}
                             </li>
                             <li className="flex items-center">
                                 <NotebookPen
                                     size={20}
-                                    className="mr-2 text-gray-600"></NotebookPen>
+                                    className="mr-2 text-gray-600" />
                                 {user.person?.marital_status}
                             </li>
                         </ul>

@@ -1,3 +1,6 @@
+'use client'
+
+import React from "react"
 
 const DetailCard = ({ 
     title, 
@@ -64,9 +67,9 @@ const DetailCard = ({
           </div>
         </div>
       </div>
-    );
-  };
+    )
+  }
   
 
   
-  export default DetailCard;
+  export default DetailCard

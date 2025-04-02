@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 
 const Footer = () => {
@@ -8,10 +9,12 @@ const Footer = () => {
                 {/* Logo y ubicación */}
                 <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5 lg:text-sm">
                     <div className="flex flex-col items-center text-center md:items-center md:text-center">
-                        <img
+                        <Image
                             src="/logo-unimar-22.png"
                             alt="Unimar Logo"
-                            className="object-contain h-24 mb-4 w-28"
+                            width={112} // w-28 = 112px (28 * 4)
+                            height={96} // h-24 = 96px (24 * 4)
+                            className="object-contain"
                         />
                         <p className="text-xs">
                             Av. Concepción Mariño, Sector El Toporo, El Valle
@@ -22,7 +25,7 @@ const Footer = () => {
                     {/* Secciones de navegación */}
 
                     {/* Parte 1 */}
-                    <div className=''>
+                    <div className="">
                         <h4 className="mb-3 font-bold">Nuestra Institución</h4>
                         <ul className="space-y-3">
                             <li>
@@ -126,31 +129,39 @@ const Footer = () => {
                         {/* Redes sociales */}
                         <div className="flex mt-4 space-x-3">
                             <Link href="#" className="flex items-center">
-                                <img
+                                <Image
                                     src="/email.png"
                                     alt="Email"
-                                    className="object-contain w-6 h-6"
+                                    width={24}
+                                    height={24}
+                                    className="object-contain"
                                 />
                             </Link>
                             <Link href="#" className="flex items-center">
-                                <img
+                                <Image
                                     src="/facebook.png"
                                     alt="Facebook"
-                                    className="object-contain w-6 h-6"
+                                    width={24}
+                                    height={24}
+                                    className="object-contain"
                                 />
                             </Link>
                             <Link href="#" className="flex items-center">
-                                <img
+                                <Image
                                     src="/instagram.png"
                                     alt="Instagram"
-                                    className="object-contain w-6 h-6"
+                                    width={24}
+                                    height={24}
+                                    className="object-contain"
                                 />
                             </Link>
                             <Link href="#" className="flex items-center">
-                                <img
+                                <Image
                                     src="/youtube-03.png"
                                     alt="YouTube"
-                                    className="object-contain w-6 h-6"
+                                    width={24}
+                                    height={24}
+                                    className="object-contain"
                                 />
                             </Link>
                         </div>

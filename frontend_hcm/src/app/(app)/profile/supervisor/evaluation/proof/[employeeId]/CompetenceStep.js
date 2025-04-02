@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useState, memo, useCallback, useEffect, useRef } from 'react'
+import React, { memo, useCallback, useEffect, useRef } from 'react'
 import SectionStep from './SectionStep'
 import { useNavigation } from '@/providers/NavigationProvider'
 import RatingScale from '@/components/RatingScale'
 import { CheckCircleIcon } from 'lucide-react'
 import { LockClosedIcon } from '@heroicons/react/24/outline'
+import { toast } from 'sonner'
 
 const CompetenceStep = memo(
     ({ sections, scores, setScores, onAllSectionsComplete }) => {
@@ -22,9 +23,8 @@ const CompetenceStep = memo(
                 sections.length > 0 &&
                 !sections[navigation.currentSection]?.questions
             ) {
-                console.error(
-                    'Sección sin preguntas:',
-                    sections[navigation.currentSection],
+                toast.error(
+                    'Error: Sección sin preguntas'
                 )
             }
         }, [navigation.currentSection, sections])
@@ -225,5 +225,7 @@ const CompetenceStep = memo(
         )
     },
 )
+
+CompetenceStep.displayName = 'CompetenceStep'
 
 export default CompetenceStep

@@ -14,13 +14,13 @@ const useVacancies = (page = 1, filters = {}) => {
 
                 // Filtramos los parámetros vacíos
                 const cleanFilters = Object.fromEntries(
-                    Object.entries(filters).filter(([_, v]) => v !== ''),
+                    Object.entries(filters).filter(([, value]) => value !== '')
                 )
 
                 const params = new URLSearchParams({
                     page,
                     ...cleanFilters ,
-                }).toString();
+                }).toString()
                 const response = await axios.get(
                     `/api/vacancies?page=${params}`,
                 )

@@ -1,8 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/auth'
-import { Check, FileText, IdCard, Info, Settings, Shield, UserCog, Users } from 'lucide-react'
 import EmployeeProfile from './EmployeeProfile'
 import AdminProfile from './AdminProfile'
 import SupervisorProfile from './SupervisorProfile'
@@ -18,17 +16,17 @@ const Profile = () => {
         <div className="max-w-4xl p-6 mx-auto rounded-lg shadow-md bg-gray-50">
             {/* Sección de Empleado */}
             {user.roles.includes('employee') && (
-                <EmployeeProfile user={user}></EmployeeProfile>
+                <EmployeeProfile user={user} />
             )}
 
             {/* Sección Administrador */}
             {user.roles.includes('admin') && (
-                <AdminProfile user={user}></AdminProfile>
+                <AdminProfile user={user} />
             )}
 
             {/* Sección Supervisor */}
             {user.roles.includes('supervisor') && (
-                <SupervisorProfile user={user}></SupervisorProfile>
+                <SupervisorProfile user={user} />
             )}
         </div>
     )

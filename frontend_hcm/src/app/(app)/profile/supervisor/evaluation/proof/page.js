@@ -1,6 +1,6 @@
 // app/dashboard/evaluaciones/page.js
-'use client';
-import UnevaluatedEmployeesList from './UnevaluatedEmployeesList';
+'use client'
+import UnevaluatedEmployeesList from './UnevaluatedEmployeesList'
 
 const EvaluationPage = () => {
 
@@ -8,7 +8,7 @@ const EvaluationPage = () => {
     <div className="container px-4 mx-auto">
       <UnevaluatedEmployeesList />
     </div>
-  );
-};
+  )
+}
 
-export default EvaluationPage;
+export default EvaluationPage

@@ -247,8 +247,7 @@ const CertificatePDF = ({ employee, program, enrollment }) => {
                 {/* Firmas */}
                 <View style={styles.signatureSection}>
                     <View style={styles.signatureBox}>
-                        <Text style={[styles.value, { marginBottom: 6 }]}>
-                        </Text>
+                        <Text style={[styles.value, { marginBottom: 6 }]} />
                         <Text style={styles.labelfirm}>FIRMA DEL INSTRUCTOR</Text>
                         <Text style={[styles.value, { fontSize: 9 }]}>
                             Nombre y Cédula
@@ -256,8 +255,7 @@ const CertificatePDF = ({ employee, program, enrollment }) => {
                     </View>
 
                     <View style={styles.signatureBox}>
-                        <Text style={[styles.value, { marginBottom: 6 }]}>
-                        </Text>
+                        <Text style={[styles.value, { marginBottom: 6 }]} />
                         <Text style={styles.labelfirm}>
                             FIRMA DEL DIRECTOR RRHH
                         </Text>

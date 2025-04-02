@@ -1,12 +1,11 @@
 'use client'
 import usePerformanceEvaluations from '@/hooks/supervisor/usePerformanceEvaluations'
 import { useEffect } from 'react'
-import Loading from '@/app/(app)/Loading'
 import StandardTable from '@/components/StandardTable'
 import { useRouter } from 'next/navigation'
 import { FaClipboardList } from 'react-icons/fa'
-import Loader from '@/components/Loader'
 import StandardLoader from '@/components/StandardLoader'
+import { toast } from 'sonner'
 
 const UnevaluatedEmployeesList = () => {
     const router = useRouter()
@@ -41,7 +40,7 @@ const UnevaluatedEmployeesList = () => {
         // El parámetro es cada empleado individual
         // Validar usando el employee recibido
         if (!employee?.id || !activePeriod?.id) {
-            console.error('Datos incompletos:', { employee, activePeriod })
+            toast.error('Datos incompletos')
             return
         }
 

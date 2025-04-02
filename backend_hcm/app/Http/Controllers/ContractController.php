@@ -31,7 +31,7 @@ class ContractController extends Controller
                 ]);
             },
             'person.identificationType',
-            'person.country'
+            'person.countries'
         ]);
 
         $person = $user->person;
@@ -60,7 +60,7 @@ class ContractController extends Controller
                 'position' => $position->description ?? 'No especificado',
                 'department' => $department->name ?? 'Sin departamento',
                 'identification' => $person->identificationtype->code . '-' . $person->identification_value ?? 'Sin documento',
-                'country' => $person->country->long_name,
+                'country' => $person->countries->long_name,
             ],
             'contracts' => $contracts->map(function ($contract) {
                 return [

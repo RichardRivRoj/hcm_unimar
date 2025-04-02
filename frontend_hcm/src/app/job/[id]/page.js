@@ -32,28 +32,18 @@ const JobDetails = ({ params }) => {
     const [currentStep, setCurrentStep] = useState(1) // Paso actual del modal
     const {
         identifications,
-        loading: loadingIdentifications,
-        error: errorIdentifications,
     } = useIdentificacitionTypes()
     const {
         genders,
-        loading: loadingGenders,
-        error: errorGenders,
     } = useGenders()
     const {
         ethnicities,
-        loading: loadingEthnicities,
-        error: errorEthnicities,
     } = useEthnicities()
     const {
         marital,
-        loading: loadingMarital,
-        error: errorMarital,
     } = useMaritalStatuses()
     const {
         countries,
-        loading: loadingCountries,
-        error: errorCountries,
     } = useCountries()
     const {
         loading: loadingValidation,
@@ -62,7 +52,6 @@ const JobDetails = ({ params }) => {
         checkCandidate,
     } = useCandidateValidation()
     const {
-        loading: loadingCandidate,
         error: errorCandidate,
         response: candidateResponse,
         submitForm,
@@ -603,11 +592,11 @@ const JobDetails = ({ params }) => {
                                         cy="12"
                                         r="10"
                                         stroke="currentColor"
-                                        strokeWidth="4"></circle>
+                                        strokeWidth="4" />
                                     <path
                                         className="opacity-75"
                                         fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                 </svg>
                             )}
                             {loadingValidation ? 'Validando...' : 'Continuar'}
@@ -685,7 +674,7 @@ const JobDetails = ({ params }) => {
                                             </option>
                                         ))}
                                     </select>
-                                    <div className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 pointer-events-none"></div>
+                                    <div className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 pointer-events-none" />
                                 </div>
                             </div>
 

@@ -14,15 +14,14 @@ const ContractDocuments = () => {
         salary_info,
         loading,
         error,
-        meta,
         refresh,
         currentPage,
         totalPages,
         goToNextPage,
         goToPrevPage
     } = useContracts()
+    
     const [selectedContract, setSelectedContract] = useState(null)
-    const [isModalOpen, setIsModalOpen] = useState(false)
 
     // Generador de texto de contrato con datos interpolados
     const generateContractText = (contract, personalInfo, salaryInfo) => {

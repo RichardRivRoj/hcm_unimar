@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import useAgenda from '@/hooks/useAgendasShow'
 import useTypeAgendas from '@/hooks/typeAgendasView'
 import useStatuses from '@/hooks/useStatuses'
-import DetailCard from '@/components/DetailCard'
 import axios from '@/lib/axios'
 import StandardLoader from '@/components/StandardLoader'
 import EditAgendaForm from './EditAgendaForm'
@@ -14,34 +13,17 @@ import RatingModal from './RatingModal'
 import DeleteConfirmationModal from './DeleteConfirmationModal'
 import Card from '@/components/Card'
 import { CheckIcon, StarIcon } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/alert'
 
 const AgendaDetail = ({ params }) => {
     const router = useRouter()
     const { id } = params
     const { agenda, loading, error } = useAgenda(id)
 
-    const {
-        typeAgendas,
-        loading: loadingTypeAgendas,
-        error: errorTypeAgendas,
-    } = useTypeAgendas()
-    const {
-        statuses,
-        loading: loadingStatuses,
-        error: errorStatuses,
-    } = useStatuses()
-
-    const [formState, setFormState] = useState({
-        scheduled_date: '',
-        time: '',
-        location: '',
-        type_agenda_id: '',
-        status_id: '',
-        changes_notification: '',
-    })
+    const { typeAgendas } = useTypeAgendas()
+    const { statuses } = useStatuses()
 
     const [isEditing, setIsEditing] = useState(false)
-    const [updateError, setUpdateError] = useState(null)
     const [successMessage, setSuccessMessage] = useState(null)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [deleteError, setDeleteError] = useState(null)
@@ -50,17 +32,10 @@ const AgendaDetail = ({ params }) => {
     const [isRated, setIsRated] = useState(false)
 
     // Cargar datos iniciales
+ 
     useEffect(() => {
         if (agenda) {
             setIsRated(agenda.agenda.has_rating)
-            setFormState({
-                scheduled_date: agenda.agenda.scheduled_date,
-                time: agenda.agenda.time_raw, // Usar el valor raw
-                location: agenda.agenda.location,
-                type_agenda_id: agenda.agenda.type_agenda_id.toString(), // Nuevo campo del backend
-                status_id: agenda.agenda.status_id.toString(), // Nuevo campo del backend
-                changes_notification: '',
-            })
         }
     }, [agenda])
 
@@ -86,12 +61,8 @@ const AgendaDetail = ({ params }) => {
         setTimeout(() => setSuccessMessage(null), 3000)
     }
 
-    const handleUpdateSuccess = updatedData => {
+    const handleUpdateSuccess = () => {
         // Actualizar estado local con los nuevos datos
-        setFormState(prev => ({
-            ...prev,
-            ...updatedData,
-        }))
         setSuccessMessage('Agenda actualizada exitosamente')
         setIsEditing(false)
 
@@ -102,23 +73,12 @@ const AgendaDetail = ({ params }) => {
     }
 
     if (loading) return <StandardLoader />
-    if (error) return <ErrorScreen error={error} />
-
-    if (error) {
+    if (error)
         return (
-            <div className="max-w-4xl p-8 mx-auto text-center">
-                <div className="p-4 mb-4 text-red-600 bg-red-100 rounded-lg">
-                    {error}
-                </div>
-                <button
-                    onClick={() => router.back()}
-                    className="flex items-center justify-center gap-2 px-6 py-2 text-gray-600 transition-all hover:text-gray-800">
-                    <span className="text-xl">←</span>
-                    Volver a agendas
-                </button>
-            </div>
+            <Alert>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
         )
-    }
 
     return (
         <div className="max-w-6xl p-4 mx-auto sm:p-6 lg:p-8">
@@ -147,7 +107,8 @@ const AgendaDetail = ({ params }) => {
                             Detalle de Agenda
                             <span className="block mt-1 text-sm font-normal text-gray-500">
                                 | Candidato:{' '}
-                                {agenda.candidate.person.first_name} {agenda.candidate.person.last_name}
+                                {agenda.candidate.person.first_name}{' '}
+                                {agenda.candidate.person.last_name}
                             </span>
                         </h1>
                     </div>
@@ -219,7 +180,7 @@ const AgendaDetail = ({ params }) => {
                                     value={new Date(
                                         agenda.agenda.scheduled_date,
                                     ).toLocaleDateString('es-ES', {
-                                        timeZone: 'UTC'
+                                        timeZone: 'UTC',
                                     })}
                                     icon="calendar"
                                     color="#004b9a"

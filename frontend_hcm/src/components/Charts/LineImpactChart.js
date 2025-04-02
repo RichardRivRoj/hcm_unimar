@@ -1,4 +1,4 @@
-import { Line } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2'
 import { 
     Chart as ChartJS, 
     CategoryScale, 
@@ -8,9 +8,9 @@ import {
     Title, 
     Tooltip, 
     Legend 
-} from 'chart.js';
+} from 'chart.js'
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const LineImpactChart = ({ data }) => {
     const options = {
@@ -35,9 +35,9 @@ const LineImpactChart = ({ data }) => {
                 title: { display: true, text: 'Periodo' }
             }
         }
-    };
+    }
 
-    return <Line data={data} options={options} />;
-};
+    return <Line data={data} options={options} />
+}
 
 export default LineImpactChart

@@ -14,7 +14,7 @@ const PublicProgramDetail = ({ program, onEnroll }) => {
             if (!program.content) return null
             return JSON.parse(program.content)
         } catch (error) {
-            console.error('Error parsing program content:', error)
+            toast.error('Contenido del programa de análisis de errores')
             return null
         }
     }

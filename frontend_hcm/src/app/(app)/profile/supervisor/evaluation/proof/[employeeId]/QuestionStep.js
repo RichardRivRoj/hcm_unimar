@@ -117,4 +117,6 @@ const QuestionStep = React.memo(
     },
 )
 
+QuestionStep.displayName = 'QuestionStep'
+
 export default QuestionStep

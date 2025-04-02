@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import axios from '@/lib/axios'
 import useTrainingDashboard from '@/hooks/admin/useTrainingDashboard'
 import { Alert, AlertDescription } from '@/components/alert'
@@ -13,11 +13,12 @@ import DataTableCard from '@/components/Dashboard/DataTableCard'
 import TrainingParticipationChart from '@/components/Charts/TrainingParticipationChart'
 import StackedBarChart from '@/components/Charts/StackedBarChart'
 import HorizontalBarChart from '@/components/Charts/HorizontalBarChart'
-import LineImpactChart from '@/components/Charts/LineImpactChart '
+import LineImpactChart from '@/components/Charts/LineImpactChart'
 import ScoreDistributionChart from '@/components/Charts/ScoreDistributionChart'
 
 const TrainingDashboard = () => {
     const [departments, setDepartments] = useState([])
+    const [fetchError, setFetchError] = useState(null)
     const { metrics, params, setParams, changePage, isLoading, errors } =
         useTrainingDashboard()
 
@@ -27,7 +28,9 @@ const TrainingDashboard = () => {
                 const response = await axios.get('/api/departments')
                 setDepartments(response.data)
             } catch (err) {
-                console.error('Error fetching departments:', err)
+                setFetchError(
+                    'Error al cargar los departamentos. Intente nuevamente.',
+                )
             }
         }
         fetchDepartments()
@@ -87,11 +90,15 @@ const TrainingDashboard = () => {
         },
     ]
 
-    const handleFilterChange = (filterType, value) => {
-        setParams({
-            [filterType]: value === 'all' ? null : value,
-        })
-    }
+    const handleFilterChange = useCallback(
+        (filterType, value) => {
+            setParams(prevParams => ({
+                ...prevParams,
+                [filterType]: value === 'all' ? null : value,
+            }))
+        },
+        [setParams],
+    )
 
     if (isLoading) return <StandardLoader />
 
@@ -103,6 +110,11 @@ const TrainingDashboard = () => {
                     <h1 className="text-2xl font-bold text-[#004b9a] md:text-3xl">
                         Desarrollo y Capacitación
                     </h1>
+                    {fetchError && (
+                        <Alert variant="destructive">
+                            <AlertDescription>{fetchError}</AlertDescription>
+                        </Alert>
+                    )}
                     <Filters filters={filterOptions} />
                 </div>
 

@@ -1,4 +1,4 @@
-import { Bar } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2'
 import { 
     Chart as ChartJS, 
     CategoryScale, 
@@ -7,9 +7,9 @@ import {
     Title, 
     Tooltip, 
     Legend 
-} from 'chart.js';
+} from 'chart.js'
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const HorizontalBarChart = ({ data }) => {
     const chartData = {
@@ -21,7 +21,7 @@ const HorizontalBarChart = ({ data }) => {
             borderColor: '#003A7A',
             borderWidth: 1
         }]
-    };
+    }
 
     const options = {
         indexAxis: 'y',
@@ -34,9 +34,9 @@ const HorizontalBarChart = ({ data }) => {
             x: { beginAtZero: true },
             y: { grid: { display: false } }
         }
-    };
+    }
 
-    return <Bar data={chartData} options={options} />;
-};
+    return <Bar data={chartData} options={options} />
+}
 
 export default HorizontalBarChart

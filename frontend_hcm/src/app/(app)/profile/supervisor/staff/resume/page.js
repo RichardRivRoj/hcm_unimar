@@ -1,13 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import useDepartmentEmployees from '@/hooks/supervisor/useDepartmentEmployees'
 import StandardTable from '@/components/StandardTable'
 import Input from '@/components/Input'
 import { Eye } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/alert'
-import { Skeleton } from '@/components/skeleton'
 import StandardLoader from '@/components/StandardLoader'
 
 const DepartmentEmployeesList = () => {
@@ -23,7 +22,6 @@ const DepartmentEmployeesList = () => {
         error,
         pagination,
         goToPage,
-        refetch,
     } = useDepartmentEmployees(filters)
 
     // Generar opciones únicas para los filtros

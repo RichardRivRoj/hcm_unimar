@@ -114,7 +114,7 @@ export const useTrainingProgram = () => {
             params: {
               include: 'departments,employees' // Forzar carga de relaciones
             }
-          });
+          })
 
             if (data.success) {
                 setState(prev => ({

@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Stepper } from 'react-form-stepper'
 import { motion } from 'framer-motion'
 import {
@@ -31,8 +31,6 @@ const EvaluationWizard = ({ employeeId, departmentId, periodId }) => {
 
     const {
         evaluationDetails: data,
-        loading,
-        error,
         fetchEvaluationDetails,
         fetchEvaluationStructure,
         createEvaluation,
@@ -58,7 +56,7 @@ const EvaluationWizard = ({ employeeId, departmentId, periodId }) => {
             const structure = await fetchEvaluationStructure()
             setSections(structure)
         } catch (error) {
-            console.error('Error loading data:', error)
+            toast.error('Error al cargar los datos')
         }
     }
 
@@ -121,7 +119,6 @@ const EvaluationWizard = ({ employeeId, departmentId, periodId }) => {
                 },
             )
         } catch (error) {
-            console.error('Error al enviar la evaluación:', error)
             toast.error('Ocurrió un error inesperado')
         }
     }

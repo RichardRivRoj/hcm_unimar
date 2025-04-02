@@ -122,4 +122,4 @@ const useDeparmentEnrollments = (enrollmentId) => {
     return { data, loading, error, updateEnrollment }
 }
 
-export default useDeparmentEnrollments;
+export default useDeparmentEnrollments

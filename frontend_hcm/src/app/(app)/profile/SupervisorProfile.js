@@ -21,7 +21,7 @@ const SupervisorProfile = ({ user }) => {
                     </svg>
                     Perfil de Supervisor
                 </h2>
-                <div className="mt-2 w-12 h-1 bg-[#004b9a] rounded-full"></div>
+                <div className="mt-2 w-12 h-1 bg-[#004b9a] rounded-full" />
             </div>
 
             {/* Contenido en grid responsivo */}
@@ -232,4 +232,4 @@ const SupervisorProfile = ({ user }) => {
     )
 }
 
-export default SupervisorProfile;
+export default SupervisorProfile

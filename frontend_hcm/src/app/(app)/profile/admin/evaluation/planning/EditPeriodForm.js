@@ -1,8 +1,8 @@
 'use client'
 
-import useEvaluationPeriods from "@/hooks/admin/useEvaluationPeriods";
-import { useForm } from "react-hook-form";
-import Button from "@/components/Button";
+import useEvaluationPeriods from "@/hooks/admin/useEvaluationPeriods"
+import { useForm } from "react-hook-form"
+import Button from "@/components/Button"
 
 const EditPeriodForm = ({ period, onClose, onSuccess }) => {
     const { register, handleSubmit, setError, formState: { errors } } = useForm({
@@ -11,14 +11,14 @@ const EditPeriodForm = ({ period, onClose, onSuccess }) => {
         start_date: period.start_date,
         end_date: period.end_date
       }
-    });
+    })
   
-    const { updateEvaluationPeriod } = useEvaluationPeriods();
+    const { updateEvaluationPeriod } = useEvaluationPeriods()
   
     const onSubmit = async (data) => {
       try {
-        await updateEvaluationPeriod(period.id, data);
-        onSuccess();
+        await updateEvaluationPeriod(period.id, data)
+        onSuccess()
       } catch (error) {
         // Manejar errores específicos
       if (error.errors) {
@@ -26,8 +26,8 @@ const EditPeriodForm = ({ period, onClose, onSuccess }) => {
           setError(field, {
             type: 'manual',
             message: messages[0]
-          });
-        });
+          })
+        })
       }
       
       // Mostrar error general si existe
@@ -35,10 +35,10 @@ const EditPeriodForm = ({ period, onClose, onSuccess }) => {
         setError('root', {
           type: 'manual',
           message: error.message
-        });
+        })
       }
       }
-    };
+    }
   
     return (
       <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-6">
@@ -127,7 +127,7 @@ const EditPeriodForm = ({ period, onClose, onSuccess }) => {
         </Button>
       </div>
       </form>
-    );
-  };
+    )
+  }
 
-export default EditPeriodForm;
+export default EditPeriodForm

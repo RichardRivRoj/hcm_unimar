@@ -1,11 +1,10 @@
 import useSWR from 'swr'
 import axios from '@/lib/axios'
 import { useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
     const router = useRouter()
-    const params = useParams()
 
     const { data: user, error, mutate } = useSWR('/api/user', () =>
         axios
@@ -52,39 +51,39 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
     }
 
     const forgotPassword = async ({ setErrors, setStatus, email }) => {
-        await csrf(); // Asegúrate de que el token CSRF esté configurado
+        await csrf() // Asegúrate de que el token CSRF esté configurado
     
-        setErrors([]); // Limpia los errores anteriores
-        setStatus(null); // Limpia el estado anterior
+        setErrors([]) // Limpia los errores anteriores
+        setStatus(null) // Limpia el estado anterior
     
         try {
-            const response = await axios.post('/forgot-password', { email });
-            setStatus(response.data.status); // Establece el estado con la respuesta del servidor
+            const response = await axios.post('/forgot-password', { email })
+            setStatus(response.data.status) // Establece el estado con la respuesta del servidor
         } catch (error) {
             if (error.response) {
                 // El servidor respondió con un código de estado fuera del rango 2xx
                 if (error.response.status === 422) {
                     // Errores de validación (por ejemplo, campos incorrectos)
-                    setErrors(error.response.data.errors);
+                    setErrors(error.response.data.errors)
                 } else {
                     // Otros errores del servidor (por ejemplo, 500)
-                    setStatus('Algo salió mal. Por favor, inténtalo de nuevo más tarde.');
+                    setStatus('Algo salió mal. Por favor, inténtalo de nuevo más tarde.')
                 }
             } else if (error.request) {
                 // La solicitud fue hecha pero no se recibió respuesta
-                setStatus('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
+                setStatus('No se pudo conectar con el servidor. Verifica tu conexión a internet.')
             } else {
                 // Otros errores (por ejemplo, errores en la configuración de Axios)
-                setStatus('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.');
+                setStatus('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
             }
         }
-    };
+    }
 
     const resetPassword = async ({ email, password, password_confirmation, token, setErrors, setStatus }) => {
-        await csrf(); // Asegúrate de que el token CSRF esté configurado
+        await csrf() // Asegúrate de que el token CSRF esté configurado
     
-        setErrors([]);
-        setStatus(null);
+        setErrors([])
+        setStatus(null)
     
         try {
             const response = await axios.post('/reset-password', {
@@ -92,28 +91,28 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
                 email,
                 password,
                 password_confirmation,
-            });
+            })
     
-            setStatus(response.data.status); // Establece el estado con la respuesta del servidor
+            setStatus(response.data.status) // Establece el estado con la respuesta del servidor
         } catch (error) {
             if (error.response) {
                 // El servidor respondió con un código de estado fuera del rango 2xx
                 if (error.response.status === 422) {
                     // Errores de validación (por ejemplo, campos incorrectos)
-                    setErrors(error.response.data.errors);
+                    setErrors(error.response.data.errors)
                 } else {
                     // Otros errores del servidor (por ejemplo, 500)
-                    setStatus('Algo salió mal. Por favor, inténtalo de nuevo más tarde.');
+                    setStatus('Algo salió mal. Por favor, inténtalo de nuevo más tarde.')
                 }
             } else if (error.request) {
                 // La solicitud fue hecha pero no se recibió respuesta
-                setStatus('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
+                setStatus('No se pudo conectar con el servidor. Verifica tu conexión a internet.')
             } else {
                 // Otros errores (por ejemplo, errores en la configuración de Axios)
-                setStatus('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.');
+                setStatus('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
             }
         }
-    };
+    }
 
     const resendEmailVerification = ({ setStatus }) => {
         axios
@@ -137,7 +136,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
 
         axios
             .post('/update-password', props)
-            .then(response => setStatus('password-updated'))
+            .then(() => setStatus('password-updated'))
             .catch(error => {
                 if (error.response.status === 422) {
                     setErrors(Object.values(error.response.data.errors).flat())

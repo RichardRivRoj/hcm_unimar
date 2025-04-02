@@ -1,8 +1,7 @@
 // components/Charts/DiversityRadarChart.js
 'use client'
 
-import { Radar } from 'react-chartjs-2';
-import { Chart as ChartJS } from 'chart.js/auto';
+import { Radar } from 'react-chartjs-2'
 
 const DiversityRadarChart = ({ data }) => {
     const options = {
@@ -24,13 +23,13 @@ const DiversityRadarChart = ({ data }) => {
                 position: 'top'
             }
         }
-    };
+    }
 
     return (
         <div className="h-96">
             <Radar data={data} options={options} />
         </div>
-    );
-};
+    )
+}
 
-export default DiversityRadarChart;
+export default DiversityRadarChart

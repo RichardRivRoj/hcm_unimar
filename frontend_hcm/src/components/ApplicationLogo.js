@@ -1,5 +1,9 @@
+'use client'
+
+import Image from "next/image"
+
 const ApplicationLogo = props => (
-    <img
+    <Image
         src="/logo.svg"
         alt="Application Logo"
         {...props}

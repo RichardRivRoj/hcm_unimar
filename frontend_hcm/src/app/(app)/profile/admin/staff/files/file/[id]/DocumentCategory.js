@@ -16,7 +16,7 @@ export default function DocumentCategory({
       <div className="space-y-4">
         {documents.map(document => {
           // Verifica si el documento es de tipo "Cuentas de banco"
-          const isBankAccount = document.banco && document.numero_cuenta;
+          const isBankAccount = document.banco && document.numero_cuenta
 
           return (
             <div
@@ -64,7 +64,7 @@ export default function DocumentCategory({
                 )}
               </div>
             </div>
-          );
+          )
         })}
       </div>
 
@@ -78,5 +78,5 @@ export default function DocumentCategory({
         />
       )}
     </div>
-  );
+  )
 }

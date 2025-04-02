@@ -1,15 +1,13 @@
 import React from 'react'
 import {
-    Check,
     FileText,
     Info,
     Settings,
-    Shield,
     UserCog,
     Users,
 } from 'lucide-react'
 
-const AdminProfile = ({ user }) => {
+const AdminProfile = () => {
     return (
         <div className="p-6 mb-6 transition-shadow bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg">
             {/* Header */}
@@ -18,7 +16,7 @@ const AdminProfile = ({ user }) => {
                     <UserCog className="w-6 h-6" /> {/* Icono de Lucide */}
                     Perfil de Administrador
                 </h2>
-                <div className="mt-2 w-12 h-1 bg-[#004b9a] rounded-full"></div>
+                <div className="mt-2 w-12 h-1 bg-[#004b9a] rounded-full" />
             </div>
 
             {/* Contenido básico y predeterminado */}
@@ -73,4 +71,4 @@ const AdminProfile = ({ user }) => {
     )
 }
 
-export default AdminProfile;
+export default AdminProfile

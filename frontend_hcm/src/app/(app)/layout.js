@@ -2,8 +2,6 @@
 
 import { useAuth } from '@/hooks/auth'
 import Navigation from '@/app/(app)/Navigation'
-import Loading from '@/app/(app)/Loading'
-import PageTitle from './PageTitle'
 import { Inter } from 'next/font/google'
 import Header from './Header'
 import { Toaster } from 'sonner'

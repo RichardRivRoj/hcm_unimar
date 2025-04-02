@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useAuth } from '@/hooks/auth'
 
 const ChangePasswordForm = () => {
-    const { user, updatePassword } = useAuth()
+    const { updatePassword } = useAuth()
     const [currentPassword, setCurrentPassword] = useState('')
     const [newPassword, setNewPassword] = useState('')
     const [passwordConfirmation, setPasswordConfirmation] = useState('')
@@ -87,4 +87,4 @@ const ChangePasswordForm = () => {
     )
 }
 
-export default ChangePasswordForm;
+export default ChangePasswordForm

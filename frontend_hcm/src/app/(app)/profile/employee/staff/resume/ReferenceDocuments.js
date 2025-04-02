@@ -38,8 +38,8 @@ const ReferenceDocuments = () => {
     }
 
     useEffect(() => {
-        getReferences(1); // Forzar carga inicial con página 1
-    }, []); // <- Ejecutar solo al montar
+        getReferences(1) // Forzar carga inicial con página 1
+    }, []) // <- Ejecutar solo al montar
 
     const generateReferenceText = reference => {
         // Función para parsear fechas en formato "DD-MM-AAAA HH:mm"
@@ -63,7 +63,6 @@ const ReferenceDocuments = () => {
 
         // Obtener componentes de fecha válidos
         const docDate = parseCustomDate(reference.document_created_at)
-        const issueDate = parseCustomDate(reference.issue_date)
 
         return `
     <div class="font-sans text-[13px] leading-[1.6] text-justify">

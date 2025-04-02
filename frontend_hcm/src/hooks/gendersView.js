@@ -1,28 +1,28 @@
-import { useState, useEffect } from 'react';
-import axios from '@/lib/axios';
+import { useState, useEffect } from 'react'
+import axios from '@/lib/axios'
 
 const useGenders = () => {
-    const [genders, setGenders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [genders, setGenders] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
 
     useEffect(() => {
         const fetchGenders = async () => {
             try {
-                const response = await axios.get('/api/public/genders'); // Llama al endpoint del backend
-                setGenders(response.data);
+                const response = await axios.get('/api/public/genders') // Llama al endpoint del backend
+                setGenders(response.data)
             } catch (err) {
-                console.error('Error al cargar generos:', err);
-                setError(err);
+              
+                setError(err)
             } finally {
-                setLoading(false);
+                setLoading(false)
             }
-        };
+        }
 
-        fetchGenders();
-    }, []);
+        fetchGenders()
+    }, [])
 
-    return { genders, loading, error };
-};
+    return { genders, loading, error }
+}
 
-export default useGenders;
+export default useGenders

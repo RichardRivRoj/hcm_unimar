@@ -1,28 +1,28 @@
-import { useState, useEffect } from 'react';
-import axios from '@/lib/axios';
+import { useState, useEffect } from 'react'
+import axios from '@/lib/axios'
 
 const useTypeAgendas = () => {
-    const [typeAgendas, setTypeAgendas] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [typeAgendas, setTypeAgendas] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
 
     useEffect(() => {
         const fetchTypeAgendas = async () => {
             try {
-                const response = await axios.get('/api/type_agendas'); // Llama al endpoint del backend
-                setTypeAgendas(response.data);
+                const response = await axios.get('/api/type_agendas') // Llama al endpoint del backend
+                setTypeAgendas(response.data)
             } catch (err) {
-                console.error('Error al cargar generos:', err);
-                setError(err);
+              
+                setError(err)
             } finally {
-                setLoading(false);
+                setLoading(false)
             }
-        };
+        }
 
-        fetchTypeAgendas();
-    }, []);
+        fetchTypeAgendas()
+    }, [])
 
-    return { typeAgendas, loading, error };
-};
+    return { typeAgendas, loading, error }
+}
 
-export default useTypeAgendas;
+export default useTypeAgendas

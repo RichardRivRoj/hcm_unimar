@@ -13,10 +13,12 @@ import Button from '@/components/Button'
 import { Alert, AlertDescription } from '@/components/alert'
 import { Skeleton } from '@/components/skeleton'
 import StandardLoader from '@/components/StandardLoader'
+import Image from 'next/image'
 
 const DepartmentEmployee = ({ params }) => {
     const { id } = params
-    const { employee, fetchEmployee, errorEmployee, loading } = useDepartmentEmployees()
+    const { employee, fetchEmployee, errorEmployee, loading } =
+        useDepartmentEmployees()
 
     useEffect(() => {
         if (id) {
@@ -49,10 +51,16 @@ const DepartmentEmployee = ({ params }) => {
                 <div className="flex items-center gap-6 mb-6 p-6 bg-[#004b9a] text-white rounded-lg shadow-lg">
                     <div className="flex-shrink-0 w-32 h-32">
                         {employee.person?.photo_url ? (
-                            <img
+                            <Image
                                 src={employee.person.photo_url}
                                 alt={`${employee.person.first_name} ${employee.person.last_name}`}
-                                className="object-cover w-32 h-32 border-4 border-white rounded-full shadow-lg"
+                                width={128}
+                                height={128}
+                                className="object-cover border-4 border-white rounded-full shadow-lg"
+                                style={{
+                                    width: '128px',
+                                    height: '128px',
+                                }}
                             />
                         ) : (
                             <div className="flex items-center justify-center w-32 h-32 bg-gray-200 rounded-full">
@@ -96,7 +104,8 @@ const DepartmentEmployee = ({ params }) => {
                                 <li className="flex items-center">
                                     <IdCard
                                         size={20}
-                                        className="mr-2 text-gray-600"></IdCard>
+                                        className="mr-2 text-gray-600"
+                                    />
                                     {employee.person?.identification_type}
                                     {' - '}
                                     {employee.person.identification_value}
@@ -226,25 +235,29 @@ const DepartmentEmployee = ({ params }) => {
                                 <li className="flex items-center">
                                     <Cake
                                         size={20}
-                                        className="mr-2 text-gray-600"></Cake>
+                                        className="mr-2 text-gray-600"
+                                    />
                                     {employee.person?.birth_date}
                                 </li>
                                 <li className="flex items-center">
                                     <Captions
                                         size={20}
-                                        className="mr-2 text-gray-600"></Captions>
+                                        className="mr-2 text-gray-600"
+                                    />
                                     {employee.person?.gender}
                                 </li>
                                 <li className="flex items-center">
                                     <HeartHandshake
                                         size={20}
-                                        className="mr-2 text-gray-600"></HeartHandshake>
+                                        className="mr-2 text-gray-600"
+                                    />
                                     {employee.person?.ethnicity}
                                 </li>
                                 <li className="flex items-center">
                                     <NotebookPen
                                         size={20}
-                                        className="mr-2 text-gray-600"></NotebookPen>
+                                        className="mr-2 text-gray-600"
+                                    />
                                     {employee.person?.marital_status}
                                 </li>
                             </ul>

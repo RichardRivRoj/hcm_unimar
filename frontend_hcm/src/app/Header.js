@@ -2,6 +2,7 @@
 
 import LoginLinks from '@/app/LoginLinks'
 import DollarPrice from '@/components/DolarPrice'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -28,10 +29,13 @@ const Header = () => {
                 <div className="flex items-center justify-between w-full px-6 py-4 bg-white">
                     {/* Imagen alineada a la izquierda */}
                     <Link href="#">
-                        <img
+                        <Image
                             src="/logounimar-22.jpg"
                             alt="Unimar"
-                            className="object-contain w-56 h-16"
+                            width={224} // w-56 = 224px (56 * 4)
+                            height={64} // h-16 = 64px (16 * 4)
+                            className="object-contain"
+                            priority // Optional: if this is above-the-fold content
                         />
                     </Link>
 
@@ -70,9 +74,7 @@ const Header = () => {
                                         <li className="relative hover:bg-gray-100">
                                             <button
                                                 onClick={() =>
-                                                    toggleSubMenu(
-                                                        'rectorado',
-                                                    )
+                                                    toggleSubMenu('rectorado')
                                                 }
                                                 className="flex items-center justify-between w-full px-4 py-2">
                                                 Rectorado
@@ -91,7 +93,10 @@ const Header = () => {
                                                         <Link
                                                             href="#"
                                                             className="block px-4 py-2">
-                                                            Planificacion, Desarrollo y Evaluación Institucional
+                                                            Planificacion,
+                                                            Desarrollo y
+                                                            Evaluación
+                                                            Institucional
                                                         </Link>
                                                     </li>
                                                     <li className="hover:bg-gray-100">
@@ -105,7 +110,8 @@ const Header = () => {
                                                         <Link
                                                             href="#"
                                                             className="block px-4 py-2">
-                                                            Evaluación y Apoyo Psicológico
+                                                            Evaluación y Apoyo
+                                                            Psicológico
                                                         </Link>
                                                     </li>
                                                 </ul>
@@ -201,13 +207,11 @@ const Header = () => {
                                                 Biblioteca UNIMAR
                                             </Link>
                                         </li>
-                                        
+
                                         <li className="relative hover:bg-gray-100">
                                             <button
                                                 onClick={() =>
-                                                    toggleSubMenu(
-                                                        'decanato',
-                                                    )
+                                                    toggleSubMenu('decanato')
                                                 }
                                                 className="flex items-center justify-between w-full px-4 py-2">
                                                 Decanatos
@@ -226,21 +230,24 @@ const Header = () => {
                                                         <Link
                                                             href="#"
                                                             className="block px-4 py-2">
-                                                            Humanidades, Artes y Educación
+                                                            Humanidades, Artes y
+                                                            Educación
                                                         </Link>
                                                     </li>
                                                     <li className="hover:bg-gray-100">
                                                         <Link
                                                             href="#"
                                                             className="block px-4 py-2">
-                                                            Ciencias Económicas y Sociales
+                                                            Ciencias Económicas
+                                                            y Sociales
                                                         </Link>
                                                     </li>
                                                     <li className="hover:bg-gray-100">
                                                         <Link
                                                             href="#"
                                                             className="block px-4 py-2">
-                                                            Ciencias Jurídicas y Políticas
+                                                            Ciencias Jurídicas y
+                                                            Políticas
                                                         </Link>
                                                     </li>
                                                     <li className="hover:bg-gray-100">
@@ -253,7 +260,6 @@ const Header = () => {
                                                 </ul>
                                             )}
                                         </li>
-                                        
                                     </ul>
                                 )}
                             </li>
@@ -294,13 +300,10 @@ const Header = () => {
                                 {/* Submenú */}
                                 {openMenu === 'estudiante' && (
                                     <ul className="absolute w-40 mt-2 bg-white border border-gray-200 rounded-md shadow-lg -left-3 text-[12px]">
-                                        
                                         <li className="relative hover:bg-gray-100">
                                             <button
                                                 onClick={() =>
-                                                    toggleSubMenu(
-                                                        'pregrado',
-                                                    )
+                                                    toggleSubMenu('pregrado')
                                                 }
                                                 className="flex items-center justify-between w-full px-4 py-2">
                                                 Pregrado
@@ -319,19 +322,18 @@ const Header = () => {
                                                         <Link
                                                             href="#"
                                                             className="block px-4 py-2">
-                                                            Estudiantes Regulares
+                                                            Estudiantes
+                                                            Regulares
                                                         </Link>
                                                     </li>
                                                 </ul>
                                             )}
                                         </li>
-                                        
+
                                         <li className="relative hover:bg-gray-100">
                                             <button
                                                 onClick={() =>
-                                                    toggleSubMenu(
-                                                        'postgrado',
-                                                    )
+                                                    toggleSubMenu('postgrado')
                                                 }
                                                 className="flex items-center justify-between w-full px-4 py-2">
                                                 Postgrado
@@ -349,13 +351,11 @@ const Header = () => {
                                                 </ul>
                                             )}
                                         </li>
-                                        
+
                                         <li className="relative hover:bg-gray-100">
                                             <button
                                                 onClick={() =>
-                                                    toggleSubMenu(
-                                                        'extensione',
-                                                    )
+                                                    toggleSubMenu('extensione')
                                                 }
                                                 className="flex items-center justify-between w-full px-4 py-2">
                                                 Extensión
@@ -380,7 +380,7 @@ const Header = () => {
                                                 </ul>
                                             )}
                                         </li>
-                                        
+
                                         <li className="hover:bg-gray-100">
                                             <Link
                                                 href="#"

@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import axios from '@/lib/axios'
 import useAgendaResultShow from '@/hooks/useResultDetailsShow'
-import DetailCard from '@/components/DetailCard'
 import { Modal } from '@/components/Modal'
 import HireEmployeeForm from './HireEmployeeForm'
 import StandardLoader from '@/components/StandardLoader'
@@ -13,14 +12,12 @@ import SelectionResultPDF from '@/components/SelectionResultPDF'
 import { format } from 'date-fns'
 import { CheckCircle2, XCircle, Clock, Download, ArrowLeft } from 'lucide-react'
 import Card from '@/components/Card'
+import { Alert, AlertDescription } from '@/components/alert'
 
 const ResultDetails = ({ params }) => {
     const router = useRouter()
     const { id } = params
     const { data: result, loading, error } = useAgendaResultShow(id)
-    const [loadingStatus, setLoadingStatus] = useState(false)
-    const [errorStatus, setErrorStatus] = useState(null)
-    const [successStatus, setSuccessStatus] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [deleteError, setDeleteError] = useState(null)
@@ -33,10 +30,9 @@ const ResultDetails = ({ params }) => {
     const closeModal = () => setIsModalOpen(false)
 
     // Manejar éxito en la contratación
-    const handleHireSuccess = response => {
-        setSuccessStatus(true)
-        closeModal() // Cerrar el modal después de contratar
-        console.log('Candidato contratado:', response)
+    const handleHireSuccess = () => {
+        closeModal()
+        router.refresh() // Actualizar los datos después de contratar
     }
 
     const openDeleteConfirmation = () => {
@@ -78,7 +74,7 @@ const ResultDetails = ({ params }) => {
     }
 
     if (loading) return <StandardLoader />
-    if (error) return <div className="p-6 text-red-600">Error: {error}</div>
+    if (error) return <Alert><AlertDescription>{error}</AlertDescription></Alert>
 
     return (
         <div

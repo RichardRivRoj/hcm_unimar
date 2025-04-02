@@ -1,26 +1,26 @@
-'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import useAgendas from '@/hooks/useAgendas';
-import useTypeAgendas from '@/hooks/typeAgendasView';
-import useStatuses from '@/hooks/useStatuses';
-import { Eye } from 'lucide-react';
-import StandardLoader from '@/components/StandardLoader';
-import StandardTable from '@/components/StandardTable';
+'use client'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import useAgendas from '@/hooks/useAgendas'
+import useTypeAgendas from '@/hooks/typeAgendasView'
+import useStatuses from '@/hooks/useStatuses'
+import { Eye } from 'lucide-react'
+import StandardLoader from '@/components/StandardLoader'
+import StandardTable from '@/components/StandardTable'
 
 const CandidateAgendas = ({ params }) => {
-    const { candidateId } = params;
-    const router = useRouter();
+    const { candidateId } = params
+    const router = useRouter()
 
     const [filters, setFilters] = useState({
         type_agenda: '',
         status: '',
         page: 1,
-    });
+    })
 
-    const { agendas, loading, meta, error } = useAgendas(candidateId, filters);
-    const { typeAgendas } = useTypeAgendas();
-    const { statuses } = useStatuses();
+    const { agendas, loading, meta, error } = useAgendas(candidateId, filters)
+    const { typeAgendas } = useTypeAgendas()
+    const { statuses } = useStatuses()
 
     // Configuración de columnas para StandardTable
     const columns = [
@@ -47,7 +47,7 @@ const CandidateAgendas = ({ params }) => {
             accessor: 'status.name',
             render: (item) => `${item.status.name}`
         }
-    ];
+    ]
 
     // Configuración de filtros para StandardTable
     const tableFilters = [
@@ -69,7 +69,7 @@ const CandidateAgendas = ({ params }) => {
                 label: status.name
             }))
         }
-    ];
+    ]
 
     // Acciones para la tabla
     const actions = [
@@ -80,21 +80,21 @@ const CandidateAgendas = ({ params }) => {
                 `/profile/admin/recruitment/interviews/agendas/${item.id}`
             )
         }
-    ];
+    ]
 
     const handlePageChange = (newPage) => {
-        setFilters(prev => ({ ...prev, page: newPage }));
-    };
+        setFilters(prev => ({ ...prev, page: newPage }))
+    }
 
     const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        setFilters(prev => ({ ...prev, [name]: value, page: 1 }));
-    };
+        const { name, value } = e.target
+        setFilters(prev => ({ ...prev, [name]: value, page: 1 }))
+    }
 
     if (loading) return <StandardLoader />
 
     if (error) {
-        return <div className="p-6 text-red-600">Error: {error}</div>;
+        return <div className="p-6 text-red-600">Error: {error}</div>
     }
 
     return (
@@ -133,7 +133,7 @@ const CandidateAgendas = ({ params }) => {
                 loading={loading}
             />
         </div>
-    );
-};
+    )
+}
 
-export default CandidateAgendas;
+export default CandidateAgendas

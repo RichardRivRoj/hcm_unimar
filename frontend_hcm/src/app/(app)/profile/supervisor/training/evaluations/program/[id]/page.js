@@ -6,7 +6,6 @@ import { motion } from 'framer-motion'
 import StandardTable from '@/components/StandardTable'
 import { EyeIcon } from '@heroicons/react/24/solid'
 import { ArrowLeft } from 'lucide-react'
-import { useState } from 'react'
 import useSupervisorProgramDetail from '@/hooks/supervisor/useRegistrationDepartmentDetails'
 import StandardLoader from '@/components/StandardLoader'
 

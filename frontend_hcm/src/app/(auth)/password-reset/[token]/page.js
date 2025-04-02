@@ -34,11 +34,7 @@ const PasswordReset = ({ params }) => {
     }
 
     useEffect(() => {
-        const token = searchParams.get('token')
         const email = searchParams.get('email')
-
-        console.log('Token:', token) // Depuración
-        console.log('Email:', email) // Depuración
 
         setEmail(email)
     }, [searchParams])

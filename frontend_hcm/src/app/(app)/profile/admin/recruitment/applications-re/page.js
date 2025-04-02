@@ -7,6 +7,7 @@ import { Eye } from 'lucide-react'
 import useStatusApplications from '@/hooks/statusApplicationsView'
 import StandardLoader from '@/components/StandardLoader'
 import StandardTable from '@/components/StandardTable' // Asegúrate de tener la ruta correcta
+import BadgeRequest from '@/components/BadgeRequest'
 
 const CandidatesPage = () => {
     const router = useRouter()
@@ -18,8 +19,6 @@ const CandidatesPage = () => {
     
     const {
         applications,
-        loading: loadingApplications,
-        error: errorApplications,
     } = useStatusApplications()
     
     const { candidates, loading, error, pagination } = useCandidates(filters)
@@ -60,7 +59,11 @@ const CandidatesPage = () => {
         {
             header: 'Estatus',
             accessor: 'status_application',
-            render: (item) => `${item.status_application.name}`,
+            render: (item) => (
+                <BadgeRequest>
+                    {item.status_application.name}
+                </BadgeRequest>
+            ),
             align: 'center'
         }
     ]

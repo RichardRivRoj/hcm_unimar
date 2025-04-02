@@ -3,7 +3,6 @@
 import { useTrainingProgram } from '@/hooks/admin/useTrainingPrograms'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Loader from '@/components/Loader'
 import { Alert, AlertDescription } from '@/components/alert'
 import { ArrowLeft, Calendar, CalendarCheck, Edit, Trash2 } from 'lucide-react'
 import { DeleteModal, GeneralModal } from '@/components/Modal'

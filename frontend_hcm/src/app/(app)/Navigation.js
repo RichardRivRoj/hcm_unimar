@@ -10,25 +10,21 @@ import {
     Bell,
     Home,
     FileText,
-    Calendar,
     Briefcase,
     Eye,
     ChevronDown,
     ChevronRight,
     Folder,
     Star,
-    Circle,
     BookCheck,
     ClipboardPenLine,
     SendToBack,
     ReplaceAll,
     BookOpenCheck,
     BookMarked,
-    CalendarSync,
     BookCopy,
     Captions,
     ClipboardType,
-    ArchiveRestore,
     User,
     ShieldCheck,
     ClipboardSignature,
@@ -241,8 +237,8 @@ const Navigation = () => {
                 {sections.map(section => {
                     if (!section.links.length) return null
 
-                    const isSectionOpen = openSections[section.name] || false;
-                    const SectionIcon = section.icon;  // Icono específico por sección
+                    const isSectionOpen = openSections[section.name] || false
+                    const SectionIcon = section.icon  // Icono específico por sección
 
                     return (
                         <div key={section.name}>

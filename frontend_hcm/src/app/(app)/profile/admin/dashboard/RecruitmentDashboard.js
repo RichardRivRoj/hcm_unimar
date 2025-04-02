@@ -7,7 +7,6 @@ import useRecruitmentDashboard from '@/hooks/admin/useRecruitmentDashboard'
 import { Alert, AlertDescription } from '@/components/alert'
 import StandardLoader from '@/components/StandardLoader'
 import StandardTable from '@/components/StandardTable'
-import ChartContainer from '@/components/Dashboard/ChartContainer'
 import MetricCard from '@/components/Dashboard/MetricCard'
 import Filters from '@/components/Dashboard/Filters'
 import ChartCard from '@/components/Dashboard/ChartCard'
@@ -19,6 +18,7 @@ import PieGenderChart from '@/components/Charts/PieGenderChart'
 
 const RecruitmentDashboard = () => {
     const [departments, setDepartments] = useState([])
+    const [error, setError] = useState(null) // Estado para manejar errores
     const { metrics, isLoading } = useRecruitmentDashboard({}, departments)
 
     useEffect(() => {
@@ -27,11 +27,12 @@ const RecruitmentDashboard = () => {
                 const response = await axios.get('/api/departments')
                 setDepartments(response.data)
             } catch (err) {
-                console.error('Error fetching departments:', err)
+                setError('Error al cargar departamentos') // Manejo de error sin console
             }
         }
         fetchDepartments()
     }, [])
+
 
     const columns = [
         {
@@ -58,11 +59,13 @@ const RecruitmentDashboard = () => {
 
     if (isLoading) return <StandardLoader />
 
-    {
-        !isLoading && metrics.interviewRatio.data.length === 0 && (
-            <Alert variant="info">
-                <AlertDescription>No hay datos disponibles</AlertDescription>
-            </Alert>
+    if (!isLoading && metrics.interviewRatio.data.length === 0) {
+        return (
+            <div className="min-h-screen p-2 bg-gray-50">
+                <Alert>
+                    <AlertDescription>No hay datos disponibles</AlertDescription>
+                </Alert>
+            </div>
         )
     }
 
@@ -74,6 +77,11 @@ const RecruitmentDashboard = () => {
                     <h1 className="text-2xl font-bold text-[#004b9a] md:text-3xl">
                         Reclutamiento y Selección
                     </h1>
+                    {error && (
+                        <Alert variant="destructive">
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                    )}
                     <Filters departments={departments} />
                 </div>
 

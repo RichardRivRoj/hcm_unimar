@@ -1,7 +1,7 @@
 'use client'
 import useSWR from 'swr'
 import axios from '@/lib/axios'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 const fetcher = (url, params) => axios.get(url, { params }).then(res => res.data)
 const swrOptions = {

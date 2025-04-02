@@ -7,7 +7,6 @@ import useDepartments from '@/hooks/useDepartments'
 import useModalities from '@/hooks/useModalities'
 import usePositions from '@/hooks/usePositions'
 import useStatuses from '@/hooks/useStatuses'
-import DetailCard from '@/components/DetailCard'
 import CheckIcon from '@/components/CheckIcon'
 import axios from '@/lib/axios'
 import StandardLoader from '@/components/StandardLoader'
@@ -19,24 +18,17 @@ const VacancyDetails = ({ params }) => {
     const [vacancy, setVacancy] = useState(null)
     const {
         departments,
-        loading: loadingDepartments,
-        error: errorDepartments,
     } = useDepartments()
     const {
         statuses,
-        loading: loadingStatuses,
-        error: errorStatuses,
     } = useStatuses()
     const {
         modalities,
-        loading: loadingModalities,
-        error: errorModalities,
     } = useModalities()
     const {
         positions,
-        loading: loadingPositions,
-        error: errorPositions,
     } = usePositions()
+    
     const [formState, setFormState] = useState({
         position_id: '',
         department_id: '',
@@ -51,7 +43,6 @@ const VacancyDetails = ({ params }) => {
     const [isEditing, setIsEditing] = useState(false)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
-    const [updateError, setUpdateError] = useState(null)
     const [successMessage, setSuccessMessage] = useState(null)
     const [isUpdating, setIsUpdating] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -67,7 +58,7 @@ const VacancyDetails = ({ params }) => {
             try {
                 return JSON.parse(requirements) || []
             } catch (err) {
-                console.error('Error parsing requirements:', err)
+                setError('Error al cargar la vacante')
                 return []
             }
         }
@@ -101,7 +92,6 @@ const VacancyDetails = ({ params }) => {
                 })
                 setLoading(false)
             } catch (err) {
-                console.error('Error:', err)
                 setError('Error al cargar la vacante')
                 setLoading(false)
             }
@@ -162,7 +152,7 @@ const VacancyDetails = ({ params }) => {
     // Enviar actualización
     const handleUpdate = async e => {
         e.preventDefault()
-        setUpdateError(null)
+        setError(null)
         setSuccessMessage(null)
         setIsUpdating(true)
 
@@ -193,7 +183,7 @@ const VacancyDetails = ({ params }) => {
                 setTimeout(() => setSuccessMessage(null), 3000)
             }
         } catch (err) {
-            setUpdateError(
+            setError(
                 err.response?.data?.message || 'Error al actualizar la vacante',
             )
         } finally {
@@ -266,9 +256,9 @@ const VacancyDetails = ({ params }) => {
                 </div>
             )}
 
-            {updateError && (
+            {error && (
                 <div className="p-4 mb-6 text-red-700 bg-red-100 border border-red-200 rounded-lg">
-                    {updateError}
+                    {error}
                 </div>
             )}
 

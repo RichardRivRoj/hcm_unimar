@@ -1,6 +1,7 @@
 'use client'
 
 import { FileText, PencilIcon } from 'lucide-react'
+import Image from 'next/image'
 
 const PersonalDataStep = ({
     formData,
